@@ -32,7 +32,7 @@ cp $dir/fcs-genome/fcs-genome-${suite_version} falcon/bin/fcs-genome
 cp $dir/bwa/bwa-${bwa_version} falcon/tools/bin/bwa-bin
 cp $dir/gatk/GATK-${gatk_version}.jar falcon/tools/package/GenomeAnalysisTK.jar
 
-tar zcfh $dir/falcon-genome-${release_version}.tgz falcon/
+tar zcfh falcon-genome-${release_version}.tgz falcon/
 
 source falcon/setup.sh
 
