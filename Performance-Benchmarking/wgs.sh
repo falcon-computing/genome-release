@@ -32,7 +32,7 @@ cp $dir/fcs-genome/fcs-genome-${suite_version} falcon/bin/fcs-genome
 cp $dir/bwa/bwa-${bwa_version} falcon/tools/bin/bwa-bin
 cp $dir/gatk/GATK-${gatk_version}.jar falcon/tools/package/GenomeAnalysisTK.jar
 
-tar zcfh $dir/falcon-genome-${release_version}.tgz falcon/
+tar zcfh $DIR/falcon-genome-${release_version}.tgz falcon/
 
 source falcon/setup.sh
 
@@ -49,8 +49,6 @@ COUNTER=0
 while [ $COUNTER -lt 3 ];do
 echo "RUN: $COUNTER"
 
-#"NA12878-Garvan-Vial1"
-#"A15" "CDMD1015" "CDMD1021" "CDMD2001" "DSDEX72" "NS17" "SRR098359" "SRR098401" "SRR702068" "SRR742200"
 declare -a seq=("A15" "CDMD1015" "CDMD1021" "CDMD2001" "DSDEX72" "NS17" "SRR098359" "SRR098401" "SRR702068" "SRR742200")
 #declare -a seq=("NA12878-Garvan-Vial1")
 
