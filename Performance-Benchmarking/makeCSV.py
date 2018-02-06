@@ -19,22 +19,17 @@ previous_line=""
 process=""
 with open(output_file,'wb') as file:
   for line in output:
-    output_match_fcs_version = re.search('fcs-genome version ([0-9a-zA-Z\.\-]*)',line)
+    output_match_fcs_version = re.search('Falcon Genome Analysis Toolkit ([0-9a-zA-Z\.\-]*)',line)
     if output_match_fcs_version:
       fcs=output_match_fcs_version.group(1)
       file.write('\n')
       file.write('fcs-genome version '+fcs)
-    output_match_release_version = re.search('release version ([0-9a-zA-Z\.\-]*)',line)
-    if output_match_release_version:
-      rel=output_match_release_version.group(1)
-      file.write('\n')
-      file.write('Release version '+rel)
-    output_match_bwa_version = re.search('bwa version ([0-9a-zA-Z\.\-]*)',line)
+    output_match_bwa_version = re.search('bwa-bin version Falcon BWA-MEM Version: ([0-9a-zA-Z\.\-]*)',line)
     if output_match_bwa_version:
       bwa=output_match_bwa_version.group(1)
       file.write('\n')
       file.write('BWA version '+bwa)
-    output_match_gatk_version = re.match('gatk version ([0-9a-zA-Z\.\-]+)',line)
+    output_match_gatk_version = re.match('GATK version ([0-9a-zA-Z\.\-]+)',line)
     if output_match_gatk_version:
         gatk=output_match_gatk_version.group(1)
         file.write('\n')
