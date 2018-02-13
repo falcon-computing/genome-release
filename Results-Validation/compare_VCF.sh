@@ -1,5 +1,6 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_COURCE[0]}" )" && pwd)
+source $DIR/globals.sh
 
 if [[ $# -ne 2 ]];then
   echo "USAGE: $0 [Subject VCF Path] [ID]"
@@ -9,31 +10,26 @@ fi
 mod_vcf=$1
 id=$2
 
-temp_dir=$DIR/temp_dir
-mkdir -p $temp_dir
-
-mkdir -p baselines
-mkdir -p baselines/${id}
-aws s3 cp s3://fcs-genome-data/baselines/${id}/${id}.vcf.gz baselines/$id
-base_vcf=baselines/$id
+base_vcf=$temp/baselines/$id
 
 #Extract VCF files
+if [ -f "$base_vcf/${id}.vcf.gz" ];then
+  gunzip -c $base_vcf/${id}.vcf.gz > $base_vcf/${id}.vcf
+fi
+grep "^[^#]" $base_vcf/${id}.vcf > $temp/${id}_base_grep.vcf
 
-gunzip -c $base_vcf/${id}.vcf.gz > $temp_dir/${id}_base.vcf
-grep "^[^#]" $temp_dir/${id}_base.vcf > $temp_dir/${id}_base_grep.vcf
-
-gunzip -c $mod_vcf > $temp_dir/${id}_mod.vcf
-grep "^[^#]" $temp_dir/${id}_mod.vcf > $temp_dir/${id}_mod_grep.vcf
+if [[ $mod_vcf == *.vcf.gz ]];then
+ gunzip -c $mod_vcf > $temp/${id}/${id}.vcf
+fi
+grep "^[^#]" $temp/${id}/${id}.vcf > $temp/${id}/${id}_mod_grep.vcf
  
 #Compare VCF results b/w baseline and modified
-
-DIFF=$(diff $temp_dir/${id}_base_grep.vcf $temp_dir/${id}_mod_grep.vcf)
+DIFF=$(diff $temp/${id}_base_grep.vcf $temp/${id}/${id}_mod_grep.vcf)
 if [ "$DIFF" == "" ]; then
-  echo "VCF indentical for ${id}"
+  echo "PASS"
 else
-  echo "VCF not identical for ${id}"
+  echo "FAIL"
 fi
 
-rm -r $temp_dir/${id}_*.vcf
+rm -r $temp/${id}/${id}*_grep.vcf
 
-rm baselines/${id}/${id}.vcf.gz
