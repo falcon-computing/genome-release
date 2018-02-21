@@ -74,7 +74,7 @@ baselines=$temp/baselines
 mkdir -p $baselines
 mkdir -p $baselines/$id
 
-#aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
+aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
 
 if [[ $bqsr == 1 || $all == 1 ]];then
  
@@ -140,5 +140,5 @@ echo "$id,$BQSR,$BAM,$VCF" >> $out
 done <$data_list
 
 #Copy to s3
-#aws s3 cp $out s3://fcs-genome-data/results-validation/$gatk_version/record.csv
+aws s3 cp $out s3://fcs-genome-data/results-validation/$gatk_version/record.csv
 
