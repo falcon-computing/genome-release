@@ -25,7 +25,7 @@ echo "GATK version $gatk_version"
 mkdir -p $temp/baseline
 baseline=$temp/baseline/$id
 mkdir -p $baseline
-#aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
+aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
 
 while read i; do
  
@@ -35,7 +35,7 @@ library=$i
 
 temp_dir=$temp/$id
 mkdir -p $temp_dir
-<<com
+
 #Alignment to Reference
 fcs-genome align \
         --ref $ref_genome \
@@ -101,7 +101,7 @@ fi
 
 #Remove Intermediate
 #rm -r $temp_dir/${id}_final_BAM.bam
-com
+
 #BWA=$($DIR/compare_BAM.sh)
 BQSR=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $id)
 BAM=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $id)
@@ -112,8 +112,8 @@ echo "$id,$BQSR,$BAM,$VCF" >> $out
 done <$data_list
 
 #Copy to s3
-#aws s3 cp performance.csv s3://fcs-genome-data/benchmarks/${gatk_version}/performace.csv
-#aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/log/
+aws s3 cp $out s3://fcs-genome-data/benchmarks/${gatk_version}/performace.csv
+aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/log/
 
 
 
