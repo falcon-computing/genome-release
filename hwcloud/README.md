@@ -40,11 +40,11 @@ setup scripts provided with this image
 1. Falcon License: valid license need to be setup in the environment variable 
 `$LM_LICENSE_PATH`. It can either point to a file or a network position in the form
 of `<port#>@<license-host>`. If the license file is not configured correctly, the following
-error will be reported:    
-```
-[fcs-genome] ERROR: Cannot connect to the license server: -15
-[fcs-genome] ERROR: Please contact support@falcon-computing.com for details.
-```    
+error will be reported:
+    ```
+    [fcs-genome] ERROR: Cannot connect to the license server: -15
+    [fcs-genome] ERROR: Please contact support@falcon-computing.com for details.
+    ```
 1. (Optional) Reference genome: to take full advantage of the FPGA acceleration provided
 by the Falcon Genome image, the reference genome needs to be preprocessed. This step
 is optional, and regular reference genome files (FASTA) will still work without processing. 
