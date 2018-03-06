@@ -25,7 +25,7 @@ check_shared_fs() {
   touch $dest_dir/$filename
   local abs_fname=$(readlink -f $dest_dir/$filename);
 
-  ssh $dest_ip "find $abs_fname";
+  ssh $dest_ip "find $abs_fname" &> /dev/null;
   ret=$?;
   rm -f $filename;
   return $ret;
@@ -55,11 +55,11 @@ fi
 abs_dir=$(readlink -f $dest_dir)
 
 add_config "$abs_dir $dest_ip/32(rw,no_root_squash)" /etc/exports
-sudo service nfs restart
-sudo chkconfig nfs on
-sudo exportfs -r
+sudo service nfs restart &> /dev/null
+sudo chkconfig nfs on &> /dev/null
+sudo exportfs -r &> /dev/null
 
-ssh $dest_ip "mkdir -p $abs_dir; sudo mount $this_ip:$abs_dir $abs_dir"
+ssh $dest_ip "mkdir -p $abs_dir; sudo mount $this_ip:$abs_dir $abs_dir"  &> /dev/null
 if [ $? -ne 0 ]; then
   echo "cannot mount $dest_dir in $dest_ip"
   exit -1

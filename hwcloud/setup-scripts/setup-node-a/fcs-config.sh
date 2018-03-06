@@ -49,17 +49,19 @@ ref_dict=${ref_genome%%.fasta}.dict
 ref_fpga=${ref_genome%%.fasta}.fpga.pac
 ref_sa=${ref_genome}.sa
 
+echo "start preparing reference genome..."
+
 if [ ! -f $ref_dict ]; then
     java -jar $PICARD CreateSequenceDictionary \
 	R=$ref_genome \
-	O=$ref_dict
+	O=$ref_dict &>> setup.log
 fi
 	
 if [ ! -f $ref_fpga ]; then
-    $BWA fa2pac $ref_genome ${ref_genome%%.fasta}.fpga
+    $BWA fa2pac $ref_genome ${ref_genome%%.fasta}.fpga &>> setup.log
 fi
 sed -i "s|bwa\.fpga\.pac_path.*|bwa\.fpga\.pac_path = $ref_fpga|" $FALCON_DIR/fcs-genome.conf
 
 if [ ! -f $ref_sa ]; then
-    $BWA index $ref_genome
+    $BWA index $ref_genome &>> setup.log
 fi
