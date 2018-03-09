@@ -1,6 +1,6 @@
 #!/bin/bash
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
-source $DIR/globals.sh
+CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+source $CURR_DIR/globals.sh
 
 if [[ $# -ne 2 ]];then
   echo "USAGE: $0 [falcon-genome-tar] [ID list]"
@@ -13,15 +13,17 @@ data_list=$2
 # build folder
 tar xvfz $fcs_genome
 source falcon/setup.sh
+chmod 777 falcon/tools/bin/bwa-bin
 
 fcs-genome
 falcon/tools/bin/bwa-bin --version
 gatk_version=$(fcs-genome gatk --version)
 echo "GATK version $gatk_version"
 
+#aws s3 cp --recursive s3://fcs-genome-data/ref/ /local/ref
 
 COUNTER=0
-while [ $COUNTER -lt 2 ];do
+while [ $COUNTER -lt 1 ];do
 echo "RUN: $COUNTER"
 
 while read i; do
@@ -105,11 +107,16 @@ done <$data_list
 let COUNTER=COUNTER+1
 done
 
-python makeCSV.py nohup.out performance.csv
+python $CURR_DIR/makeCSV.py nohup.out performance.csv
+cat /proc/meminfo > $temp_dir/meminfo
+cat /proc/cpuinfo > $temp_dir/cpuinfo
+
+timestamp=$(date +%Y%m%d_%H%M%S)
 
 #Copy to s3
-aws s3 cp performance.csv s3://fcs-genome-data/benchmarks/${gatk_version}/performace.csv
-aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/log/
-
+aws s3 cp performance.csv s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/performance.csv
+aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/log/
+aws s3 cp $temp_dir/meminfo s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/meminfo
+aws s3 cp $temp_dir/cpuinfo s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/cpuinfo
 
 
