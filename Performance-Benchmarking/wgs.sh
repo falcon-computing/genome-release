@@ -34,7 +34,7 @@ library=$i
 
 echo "ID: $id" 
 
-temp_dir=$temp/$id
+temp_dir=$output_dir/$id
 mkdir -p $temp_dir
 
 #Alignment to Reference
