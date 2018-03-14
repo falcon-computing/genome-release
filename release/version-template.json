@@ -1,0 +1,6 @@
+{
+  "release" : "v1.0",
+  "fcs_genome" : "v1.1.0", 
+  "bwa" : "v0.4.1",
+  "gatk" : "3.8-falcon-v0.4.1"
+}
