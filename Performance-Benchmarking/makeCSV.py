@@ -19,6 +19,11 @@ previous_line=""
 process=""
 with open(output_file,'wb') as file:
   for line in output:
+    output_match_runtype = re.search('RUN TYPE: (\w*)',line)
+    if output_match_runtype:
+      runtype=output_match_runtype.group(1)
+      file.write('\n')
+      file.write('RUN TYPE '+ runtype)
     output_match_fcs_version = re.search('Falcon Genome Analysis Toolkit ([0-9a-zA-Z\.\-]*)',line)
     if output_match_fcs_version:
       fcs=output_match_fcs_version.group(1)

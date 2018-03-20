@@ -2,13 +2,14 @@
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 source $CURR_DIR/globals.sh
 
-if [[ $# -ne 2 ]];then
-  echo "USAGE: $0 [falcon-genome-tar] [ID list]"
+if [[ $# -ne 3 ]];then
+  echo "USAGE: $0 [falcon-genome-tar] [ID list] [daily/weekly]"
   exit 1
 fi
 
 fcs_genome=$1
 data_list=$2
+run_type=$3
 
 # build folder
 tar xvfz $fcs_genome
@@ -20,9 +21,13 @@ falcon/tools/bin/bwa-bin --version
 gatk_version=$(fcs-genome gatk --version)
 echo "GATK version $gatk_version"
 
-#aws s3 cp --recursive s3://fcs-genome-data/ref/ /local/ref
+# Set up reference and fastq files
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/$run_type/ $fastq_file_path
 
+# Pipeline run
 COUNTER=0
+echo "RUN TYPE: $run_type"
 while [ $COUNTER -lt 1 ];do
 echo "RUN: $COUNTER"
 
