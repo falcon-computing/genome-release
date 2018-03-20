@@ -2,21 +2,22 @@
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 source $CURR_DIR/globals.sh
 
-if [[ $# -ne 3 ]];then
-  echo "USAGE: $0 [falcon-genome-tar] [ID list] [daily/weekly]"
+if [[ $# -ne 2 ]];then
+  echo "USAGE: $0 [falcon-genome-tar] [daily/weekly]"
   exit 1
 fi
 
 fcs_genome=$1
-data_list=$2
-run_type=$3
+run_type=$2
 
 if [ $run_type -eq "weekly" || $run_type -eq "daily" ];then
   #Valid parameters
 else
-  echo "USAGE: $0 [falcon-genome-tar] [ID list] [daily/weekly]"
+  echo "USAGE: $0 [falcon-genome-tar] [daily/weekly]"
   exit 1
 fi
+
+data_list=${CURR_DIR}/Performance_data/${run_type}.list
 
 # build folder
 tar xvfz $fcs_genome
