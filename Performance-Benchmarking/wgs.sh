@@ -11,6 +11,13 @@ fcs_genome=$1
 data_list=$2
 run_type=$3
 
+if [ $run_type -eq "weekly" || $run_type -eq "daily" ];then
+  #Valid parameters
+else
+  echo "USAGE: $0 [falcon-genome-tar] [ID list] [daily/weekly]"
+  exit 1
+fi
+
 # build folder
 tar xvfz $fcs_genome
 source falcon/setup.sh
