@@ -13,7 +13,7 @@ chmod 600 authorized_keys
 cat id_rsa.pub | ssh $dest_ip "
   mkdir -p ~/.ssh; \
   cd ~/.ssh; \
-  ssh-keygen -f id_rsa -t rsa -N ''; \
+  yes n | ssh-keygen -f id_rsa -t rsa -N ''; \
   cat - >> authorized_keys; \
   chmod 600 authorized_keys; \
   cat id_rsa.pub" >> authorized_keys 2> /dev/null
@@ -25,7 +25,7 @@ add_config() {
   local line="$1";
   local file="$2";
   if [ -z "$(sudo grep "$line" $file)" ]; then
-    echo $line | tee --append $file;
+    echo $line | tee --append $file > /dev/null;
   fi;
 }
 

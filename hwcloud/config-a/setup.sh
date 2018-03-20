@@ -5,41 +5,6 @@ echo "#############################"
 echo "# Falcon Genome Image Setup #"
 echo "#############################"
 
-echo "Please have the private IP of the FP1 instance ready and "
-echo "follow the prompt to setup Falcon Genome solution on a "
-echo "pair of ECS and FP1 nodes."
-echo ""
-
-echo "Please enter the private IP address of the FP1 node "
-read -p "(e.g. 192.168.x.x): " private_ip
-ret=`nmap -Pn -p22 $private_ip | grep open | wc -l`
-retry=0
-while [ $ret -eq 0 ]; do
-    read -p "The entered IP does not seem to work, please re-enter: " private_ip
-    if [ $retry -gt 3 ]; then
-	echo "Too many failed attempts, exiting."
-        exit 1
-    fi
-    retry=$(($retry + 1))
-done
-   
-echo ""
-echo "Setting up SSH..."
-$DIR/setup-node-a/ssh-config.sh $private_ip
-if [ $? -ne 0 ]; then
-    echo "SSH setup fails"
-    exit 2
-fi
-echo ""
-
-echo "Setting up FP1 node..."
-ssh $private_ip "source ~/setup-scripts/setup-node-b/setup.sh" &>> setup.log
-if [ $? -ne 0 ]; then
-    echo "FP1 setup fails"
-    exit 3
-fi
-echo ""
-
 echo "Setting up working dir..."
 echo "If you already have the working directory ready please enter "
 read -p "the dir path, otherwise, please enter 'continue' or 'c': " work_dir
@@ -77,22 +42,47 @@ else
       retry=$(($retry + 1))
     done
 fi
-echo ""
 
-echo "Setting up shared dir"
-$DIR/setup-node-a/nfs-config.sh $work_dir $private_ip
-if [ $? -ne 0 ]; then
-    echo "Shared dir setup fails"
-    exit 4
+echo "Preparing reference genome..."
+read -e -p "Please enter the path to the reference genome, or leave it blank to skip this step: " ref_genome 
+
+work_dir=$(readlink -f $work_dir)
+
+if [ -z "$(grep '^temp_dir' $FALCON_DIR/fcs-genome.conf)" ]; then
+    echo "temp_dir = $work_dir/temp" >> $FALCON_DIR/fcs-genome.conf
+else
+    sed -i "s|temp_dir.*|temp_dir = $work_dir/temp|" $FALCON_DIR/fcs-genome.conf > /dev/null
 fi
-echo ""
 
-echo "Wrapping up..."
-$DIR/setup-node-a/fcs-config.sh $private_ip $work_dir
-if [ $? -ne 0 ]; then
-    echo "Writing fcs-genome.conf fails"
-    exit 5
+# prepare reference and configure fpga.pac_path
+if [ ! -z "$ref_genome" ]; then 
+  if [ -f "$ref_genome" ]; then
+    ref_genome=$(readlink -f $ref_genome)
+    
+    FALCON_DIR=/usr/local/falcon
+    PICARD=$FALCON_DIR/tools/package/picard.jar
+    BWA=$FALCON_DIR/tools/bin/bwa-org
+    ref_dict=${ref_genome%%.fasta}.dict
+    ref_idx=${ref_genome}.fai
+    ref_sa=${ref_genome}.sa
+    
+    if [ ! -f $ref_dict ]; then
+      java -jar $PICARD CreateSequenceDictionary \
+    	R=$ref_genome \
+    	O=$ref_dict &>> setup.log
+    fi
+    
+    if [ ! -f $ref_dict ]; then
+      $SAMTOOLS faidx $ref_genome
+    fi
+    
+    if [ ! -f $ref_sa ]; then
+      $BWA index $ref_genome &>> setup.log
+    fi
+  else
+    echo "Cannot find $ref_genome, skip preparation"
+  fi
 fi
-echo ""
 
+echo ""
 echo "Configuration is successful."
