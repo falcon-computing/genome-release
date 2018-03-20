@@ -10,8 +10,9 @@ fi
 fcs_genome=$1
 run_type=$2
 
-if [ $run_type -eq "weekly" || $run_type -eq "daily" ];then
+if [[ $run_type == "weekly" || $run_type == "daily" ]];then
   #Valid parameters
+  echo "Valid run"
 else
   echo "USAGE: $0 [falcon-genome-tar] [daily/weekly]"
   exit 1
