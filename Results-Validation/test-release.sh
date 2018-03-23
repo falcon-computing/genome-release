@@ -1,24 +1,13 @@
-<<<<<<< HEAD:Performance-Benchmarking/wgs.sh
 #!/bin/bash
-=======
-#/bin/bash
->>>>>>> master:Results-Validation/test-release.sh
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
 source $CURR_DIR/globals.sh
 
-if [[ $# -ne 2 ]];then
-  echo "USAGE: $0 [falcon-genome-tar] [ID list]"
+if [[ $# -ne 1 ]];then
+  echo "USAGE: $0 [falcon-genome-tar]"
   exit 1
 fi
 
 fcs_genome=$1
-data_list=$2
-<<<<<<< HEAD:Performance-Benchmarking/wgs.sh
-=======
-
-out="record-release.csv"
-echo "ID,BQSR,PR,HTC" >> $out
->>>>>>> master:Results-Validation/test-release.sh
 
 # build folder
 tar xvfz $fcs_genome
@@ -29,35 +18,39 @@ fcs-genome
 falcon/tools/bin/bwa-bin --version
 gatk_version=$(fcs-genome gatk --version)
 echo "GATK version $gatk_version"
-<<<<<<< HEAD:Performance-Benchmarking/wgs.sh
 
-#aws s3 cp --recursive s3://fcs-genome-data/ref/ /local/ref
+if [ $gatk_version =~ "3.6" ];then
+  baseline_gatk="GATK-3.6"
+elif [ $gatk_version =~ "3.7" ];then
+  baseline_gatk="GATK-3.7"
+elif [ $gatk_version =~ "3.8" ];then
+  baseline_gatk="GATK-3.8"
+else
+  echo "GATK version not supported"
+  echo "USAGE: $0 [falcon-genome-tar]"
+  exit 1
+fi
 
-COUNTER=0
-while [ $COUNTER -lt 1 ];do
-echo "RUN: $COUNTER"
-=======
+data_list=$CURR_DIR/Validation_data/data.list
 
-mkdir -p $temp/baseline
-baseline=$temp/baseline/$id
-mkdir -p $baseline
-aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
->>>>>>> master:Results-Validation/test-release.sh
+out="record-release.csv"
+echo "BWA,BQSR,PR,HTC" >> $out
 
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+
+num=0
 while read i; do
  
 id=$i
 platform=Illumina
 library=$i
+$num+=1
 
-<<<<<<< HEAD:Performance-Benchmarking/wgs.sh
 echo "ID: $id" 
 
 temp_dir=$output_dir/$id
-=======
-temp_dir=$temp/$id
->>>>>>> master:Results-Validation/test-release.sh
-mkdir -p $temp_dir
 
 #Alignment to Reference
 fcs-genome align \
@@ -122,41 +115,35 @@ if [[ $? -ne 0 ]];then
   echo "Failed haplotype caller"
 fi
 
-#Remove Intermediate
-#rm -r $temp_dir/${id}_final_BAM.bam
-
-<<<<<<< HEAD:Performance-Benchmarking/wgs.sh
-done <$data_list
-let COUNTER=COUNTER+1
-done
-
-python $CURR_DIR/makeCSV.py nohup.out performance.csv
-cat /proc/meminfo > $temp_dir/meminfo
-cat /proc/cpuinfo > $temp_dir/cpuinfo
-
-timestamp=$(date +%Y%m%d_%H%M%S)
-
-#Copy to s3
-aws s3 cp performance.csv s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/performance.csv
-aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/log/
-aws s3 cp $temp_dir/meminfo s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/meminfo
-aws s3 cp $temp_dir/cpuinfo s3://fcs-genome-data/benchmarks/${gatk_version}/$timestamp/cpuinfo
-
-
-=======
-#BWA=$($DIR/compare_BAM.sh)
-BQSR=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $id)
-BAM=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $id)
-VCF=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $id)
-
-echo "$id,$BQSR,$BAM,$VCF" >> $out
+BWA+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $baseline_path/$id/${id}_marked.bam)
+BQSR+=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $baseline_path/$id/${id}_BQSR.table)
+PR+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $baseline_path/$id/${id}_final_BAM.bam)
+VCF+=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.vcf.gz)
 
 done <$data_list
 
-#Copy to s3
-aws s3 cp $out s3://fcs-genome-data/benchmarks/${gatk_version}/performace.csv
-aws s3 cp --recursive log/ s3://fcs-genome-data/benchmarks/${gatk_version}/log/
 
+if [[ $BWA == $num ]];then
+  result="PASS,"
+else
+  result="FAIL,"
+fi
 
+if [[ $BQSR == $num ]];then
+  result+="PASS,"
+else
+  result+="FAIL,"
+fi
 
->>>>>>> master:Results-Validation/test-release.sh
+if [[ $PR == $num ]];then
+  result+="PASS,"
+else
+  result+="FAIL"
+fi
+
+if [[ $VCF == $num ]];then
+  result+="PASS"
+else
+  result+="FAIL"
+fi
+

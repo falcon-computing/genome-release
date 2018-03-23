@@ -5,28 +5,24 @@ source $DIR/globals.sh
 print_help() {
   echo "USAGE:"
   echo "$0 \\";
-  echo "-g <gatk.jar> \\";
-  echo "-i <ID list> \\";
+  echo "-g <gatk.jar> REQUIRED\\";
+  echo "-i <ID list> REQUIRED\\";
   echo "-b <bqsr> \\";
   echo "-p <print reads> \\";
   echo "-h <haplotype caller> \\";
   echo "-a <all>"
 }
 
-if [[ $# -lt 2 ]];then
-  print_help
-  exit 1;
-fi
-
-while [[ $# -gt 0 ]];do
-  key="$1"
-  case $key in
+options=':g:ibpha'
+while getopts $options option
+do
+  case $option in
   -g|--gatk)
-    gatk="$2"
+    gatk="$OPTARG"
     shift
   ;;
   -i|--list)
-    data_list="$2"
+    data_list="$OPTARG"
     shift
   ;;
   -b|--bqsr)
@@ -45,43 +41,58 @@ while [[ $# -gt 0 ]];do
     all=1
     shift
   ;;
+  :)
+  echo "Missing option argument for -$OPTARG" 
+  exit 1
+  ;;
   *)
-  echo "Failed to recognize argument '$1'"
   print_help
   exit 1
   ;;
   esac
-  shift
 done
 
 gatk_version=$(java -jar $gatk --version)
 echo "GATK version $gatk_version"
+if [ $gatk_version =~ "3.6" ];then
+  baseline_gatk="GATK-3.6"
+elif [ $gatk_version =~ "3.7" ];then
+  baseline_gatk="GATK-3.7"
+elif [ $gatk_version =~ "3.8" ];then
+  baseline_gatk="GATK-3.8"
+else
+  echo "GATK version not supported"
+  echo "USAGE: $0 [falcon-genome-tar]"
+  exit 1
+fi
 
-out="record.csv"
-echo "ID,BQSR,PR,HTC" >> $out
+data_list=$CURR_DIR/Validation_data/data.list
 
+out="record-gatk.csv"
+echo "BQSR,PR,HTC" >> $out
+
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+
+num=0
 while read i; do
  
 id=$i
 platform=Illumina
 library=$i
 
-echo "ID: $id" 
-
-temp_dir=$temp/$id
+temp_dir=${output_dir}/$id
 mkdir -p $temp_dir
-baselines=$temp/baselines
-mkdir -p $baselines
-mkdir -p $baselines/$id
 
-aws s3 cp --recursive s3://fcs-genome-data/baselines/$id/ $baselines/$id
+echo "ID: $id" 
 
 if [[ $bqsr == 1 || $all == 1 ]];then
  
 #Base Recalibration
 java -jar $gatk -T BaseRecalibrator \
         -R $ref_genome \
-        -I ${baselines}/$id/${id}_marked.bam \
+        -I ${baseline_path}/$id/${id}_marked.bam \
         -o $temp_dir/${id}_BQSR.table \
         -knownSites $db138_SNPs \
         -knownSites $g1000_indels \
@@ -92,7 +103,7 @@ if [[ $? -ne 0 ]];then
 echo "Failed base recalibration"
 fi
 
-BQSR=$($DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $id)
+BQSR+=$($DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table ${baseline_path}/${id}_BQSR.table)
 
 fi
 
@@ -101,8 +112,8 @@ if [[ $pr == 1 || $all == 1 ]];then
 #Print Reads
 java -jar $gatk -T PrintReads \
         -R $ref_genome \
-        -BQSR ${baselines}/$id/${id}_BQSR.table \
-        -I ${baselines}/$id/${id}_marked.bam \
+        -BQSR ${baseline_path}/$id/${id}_BQSR.table \
+        -I ${baseline_path}/$id/${id}_marked.bam \
         -o ${temp_dir}/${id}_final_BAM.bam \
         -nct 1
 
@@ -110,7 +121,7 @@ if [[ $? -ne 0 ]];then
 echo "Failed print reads"
 fi
 
-BAM=$($DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $id)
+BAM+=$($DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam ${baseline_path}/${id}/${id}_final_BAM.bam)
 
 fi
 #Remove Intermediate
@@ -122,7 +133,7 @@ if [[ $htc == 1 || $all == 1 ]];then
 #Haplotype Caller
 java -jar $gatk -T HaplotypeCaller \
         -R $ref_genome \
-        -I ${baselines}/$id/${id}_final_BAM.bam \
+        -I ${baseline_path}/$id/${id}_final_BAM.bam \
         -o $temp_dir/${id}.vcf \
         -nct 1 
 
@@ -130,13 +141,12 @@ if [[ $? -ne 0 ]];then
   echo "Failed haplotype caller"
 fi
 
-VCF=$($DIR/compare_VCF.sh $temp_dir/${id}.vcf $id)
+VCF+=$($DIR/compare_VCF.sh $temp_dir/${id}.vcf ${baseline_path}/$id/${id}.vcf.gz)
 
 fi
 #Remove Intermediate
 #rm -r $temp_dir/${id}_final_BAM.bam
 
-echo "$id,$BQSR,$BAM,$VCF" >> $out
 done <$data_list
 
 #Copy to s3

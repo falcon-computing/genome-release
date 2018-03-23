@@ -1,31 +1,33 @@
 #!/bin/bash
-DIR=$( cd "$( dirname "${BASH_COURCE[0]}" )" && pwd)
-source $DIR/globals.sh
+DIR1=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
+source $DIR1/globals.sh.template
 
 if [[ $# -ne 2 ]];then
-  echo "USAGE: $0 [Subject BAM Path] [ID]"
+  echo "USAGE: $0 [Subject BAM Path] [Baseline BAM path]"
   exit 1
 fi
 
 mod_bam=$1
-id=$2
+base_bam=$2
 
-base_bam=$temp/$baselines/$id
-
-#Declare array 
-declare -A pid_table1
-declare -A pid_table2
-declare -A pid_table3
-
-num_proc=16
-
-proc_id1=0
-proc_id2=0
-proc_id3=0
-
-DIFF=""
+temp=$DIR1/temp
+mkdir -p $temp
 
 if [ -d "$mod_bam" ];then
+
+ #Declare array 
+ declare -A pid_table1
+ declare -A pid_table2
+ declare -A pid_table3
+
+ num_proc=16
+
+ proc_id1=0
+ proc_id2=0
+ proc_id3=0
+
+ DIFF=""
+
  for file in $(ls $mod_bam/*.bam)
  do
     part=`echo $(basename $file)`
@@ -88,9 +90,9 @@ elif [ -f "$mod_bam" ];then
 fi
 
  if [ "$DIFF" == "" ]; then
-   echo "PASS"
+   echo 1
  else
-   echo "FAIL"
+   echo 0
  fi
  rm $temp/*_base_flagstat
  rm $temp/*_mod_flagstat
