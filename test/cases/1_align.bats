@@ -15,76 +15,78 @@ LIB=SMALL_TEST
   [[ "$output" == *"Falcon Genome Analysis Toolkit"* ]]
 }
 
-@test "align without input arg" {
+@test "align without input arg" { 
   run ${FCSBIN} al  
   [ "$status" -eq 1 ]
-  [[ "${lines[0]}" == *"ERROR"* ]]
-  [[ "${lines[1]}" == *"fcs-genome al"* ]]
+  #run check_dev_version ${FCBIN}
+  #[ "$status" -eq 1 ]
+  #[[ "${output}" == *"ERROR"* ]]
+  [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align without reference specified" {
    run ${FCSBIN} al -1 $fastq1 -2 $fastq2 -o output.bam --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f  
    [ "$status" -eq 1 ]
-   [[ "${lines[0]}" == *"ERROR: Missing argument '--ref'"* ]]
-   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+   [[ "${output}" == *"ERROR: Missing argument '--ref'"* ]]
+   [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align without output specified" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f
    [ "$status" -eq 1 ]
-   [[ "${lines[0]}" == *"ERROR: Missing argument '--output'"* ]]
-   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+   [[ "${output}" == *"ERROR: Missing argument '--output'"* ]]
+   [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align without -1 specified" {
    run ${FCSBIN} al -r ${ref_genome} -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -eq 1 ]
-   [[ "${lines[0]}" == *"ERROR: Missing argument '--fastq1'"* ]]
-   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+   [[ "${output}" == *"ERROR: Missing argument '--fastq1'"* ]]
+   [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align without -2 specified" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -eq 1 ]
-   [[ "${lines[0]}" == *"ERROR: Missing argument '--fastq2'"* ]]
-   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+   [[ "${output}" == *"ERROR: Missing argument '--fastq2'"* ]]
+   [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align without -rg specified" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -eq 1 ]
-   [[ "${lines[0]}" == *"ERROR: Missing argument '--rg'"* ]]
-   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+   [[ "${output}" == *"ERROR: Missing argument '--rg'"* ]]
+   [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "align input FASTQ file R1 does not exist" {
    run ${FCSBIN} al -r ${ref_genome} -1 ${fastq_dir}/doesnotexist -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -gt 1 ]
-   [[ "${lines[1]}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
+   [[ "${output}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
 }
 
 @test "align input FASTQ file R2 does not exist" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq_dir/doesnotexist --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -gt 1 ]
-   [[ "${lines[1]}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
+   [[ "${output}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
 }
 
 @test "Output file directory does not exist" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o doesnotexist/output.bam -f
    [ "$status" -gt 1 ]
-   [[ "${lines[0]}" == *"ERROR: Cannot write to output path"* ]]
+   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
 }
 
 @test "Input file directory do not exist" {
    run ${FCSBIN} al -r ${ref_genome} -1 doesnotexist/small_1.fastq.gz -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -gt 1 ]
-   [[ "${lines[1]}" == *"WARNING: Cannot find"* ]]
+   [[ "${output}" == *"WARNING: Cannot find"* ]]
 }
 
 @test "output file directory not writeable" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o /output.bam -f
    [ "$status" -gt 1 ]
-   [[ "${lines[0]}" == *"ERROR: Cannot write to output path"* ]]
+   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
 }
 
 @test "Download test data" {
