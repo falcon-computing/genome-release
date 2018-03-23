@@ -15,3 +15,8 @@ load ../global
   [ ! -z "$BWABIN" ]
   [ -f $BWABIN ]
 }
+
+@test "check if reference genome exists" {
+  [ ! -z "$ref_genome" ]
+  [ -f $ref_genome ]
+}

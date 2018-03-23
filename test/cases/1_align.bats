@@ -1,20 +1,90 @@
 #!/usr/bin/env bats
 load ../global
 
+fastq_dir=/genome/fastq
+fastq1=$fastq_dir/small_1.fastq.gz
+fastq2=$fastq_dir/small_2.fastq.gz
+
+RGID=HOBAODXX
+SAMPLE_ID=small
+PLATFORM=Illumina
+LIB=SMALL_TEST
+
 @test "Check for fcs-genome" {
   run $FCSBIN
   [[ "$output" == *"Falcon Genome Analysis Toolkit"* ]]
 }
 
-@test "Check for license" {
-  run $FCSBIN
-  [[ "$output" != *"Cannot connect to the license server: "* ]]
+@test "align without input arg" {
+  run ${FCSBIN} al  
+  [ "$status" -eq 1 ]
+  [[ "${lines[0]}" == *"ERROR"* ]]
+  [[ "${lines[1]}" == *"fcs-genome al"* ]]
 }
 
-@test "Check for BWA version" {
-  skip
-  result=check_dev_version "$BWABIN"
-  [ "$result" == 1 ]
+@test "align without reference specified" {
+   run ${FCSBIN} al -1 $fastq1 -2 $fastq2 -o output.bam --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f  
+   [ "$status" -eq 1 ]
+   [[ "${lines[0]}" == *"ERROR: Missing argument '--ref'"* ]]
+   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+}
+
+@test "align without output specified" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f
+   [ "$status" -eq 1 ]
+   [[ "${lines[0]}" == *"ERROR: Missing argument '--output'"* ]]
+   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+}
+
+@test "align without -1 specified" {
+   run ${FCSBIN} al -r ${ref_genome} -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -eq 1 ]
+   [[ "${lines[0]}" == *"ERROR: Missing argument '--fastq1'"* ]]
+   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+}
+
+@test "align without -2 specified" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -eq 1 ]
+   [[ "${lines[0]}" == *"ERROR: Missing argument '--fastq2'"* ]]
+   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+}
+
+@test "align without -rg specified" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -eq 1 ]
+   [[ "${lines[0]}" == *"ERROR: Missing argument '--rg'"* ]]
+   [[ "${lines[1]}" == *"fcs-genome al"* ]]
+}
+
+@test "align input FASTQ file R1 does not exist" {
+   run ${FCSBIN} al -r ${ref_genome} -1 ${fastq_dir}/doesnotexist -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -gt 1 ]
+   [[ "${lines[1]}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
+}
+
+@test "align input FASTQ file R2 does not exist" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq_dir/doesnotexist --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -gt 1 ]
+   [[ "${lines[1]}" == *"WARNING: Cannot find $fastq_dir/doesnot"* ]]
+}
+
+@test "Output file directory does not exist" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o doesnotexist/output.bam -f
+   [ "$status" -gt 1 ]
+   [[ "${lines[0]}" == *"ERROR: Cannot write to output path"* ]]
+}
+
+@test "Input file directory do not exist" {
+   run ${FCSBIN} al -r ${ref_genome} -1 doesnotexist/small_1.fastq.gz -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
+   [ "$status" -gt 1 ]
+   [[ "${lines[1]}" == *"WARNING: Cannot find"* ]]
+}
+
+@test "output file directory not writeable" {
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o /output.bam -f
+   [ "$status" -gt 1 ]
+   [[ "${lines[0]}" == *"ERROR: Cannot write to output path"* ]]
 }
 
 @test "Download test data" {
