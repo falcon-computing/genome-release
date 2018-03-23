@@ -1,6 +1,6 @@
 #!/bin/bash
 DIR1=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)
-source $DIR1/globals.sh.template
+source $DIR1/globals.sh
 
 if [[ $# -ne 2 ]];then
   echo "USAGE: $0 [Subject BAM Path] [Baseline BAM path]"
@@ -84,7 +84,7 @@ if [ -d "$mod_bam" ];then
 elif [ -f "$mod_bam" ];then
   part=`echo $(basename $mod_bam)`
   samtools flagstat $mod_bam > $temp/${part}_mod_flagstat
-  samtools flagstat $base_bam/$part > $temp/${part}_base_flagstat
+  samtools flagstat $base_bam > $temp/${part}_base_flagstat
 
   DIFF+=$(diff $temp/${part}_mod_flagstat $temp/${part}_base_flagstat)
 fi

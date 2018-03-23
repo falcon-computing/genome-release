@@ -19,11 +19,11 @@ falcon/tools/bin/bwa-bin --version
 gatk_version=$(fcs-genome gatk --version)
 echo "GATK version $gatk_version"
 
-if [ $gatk_version =~ "3.6" ];then
+if [[ $gatk_version == *"3.6"* ]];then
   baseline_gatk="GATK-3.6"
-elif [ $gatk_version =~ "3.7" ];then
+elif [[ $gatk_version == *"3.7"* ]];then
   baseline_gatk="GATK-3.7"
-elif [ $gatk_version =~ "3.8" ];then
+elif [[ $gatk_version == *"3.8"* ]];then
   baseline_gatk="GATK-3.8"
 else
   echo "GATK version not supported"
@@ -31,14 +31,14 @@ else
   exit 1
 fi
 
-data_list=$CURR_DIR/Validation_data/data.list
+data_list=$CURR_DIR/Validation_data/daily.list
 
 out="record-release.csv"
 echo "BWA,BQSR,PR,HTC" >> $out
 
-aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
-aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
-aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+#aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+#aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+#aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
 num=0
 while read i; do
@@ -46,11 +46,12 @@ while read i; do
 id=$i
 platform=Illumina
 library=$i
-$num+=1
+num+=1
 
 echo "ID: $id" 
 
 temp_dir=$output_dir/$id
+mkdir -p $temp_dir
 
 #Alignment to Reference
 fcs-genome align \
@@ -67,7 +68,7 @@ fi
 <<comm
 #Mark Duplicates
 fcs-genome markDup \
-        --input ${temp_dir}/${id}_aligned.bam \
+        -input ${temp_dir}/${id}_aligned.bam \
         --output ${temp_dir}/${id}_marked.bam \
         -f
 
