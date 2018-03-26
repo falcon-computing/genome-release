@@ -40,13 +40,13 @@ echo "BWA,BQSR,PR,HTC" >> $out
 #aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
 #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
-num=0
+num=""
 while read i; do
  
 id=$i
 platform=Illumina
 library=$i
-num+=1
+num+="1"
 
 echo "ID: $id" 
 
@@ -81,7 +81,7 @@ comm
 #Base Recalibration
 fcs-genome baserecal \
         --ref $ref_genome \
-        --input ${temp_dir}/${id}_marked.bam \
+        --input $baseline_path/$id/${id}_marked.bam \
         --output $temp_dir/${id}_BQSR.table \
         --knownSites $db138_SNPs \
         --knownSites $g1000_indels \
@@ -94,8 +94,8 @@ fi
 #Print Reads
 fcs-genome printreads \
         --ref $ref_genome \
-        --bqsr ${temp_dir}/${id}_BQSR.table \
-        --input ${temp_dir}/${id}_marked.bam \
+        --bqsr $baseline_path/$id/${id}_BQSR.table \
+        --input $baseline_path/$id/${id}_marked.bam \
         --output ${temp_dir}/${id}_final_BAM.bam -f
 
 if [[ $? -ne 0 ]];then
@@ -109,7 +109,7 @@ fi
 #Haplotype Caller
 fcs-genome htc \
         --ref $ref_genome \
-        --input ${temp_dir}/${id}_final_BAM.bam \
+        --input $baseline_path/$id/${id}_final_BAM.bam \
         --output $temp_dir/${id}.vcf --produce-vcf -f
 
 if [[ $? -ne 0 ]];then
@@ -123,6 +123,10 @@ VCF+=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.
 
 done <$data_list
 
+echo "$BWA"
+echo "$BQSR"
+echo "$PR"
+echo "$VCF"
 
 if [[ $BWA == $num ]];then
   result="PASS,"
@@ -139,7 +143,7 @@ fi
 if [[ $PR == $num ]];then
   result+="PASS,"
 else
-  result+="FAIL"
+  result+="FAIL,"
 fi
 
 if [[ $VCF == $num ]];then
@@ -148,3 +152,4 @@ else
   result+="FAIL"
 fi
 
+echo "$result" >> $out
