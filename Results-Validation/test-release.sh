@@ -36,9 +36,9 @@ data_list=$CURR_DIR/Validation_data/daily.list
 out="record-release.csv"
 echo "BWA,BQSR,PR,HTC" >> $out
 
-#aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
-#aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
-#aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
 num=""
 while read i; do
