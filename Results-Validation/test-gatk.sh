@@ -108,14 +108,14 @@ java -jar $gatk -T PrintReads \
         -R $ref_genome \
         -BQSR ${baseline_path}/$id/${id}_BQSR.table \
         -I ${baseline_path}/$id/${id}_marked.bam \
-        -o ${temp_dir}/${id}_final_BAM.bam \
+        -o ${temp_dir}/${id}.bam \
         -nct 1
 
 if [[ $? -ne 0 ]];then
 echo "Failed print reads"
 fi
 
-BAM+=$($DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam ${baseline_path}/${id}/${id}_final_BAM.bam)
+BAM+=$($DIR/compare_BAM.sh ${temp_dir}/${id}.bam ${baseline_path}/${id}/${id}.bam)
 
 fi
 #Remove Intermediate
@@ -127,7 +127,7 @@ if [[ $htc == 1 || $all == 1 ]];then
 #Haplotype Caller
 java -jar $gatk -T HaplotypeCaller \
         -R $ref_genome \
-        -I ${baseline_path}/$id/${id}_final_BAM.bam \
+        -I ${baseline_path}/$id/${id}.bam \
         -o $temp_dir/${id}.vcf \
         -nct 1 
 
