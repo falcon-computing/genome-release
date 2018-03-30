@@ -34,11 +34,11 @@ fi
 data_list=$CURR_DIR/Validation_data/daily.list
 
 out="record-release.csv"
-echo "BWA,BQSR,PR,HTC" >> $out
+echo "Sample,BWA,BQSR,PR,HTC" >> $out
 
-aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
-aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
-aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+#aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+#aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+#aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
 num=""
 while read i; do
@@ -116,40 +116,11 @@ if [[ $? -ne 0 ]];then
   echo "Failed haplotype caller"
 fi
 
-BWA+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $baseline_path/$id/${id}_marked.bam)
-BQSR+=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $baseline_path/$id/${id}_BQSR.table)
-PR+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $baseline_path/$id/${id}_final_BAM.bam)
-VCF+=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.vcf.gz)
+BWA=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $baseline_path/$id/${id}_marked.bam)
+BQSR=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $baseline_path/$id/${id}_BQSR.table)
+PR=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $baseline_path/$id/${id}_final_BAM.bam)
+VCF=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.vcf.gz)
+
+echo "$id,$BWA,$BQSR,$PR,$VCF" >> $out
 
 done <$data_list
-
-echo "$BWA"
-echo "$BQSR"
-echo "$PR"
-echo "$VCF"
-
-if [[ $BWA == $num ]];then
-  result="PASS,"
-else
-  result="FAIL,"
-fi
-
-if [[ $BQSR == $num ]];then
-  result+="PASS,"
-else
-  result+="FAIL,"
-fi
-
-if [[ $PR == $num ]];then
-  result+="PASS,"
-else
-  result+="FAIL,"
-fi
-
-if [[ $VCF == $num ]];then
-  result+="PASS"
-else
-  result+="FAIL"
-fi
-
-echo "$result" >> $out

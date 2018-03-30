@@ -27,9 +27,9 @@ grep "^[^#]" $temp/mod.vcf > $temp/mod_grep.vcf
 #Compare VCF results b/w baseline and modified
 DIFF=$(diff $temp/base_grep.vcf $temp/mod_grep.vcf)
 if [ "$DIFF" == "" ]; then
-  echo 1
+  echo "Pass"
 else
-  echo 0
+  echo "Fail"
 fi
 
 rm -r $temp/*_grep.vcf
