@@ -12,7 +12,7 @@ fcs_genome=$1
 # build folder
 tar xvfz $fcs_genome
 source falcon/setup.sh
-chmod 777 falcon/tools/bin/bwa-bin
+chmod 777 falcon/tools/bin/*
 
 fcs-genome
 falcon/tools/bin/bwa-bin --version
@@ -36,9 +36,9 @@ data_list=$CURR_DIR/Validation_data/daily.list
 out="record-release.csv"
 echo "Sample,BWA,BQSR,PR,HTC" >> $out
 
-#aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
-#aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
-#aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
 num=""
 while read i; do
@@ -59,7 +59,7 @@ fcs-genome align \
         --fastq1 ${fastq_file_path}/${i}_1.fastq.gz \
         --fastq2 ${fastq_file_path}/${i}_2.fastq.gz \
         --output $temp_dir/${id}_marked.bam \
-        --rg $id --sp $id --pl $platform --lb $library -f #--align-only -f
+        --rg $id --sp $id --pl $platform --lb $library --extra-options -inorder_output -f #--align-only -f
 
 if [[ $? -ne 0 ]];then
   echo "Failed alignment to reference"
