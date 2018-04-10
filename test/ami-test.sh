@@ -3,12 +3,12 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 echo -e "\n"
 echo "====================================================="
-echo "Testing Falcon Genome Release Package"
+echo "Testing Falcon Genome Installation on the Cloud"
 echo "====================================================="
 echo -e "\n"
 
 echo -e "Begin Test\n"
-for bat in $(ls $DIR/cases/*.bats); do
+for bat in $(ls $DIR/ami-test/*.bats); do
   ${DIR}/../bats/bats $bat
   if [ "$?" -ne 0 ]; then
     exit 1
