@@ -7,8 +7,6 @@ fastq_dir=
 ref_dir=
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
-g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
-g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 
 start_ts=$(date +%s)
 set -x 
@@ -23,9 +21,7 @@ fcs-genome bqsr \
     -r $ref_genome \
     -i $local_dir/${sample_id}.bam \
     -o $local_dir/${sample_id}.recal.bam \
-    -K $db138_SNPs \
-    -K $g1000_indels \
-    -K $g1000_gold_standard_indels -f
+    -K $db138_SNPs -f
 
 fcs-genome htc \
     -r $ref_genome \

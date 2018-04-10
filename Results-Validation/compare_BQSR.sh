@@ -14,9 +14,9 @@ base_path=$2
 
 DIFF=$(diff ${base_path} ${mod_path})
 if [ "$DIFF" == "" ]; then
-  echo 1
+  echo "Pass"
 else
-  echo 0
+  echo "Fail"
 fi
 
 

@@ -90,9 +90,9 @@ elif [ -f "$mod_bam" ];then
 fi
 
  if [ "$DIFF" == "" ]; then
-   echo 1
+   echo "Pass"
  else
-   echo 0
+   echo "Fail"
  fi
  rm $temp/*_base_flagstat
  rm $temp/*_mod_flagstat

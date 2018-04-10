@@ -1,6 +1,8 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-FALCON_DIR=$DIR/../release/falcon
+if [ -z "$FALCON_DIR" ]; then
+  FALCON_DIR=$DIR/../release/falcon
+fi
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
