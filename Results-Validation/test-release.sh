@@ -12,7 +12,7 @@ fcs_genome=$1
 # build folder
 tar xvfz $fcs_genome
 source falcon/setup.sh
-chmod 777 falcon/tools/bin/bwa-bin
+chmod 777 falcon/tools/bin/*
 
 fcs-genome
 falcon/tools/bin/bwa-bin --version
@@ -34,19 +34,19 @@ fi
 data_list=$CURR_DIR/Validation_data/daily.list
 
 out="record-release.csv"
-echo "BWA,BQSR,PR,HTC" >> $out
+echo "Sample,BWA,BQSR,PR,HTC" >> $out
 
-#aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
-#aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
-#aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
+aws s3 cp --recursive s3://fcs-genome-data/ref/ $ref_dir
+aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $fastq_file_path
+aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/${baseline_gatk}/output/ $baseline_path
 
-num=0
+num=""
 while read i; do
  
 id=$i
 platform=Illumina
 library=$i
-num+=1
+num+="1"
 
 echo "ID: $id" 
 
@@ -59,7 +59,7 @@ fcs-genome align \
         --fastq1 ${fastq_file_path}/${i}_1.fastq.gz \
         --fastq2 ${fastq_file_path}/${i}_2.fastq.gz \
         --output $temp_dir/${id}_marked.bam \
-        --rg $id --sp $id --pl $platform --lb $library -f #--align-only -f
+        --rg $id --sp $id --pl $platform --lb $library --extra-options -inorder_output -f #--align-only -f
 
 if [[ $? -ne 0 ]];then
   echo "Failed alignment to reference"
@@ -81,7 +81,7 @@ comm
 #Base Recalibration
 fcs-genome baserecal \
         --ref $ref_genome \
-        --input ${temp_dir}/${id}_marked.bam \
+        --input $baseline_path/$id/${id}_marked.bam \
         --output $temp_dir/${id}_BQSR.table \
         --knownSites $db138_SNPs \
         --knownSites $g1000_indels \
@@ -94,8 +94,8 @@ fi
 #Print Reads
 fcs-genome printreads \
         --ref $ref_genome \
-        --bqsr ${temp_dir}/${id}_BQSR.table \
-        --input ${temp_dir}/${id}_marked.bam \
+        --bqsr $baseline_path/$id/${id}_BQSR.table \
+        --input $baseline_path/$id/${id}_marked.bam \
         --output ${temp_dir}/${id}_final_BAM.bam -f
 
 if [[ $? -ne 0 ]];then
@@ -109,42 +109,18 @@ fi
 #Haplotype Caller
 fcs-genome htc \
         --ref $ref_genome \
-        --input ${temp_dir}/${id}_final_BAM.bam \
+        --input $baseline_path/$id/${id}_final_BAM.bam \
         --output $temp_dir/${id}.vcf --produce-vcf -f
 
 if [[ $? -ne 0 ]];then
   echo "Failed haplotype caller"
 fi
 
-BWA+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $baseline_path/$id/${id}_marked.bam)
-BQSR+=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $baseline_path/$id/${id}_BQSR.table)
-PR+=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $baseline_path/$id/${id}_final_BAM.bam)
-VCF+=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.vcf.gz)
+BWA=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_marked.bam $baseline_path/$id/${id}_marked.bam)
+BQSR=$($CURR_DIR/compare_BQSR.sh ${temp_dir}/${id}_BQSR.table $baseline_path/$id/${id}_BQSR.table)
+PR=$($CURR_DIR/compare_BAM.sh ${temp_dir}/${id}_final_BAM.bam $baseline_path/$id/${id}_final_BAM.bam)
+VCF=$($CURR_DIR/compare_VCF.sh $temp_dir/${id}.vcf.gz $baseline_path/$id/${id}.vcf.gz)
+
+echo "$id,$BWA,$BQSR,$PR,$VCF" >> $out
 
 done <$data_list
-
-
-if [[ $BWA == $num ]];then
-  result="PASS,"
-else
-  result="FAIL,"
-fi
-
-if [[ $BQSR == $num ]];then
-  result+="PASS,"
-else
-  result+="FAIL,"
-fi
-
-if [[ $PR == $num ]];then
-  result+="PASS,"
-else
-  result+="FAIL"
-fi
-
-if [[ $VCF == $num ]];then
-  result+="PASS"
-else
-  result+="FAIL"
-fi
-
