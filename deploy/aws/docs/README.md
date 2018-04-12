@@ -44,7 +44,7 @@ Two extra lines need to be included in the /usr/local/falcon/fcs-genome.conf fil
    ```
 And the rest of the protocol remains intact.
 
-As storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this instance, a BASH script (setup.sh) and a README.md file are located in the working directory:
+A storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this instance, a BASH script (setup.sh) and a README.md file are located in the working directory:
    ```
    [centos@ip-172-31-11-209 ~]$ ls
    README.md  setup.sh
@@ -57,7 +57,7 @@ Visualize storage devices currently available using lsblk:
    └─xvda1 202:1    0     8G  0 part /
    nvme0n1 259:0    0 437.7G  0 disk
    ```
-In this instance, nvme0n1 is available and ready to be used. 
+In this example, nvme0n1 is available and ready to be used. Execute setup.sh and follow the instructions:
    ```
    [centos@ip-172-31-11-209 ~]$ ./setup.sh 
    #############################
@@ -84,7 +84,7 @@ In this instance, nvme0n1 is available and ready to be used.
 
    [centos@ip-172-31-11-209 ~]$ sudo chown -R centos /local
    ```
-The device /dev/nvme0n1 was mounted on /local and we give centos user the full access.
+The device /dev/nvme0n1 was mounted on /local and centos user should have full access.
 
 ## Prepare Reference Genome
 In /local, create the ref/ folder:
