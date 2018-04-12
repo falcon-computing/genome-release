@@ -103,9 +103,16 @@ Build the Reference Index (This takes some time):
    ```
 After completion, the following files should be present in the ref/ folder:
    ```
-   [centos@ip-172-31-11-209 local]$ ls ref
-   dbsnp_138.b37.vcf   human_g1k_v37.fasta      human_g1k_v37.fasta.ann  human_g1k_v37.fasta.fai  human_g1k_v37.fasta.sa
-   human_g1k_v37.dict  human_g1k_v37.fasta.amb  human_g1k_v37.fasta.bwt  human_g1k_v37.fasta.pac
+   [centos@ip-172-31-11-209 local]$ ls -1 ref
+   dbsnp_138.b37.vcf
+   human_g1k_v37.dict
+   human_g1k_v37.fasta
+   human_g1k_v37.fasta.amb
+   human_g1k_v37.fasta.ann
+   human_g1k_v37.fasta.bwt
+   human_g1k_v37.fasta.fai
+   human_g1k_v37.fasta.pac
+   human_g1k_v37.fasta.sa
   ```
 
 ## Run Pipeline
