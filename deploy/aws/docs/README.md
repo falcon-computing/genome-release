@@ -96,6 +96,11 @@ Populate ref/ folder:
    [centos@ip-172-31-11-209 /local]$ aws s3 cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
    [centos@ip-172-31-11-209 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138_b37.vcf ref/
    ```
+If aws command needs to be installed, follow these steps and have the credentials handy:
+   ```
+   [centos@ip-172-31-11-209 /local]$ sudo yum install -y python-pip; sudo pip install awscli 
+   [centos@ip-172-31-11-209 /local]$ aws configure
+   ```
 Build the Reference Index (This takes some time):
    ```
    [centos@ip-172-31-11-209 /local]$ /usr/local/falcon/tools/bin/samtools faidx ref/human_g1k_v37.fasta 
