@@ -1,9 +1,10 @@
 #!/usr/bin/env bats
 load ../global
 
-fastq_dir=/genome/fastq
-fastq1=$fastq_dir/small_1.fastq.gz
-fastq2=$fastq_dir/small_2.fastq.gz
+fastq_dir=$WORKDIR/fastq
+fastq1=$fastq_dir/A15_sample_1.fastq.gz
+fastq2=$fastq_dir/A15_sample_2.fastq.gz
+fastq_input=$fastq_dir/A15_sample
 
 RGID=HOBAODXX
 SAMPLE_ID=small
@@ -16,7 +17,8 @@ LIB=SMALL_TEST
 }
 
 @test "align without input arg" { 
-  run ${FCSBIN} al  
+  run ${FCSBIN} al
+  echo "$output"  
   [ "$status" -eq 1 ]
   [[ "${output}" == *"fcs-genome al"* ]]
 }
@@ -86,20 +88,19 @@ LIB=SMALL_TEST
    [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
 }
 
-@test "Download test data" {
-  skip 
-  mkdir -p $WORKDIR/fastq/
-  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WROKDIR/fastq/
-  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WROKDIR/fastq/
+@test "Download test data" { 
+ 
+  #mkdir -p $WORKDIR/fastq/
+  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WORKDIR/fastq/
+  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WORKDIR/fastq/
   fastq_input=$WORKDIR/fastq/A15_sample
   
-  mkdir -p $WORKDIR/A15_sample_baseline
-  aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/A15_sample/ $WORKDIR/A15_sample_baseline
+  #mkdir -p $WORKDIR/A15_sample_baseline
+  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/A15_sample/ $WORKDIR/A15_sample_baseline
   BAM_baseline=$WORKDIR/A15_sample_baseline/A15_sample_marked.bam
 }
 
-@test "normal run for alignment" {
-  skip 
+@test "normal run for alignment" { 
   run mkdir -p $WORKDIR
   [ -f $ref_genome ]
   [ -f ${fastq_input}_1.fastq.gz ]
@@ -113,37 +114,38 @@ LIB=SMALL_TEST
     -1 ${fastq_input}_1.fastq.gz \
     -2 ${fastq_input}_2.fastq.gz \
     -o $WORKDIR/A15_sample.bam \
-    -R sample -S sample -L sample -P illumina -f
+    --extra-options "-inorder_output" --rg sample --sp sample --pl illumina --lb sample -f
   set +x
 
   [ "$status" -eq 0 ]
   [ -f "$WORKDIR/A15_sample.bam" ]
-
-  # rm $WORKDIR/small.bam
 }
 
 @test "Compare BAM file against baseline" {
-  skip 
-  result=compare_BAM "$WORKDIR/small.bam"
-  [ "$result" == "PASS" ]
+  BAM="$WORKDIR/A15_sample.bam"
+  compare_BAM "$BAM"
+  
+  [ "$result_bam" -eq 0 ]
   
   rm $WORKDIR/subject_bwa.sam
   rm $WORKDIR/baseline_bwa.sam
 }
 
 @test "Compare flagstat against baseline" {
-  skip 
-  result=compare_flagstat "$WORKDIR/small.bam"
-  [ "$result" == "PASS" ]
+  BAM="$WORKDIR/A15_sample.bam"
+  compare_flagstat "$BAM"
+  
+  [ "$result_flagstat" -eq 0 ]
 
   rm $WORKDIR/subject_flagstat
   rm $WORKDIR/baseline_flagstat
 }
 
 @test "Compare idxstats against baseline" {
-  skip 
-  result=compare_idxstats "$WORKDIR/small.bam"
-  [ "$result" == "PASS" ]
+  BAM="$WORKDIR/A15_sample.bam"
+  compare_idxstats "$BAM"
+  
+  [ "$result_idxstats" -eq 0 ]
   
   rm $WORKDIR/subject_idxstats
   rm $WORKDIR/baseline_idxstats
