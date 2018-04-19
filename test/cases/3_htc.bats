@@ -58,7 +58,7 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
 }
 
 @test "Compare vcf file against baseline" {
-  VCF="$WORKDIR/A15_sample.vcf"
+  VCF="$WORKDIR/A15_sample.vcf.gz"
   compare_vcf "$VCF"
 
   [ "$result_vcf" -eq 0 ]

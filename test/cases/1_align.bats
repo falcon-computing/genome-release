@@ -108,7 +108,7 @@ LIB=SMALL_TEST
 
   set -x
   # run with configuration settings
-  FCS_TEMP_DIR=$WORKDIR \
+  FCS_TEMP_DIR=$WORKDIR
   $FCSBIN align \
     -r $ref_genome \
     -1 ${fastq_input}_1.fastq.gz \
@@ -150,4 +150,5 @@ LIB=SMALL_TEST
   rm $WORKDIR/subject_idxstats
   rm $WORKDIR/baseline_idxstats
 }
+
 
