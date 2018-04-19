@@ -1,6 +1,27 @@
 # Step-by-Step Guide for AWS Image
 
 ## Create Instance
+Go to the AWS marketplace and find the Falcon Accelerated Genomics Pipelines
+
+
+![alt text](img/SubscribePage.png)
+
+Click the yellow bottom "Continue to Subscribe". The top on the next page looks like as follow:
+
+![alt text](img/LaunchPage1.png)
+
+Choose your instance in the Software Pricing section. Scroll down and set the Key Pair as "user":
+
+![alt text](img/LaunchPage2.png)
+
+Once it is set, go to the top of the page and click the yellow bottom "Launch with 1-click". The next page should look like:
+
+![alt text](img/LaunchPage3.png)
+
+Go to the console and check the IP that is assigned to this instance:
+
+![alt text](img/Console.png)
+
 
 ## Login to Instance
 Assume the user has an account in AWS and an instance in AWS is open with the IP address 172.31.11.209. From Customer’s AWS account log in to centos account using ssh:
