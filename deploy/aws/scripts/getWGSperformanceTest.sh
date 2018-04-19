@@ -52,6 +52,25 @@ CLOUD=$2
 OUTPUT=$3
 ALIGN_ONLY=$4
 
+echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject \"From ${INSTANCE} in ${CLOUD}\" --message \"${INSTANCE} in ${CLOUD} running now\""
+aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message "${INSTANCE} in ${CLOUD} running now"
+
+function extra_info {
+    echo "=========== " >> temp.log
+    echo "Check Disk: " >> temp.log
+    echo "=========== " >> temp.log
+    df -h >> temp.log 
+    echo "=================== " >> temp.log
+    echo "Check Top Processes: " >> temp.log
+    echo "==================== " >> temp.log
+    ps aux | sort -nrk 3,3 | head -n 5 >> temp.log
+    echo "============ " >> temp.log
+    echo "Check DMESG: " >> temp.log
+    echo "============ " >> temp.log
+    dmesg | tail -n10  >> temp.log
+    echo "============ " >> temp.log
+}
+
 FASTQ_SET=(`ls -1 $fastq_dir/*[R,_]1*fastq.gz`)
 PLATFORM="Illumina"
 count=1
@@ -96,8 +115,12 @@ for R1 in ${FASTQ_SET[@]}
            echo "${FCS} align --ref $ref_genome --fastq1 $R1 --fastq2 $R2 --output ${OUTPUT_BAM} --rg ${RG} --sp ${SAMPLE_ID} --pl $PLATFORM --lb $LIB_ID -f ${ALIGN_ONLY} 2> ${TMP_DIR}/${SAMPLE_ID}_bwa.log"    
            ${FCS} align --ref $ref_genome --fastq1 $R1 --fastq2 $R2 --output ${OUTPUT_BAM} --rg ${RG} --sp ${SAMPLE_ID} --pl $PLATFORM --lb $LIB_ID -f ${ALIGN_ONLY} 2> ${TMP_DIR}/${SAMPLE_ID}_bwa.log
            if [[ $? -ne 0 ]];then 
-              echo "Alignment Round $align_count to Reference FAILED for ${SAMPLE_ID} `date`"
-              echo "Alignment for ${SAMPLE_ID} will be re-submitted again"
+              echo "From ${INSTANCE} in ${CLOUD} " > temp.log
+              echo "Alignment Round $align_count to Reference FAILED for ${SAMPLE_ID} `date`" >> temp.log
+              echo "Alignment for ${SAMPLE_ID} will be re-submitted again" >> temp.log
+              extra_info;
+              aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+              cat temp.log
            else
               align_status=0
            fi
@@ -121,8 +144,12 @@ for R1 in ${FASTQ_SET[@]}
                  echo "${FCS} markDup --input ${ALIGNED_BAM} --output ${MARKED_BAM} -f 2> ${TMP_DIR}/${SAMPLE_ID}_md.log"
                  ${FCS} markDup --input ${ALIGNED_BAM} --output ${MARKED_BAM} -f 2> ${TMP_DIR}/${SAMPLE_ID}_md.log
                  if [[ $? -ne 0 ]];then
-                     echo "Mark Duplicates Round ${markdups_count} FAILED for ${SAMPLE_ID} `date`"
-                     echo "Mark Duplicates for ${SAMPLE_ID} will be re-submitted again"
+                     echo "From ${INSTANCE} in ${CLOUD} " > temp.log
+                     echo "Mark Duplicates Round ${markdups_count} FAILED for ${SAMPLE_ID} `date`" >> temp.log
+                     echo "Mark Duplicates for ${SAMPLE_ID} will be re-submitted again" >> temp.log
+                     extra_info;                     
+                     aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+                     cat temp.log
                  else
                      markdups_status=0
                  fi
@@ -160,8 +187,12 @@ for R1 in ${FASTQ_SET[@]}
               --knownSites $g1000_gold_standard_indels -f 2>${TMP_DIR}/${SAMPLE_ID}_baserecal.log 
 
           if [[ $? -ne 0 ]];then
-             echo "Base Recalibration Round $base_recal_count FAILED for ${SAMPLE_ID} `date`"
-             echo "Base Recalibration for ${SAMPLE_ID} will be re-submitted again"
+             echo "From ${INSTANCE} in ${CLOUD} " > temp.log
+             echo "Base Recalibration Round $base_recal_count FAILED for ${SAMPLE_ID} `date`" >> temp.log
+             echo "Base Recalibration for ${SAMPLE_ID} will be re-submitted again" >> temp.log
+             extra_info;
+             aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+             cat temp.log
           else
              base_recal_status=0
           fi
@@ -186,8 +217,12 @@ for R1 in ${FASTQ_SET[@]}
               --input ${MARKED_BAM} \
               --output ${TMP_DIR}/${SAMPLE_ID}_recalibrated.bam -f 2>${TMP_DIR}/${SAMPLE_ID}_printreads.log
           if [[ $? -ne 0 ]];then
-             echo "Print Reads Round ${print_reads_count} FAILED for ${SAMPLE_ID} `date`"
-             echo "Print Reads for ${SAMPLE_ID} will be re-submitted again"
+             echo "From ${INSTANCE} in ${CLOUD} " > temp.log
+             echo "Print Reads Round ${print_reads_count} FAILED for ${SAMPLE_ID} `date`" >> temp.log
+             echo "Print Reads for ${SAMPLE_ID} will be re-submitted again" >> temp.log
+             extra_info;
+             aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+             cat temp.log
           else
              print_reads_status=0              
           fi
@@ -215,8 +250,12 @@ for R1 in ${FASTQ_SET[@]}
               --output $TMP_DIR/${SAMPLE_ID}.vcf --produce-vcf -f 2>${TMP_DIR}/${SAMPLE_ID}_htc.log
 
           if [[ $? -ne 0 ]];then
-             echo "Haplotype Caller Round ${htc_count} FAILED for ${SAMPLE_ID} `date`"
-             echo "Haplotype Caller for ${SAMPLE_ID} will be re-submitted again"
+             echo "From ${INSTANCE} in ${CLOUD} " > temp.log
+             echo "Haplotype Caller Round ${htc_count} FAILED for ${SAMPLE_ID} `date`" >> temp.log
+             echo "Haplotype Caller for ${SAMPLE_ID} will be re-submitted again" >> temp.log
+             extra_info;
+             aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+             cat temp.log 
           else
              htc_status=0
           fi
@@ -281,9 +320,10 @@ if [ "${CLOUD}" == "aws" ];then
    SUBJECT="$INSTANCE : Pipeline Complete on `date`"
    echo "$SUBJECT"
    echo "$SUBJECT"
-   MESSAGE="$INSTANCE: LOG file generated and posted at  ${OUTPUT}/${BATCH_LOG}"
-   echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject \"$SUBJECT\" --message \"$MESSAGE\""
-   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "$SUBJECT" --message "$MESSAGE"
+   MESSAGE="$INSTANCE: LOG file generated and posted at ${OUTPUT}/${BATCH_LOG}"
+   echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject \"$SUBJECT\" --message file://${BATCH_LOG}"
+   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "$SUBJECT" --message file://${BATCH_LOG}
 fi
 
- 
+echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject \"From ${INSTANCE} in ${CLOUD}\" --message \"${INSTANCE} in ${CLOUD} completed\""
+aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message "${INSTANCE} in ${CLOUD} completed"
