@@ -89,18 +89,19 @@ LIB=SMALL_TEST
 }
 
 @test "Download test data" { 
- 
-  #mkdir -p $WORKDIR/fastq/
-  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WORKDIR/fastq/
-  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WORKDIR/fastq/
+  skip
+  mkdir -p $WORKDIR/fastq/
+  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WORKDIR/fastq/
+  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WORKDIR/fastq/
   fastq_input=$WORKDIR/fastq/A15_sample
   
-  #mkdir -p $WORKDIR/A15_sample_baseline
-  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/A15_sample/ $WORKDIR/A15_sample_baseline
+  mkdir -p $WORKDIR/A15_sample_baseline
+  aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/A15_sample/ $WORKDIR/A15_sample_baseline
   BAM_baseline=$WORKDIR/A15_sample_baseline/A15_sample_marked.bam
 }
 
 @test "normal run for alignment" { 
+  skip
   run mkdir -p $WORKDIR
   [ -f $ref_genome ]
   [ -f ${fastq_input}_1.fastq.gz ]
@@ -122,6 +123,7 @@ LIB=SMALL_TEST
 }
 
 @test "Compare BAM file against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample.bam"
   compare_BAM "$BAM"
   
@@ -132,6 +134,7 @@ LIB=SMALL_TEST
 }
 
 @test "Compare flagstat against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample.bam"
   compare_flagstat "$BAM"
   
@@ -142,6 +145,7 @@ LIB=SMALL_TEST
 }
 
 @test "Compare idxstats against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample.bam"
   compare_idxstats "$BAM"
   
