@@ -121,7 +121,7 @@ LIB=SMALL_TEST
   [ -f "$WORKDIR/A15_sample.bam" ]
 }
 
-@test "Compare BAM file against baseline" {
+@test "Compare BAM file against baseline" { 
   BAM="$WORKDIR/A15_sample.bam"
   compare_BAM "$BAM"
   
