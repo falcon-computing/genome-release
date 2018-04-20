@@ -51,6 +51,7 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
 }
 
 @test "normal run for htc" {
+  skip
   run ${FCSBIN} htc \
     -r ${ref_genome} \
     -i $WORKDIR/A15_sample_baseline/A15_final_BAM.bam \
@@ -58,6 +59,7 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
 }
 
 @test "Compare vcf file against baseline" {
+  skip
   VCF="$WORKDIR/A15_sample.vcf.gz"
   compare_vcf "$VCF"
 
