@@ -24,14 +24,14 @@ Go to the console and check the IP that is assigned to this instance:
 
 
 ## Login to Instance
-Assume the user has an account in AWS and an instance in AWS is open with the IP address 172.31.11.209. From Customer’s AWS account log in to centos account using ssh:
+Assume the user has a login account in AWS. To access to the instance recently created in AWS, ssh as centos user to the the IP address shown in the console which is in this case 172.31.41.148:
    ```
-   [customer@ip-172-31-59-238:10~]$ ssh -i ~/.ssh/user.pem centos@172.31.11.209
+   [customer@ip-172-31-59-238:10~]$ ssh -i ~/.ssh/user.pem centos@172.31.41.148
    ```
 ## Setup Instance
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
    ```
-   [centos@ip-172-31-11-209~]$ /usr/local/falcon/bin/fcs-genome 
+   [centos@ip-172-31-41-148~]$ /usr/local/falcon/bin/fcs-genome 
    Falcon Genome Analysis Toolkit v1.1.2-13
    Usage: fcs-genome [command] <options>
    
@@ -51,11 +51,11 @@ The fcs-genome executables should be located at /usr/local/falcon/. The version 
    ```
 Setting key variables in the environment:
    ```
-   [centos@ip-172-31-11-209~]$ /usr/local/falcon/setup.sh
+   [centos@ip-172-31-41-148~]$ /usr/local/falcon/setup.sh
    ```
 NOTE: if user desires to use the fpga feature, login as root is required:
    ```
-   [centos@ip-172-31-11-209 local]$ sudo bash
+   [centos@ip-172-31-41-148 local]$ sudo bash
    [root@ip-172-31-11-209 local]# 
    ```
 Two extra lines need to be included in the /usr/local/falcon/fcs-genome.conf file:
@@ -67,12 +67,12 @@ And the rest of the protocol remains intact.
 
 A storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this instance, a BASH script (setup.sh) and a README.md file are located in the working directory:
    ```
-   [centos@ip-172-31-11-209 ~]$ ls
+   [centos@ip-172-31-41-148 ~]$ ls
    README.md  setup.sh
    ```
 Visualize storage devices currently available using lsblk:
    ```
-   [centos@ip-172-31-11-209 ~]$ lsblk
+   [centos@ip-172-31-41-148 ~]$ lsblk
    NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
    xvda    202:0    0     8G  0 disk 
    └─xvda1 202:1    0     8G  0 part /
@@ -80,7 +80,7 @@ Visualize storage devices currently available using lsblk:
    ```
 In this example, nvme0n1 is available and ready to be used. Execute setup.sh and follow the instructions:
    ```
-   [centos@ip-172-31-11-209 ~]$ ./setup.sh 
+   [centos@ip-172-31-41-148 ~]$ ./setup.sh 
    #############################
    # Falcon Genome Image Setup #
    #############################
@@ -93,7 +93,7 @@ In this example, nvme0n1 is available and ready to be used. Execute setup.sh and
    Please enter the path of the reference genome, or leave it blank to skip this step:
 
    Configuration Successful.
-   [centos@ip-172-31-11-209 ~]$ df -h 
+   [centos@ip-172-31-41-148 ~]$ df -h 
    Filesystem      Size  Used Avail Use% Mounted on
    /dev/xvda1      8.0G  2.0G  6.1G  25% /
    devtmpfs         60G     0   60G   0% /dev
@@ -103,19 +103,19 @@ In this example, nvme0n1 is available and ready to be used. Execute setup.sh and
    /dev/nvme0n1    431G   73M  409G  22% /local
    tmpfs            12G     0   12G   0% /run/user/1000
 
-   [centos@ip-172-31-11-209 ~]$ sudo chown -R centos /local
+   [centos@ip-172-31-41-148 ~]$ sudo chown -R centos /local
    ```
 The device /dev/nvme0n1 was mounted on /local and centos user should have full access.
 
 ## Prepare Reference Genome
 In /local, create the ref/ folder:
    ```
-   [centos@ip-172-31-11-209 /local]$ mkdir ref/
+   [centos@ip-172-31-41-148 /local]$ mkdir ref/
    ```
 Populate ref/ folder:
    ```
-   [centos@ip-172-31-11-209 /local]$ aws s3 cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
-   [centos@ip-172-31-11-209 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138_b37.vcf ref/
+   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
+   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138_b37.vcf ref/
    ```
 If aws command needs to be installed, follow these steps and have the credentials handy:
    ```
@@ -124,12 +124,12 @@ If aws command needs to be installed, follow these steps and have the credential
    ```
 Build the Reference Index (This takes some time):
    ```
-   [centos@ip-172-31-11-209 /local]$ /usr/local/falcon/tools/bin/samtools faidx ref/human_g1k_v37.fasta 
-   [centos@ip-172-31-11-209 /local]$ /usr/local/falcon/prepare-ref.sh ref/human_g1k_v37.fasta 
+   [centos@ip-172-31-41-148 /local]$ /usr/local/falcon/tools/bin/samtools faidx ref/human_g1k_v37.fasta 
+   [centos@ip-172-31-41-148 /local]$ /usr/local/falcon/prepare-ref.sh ref/human_g1k_v37.fasta 
    ```
 After completion, the following files should be present in the ref/ folder:
    ```
-   [centos@ip-172-31-11-209 local]$ ls -1 ref
+   [centos@ip-172-31-41-148 local]$ ls -1 ref
    dbsnp_138.b37.vcf
    human_g1k_v37.dict
    human_g1k_v37.fasta
@@ -144,8 +144,8 @@ After completion, the following files should be present in the ref/ folder:
 ## Run Pipeline
 For testing purposes, a BASH script with a mock pipeline is provided in this instance:
    ```
-   [centos@ip-172-31-11-209 ~]$ cd /local
-   [centos@ip-172-31-11-209 /local]$ cp /usr/local/falcon/example-wgs-germline.sh .
+   [centos@ip-172-31-41-148 ~]$ cd /local
+   [centos@ip-172-31-41-148 /local]$ cp /usr/local/falcon/example-wgs-germline.sh .
    ```
 Use an editor such as vim and open the file and look for the variables local_dir, fastq_dir, and ref_dir. 
 These variables need to be defined by the user.  In this instance, we define them as follows:
@@ -156,15 +156,15 @@ These variables need to be defined by the user.  In this instance, we define the
    ```
 Create the folder fastq/ in /local/
    ```
-   [centos@ip-172-31-11-209 /local]$ mkdir fastq/ 
+   [centos@ip-172-31-41-148 /local]$ mkdir fastq/ 
    ```
 Populate fastq/ folder with test data from AWS S3:
    ```
-   [centos@ip-172-31-11-209 /local]$ aws s3 cp s3://fcs-genome-data/fastq/wes/ fastq/ --recursive --exclude "*" --include "small_*fastq.gz"
+   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/fastq/wes/ fastq/ --recursive --exclude "*" --include "small_*fastq.gz"
    ```
 Once all input files are in place, the test can be run easily:
    ```
-   [centos@ip-172-31-11-209 local]$ nohup ./example-wgs-germline.sh small & 
+   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh small & 
    ```
 After finishing the whole process (for this instance, we test align, bqsr and htc), the nohup.out file displays the log:
    ```
