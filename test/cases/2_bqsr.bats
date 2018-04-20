@@ -54,24 +54,3 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
    [ "$status" -eq 1 ]
    [[ "${output}" == *"ERROR: Input file /merlin_fs/merlin2/ssd1/yaoh/bams_al/dontexist does not exist"* ]]
 }
-
-@test "Normal run for BQSR" {
-  run ${FCSBIN} baserecal \
-    -r ${ref_genome} \
-    -i $WORKDIR/A15_sample_baseline/A15_sample_marked.bam \
-    -o $WORKDIR/A15_BQSR.table \
-    --knownSites $db138_SNPs \
-    --knownSites $g1000_indels \
-    --knownSites $g1000_gold_standard_indels -f 
- 
-  [ "$status" -eq 0 ]
-  [ -f $WORKDIR/A15_BQSR.table ]
-}
-
-@test "Compare BQSR table against baseline" {
-  BQSR="$WORKDIR/A15_BQSR.table"
-  compare_bqsr "$BQSR"
-
-  [ "$result_bqsr" -eq 0 ]
-}
-
