@@ -56,6 +56,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 }
 
 @test "Normal run for BQSR" {
+  skip
   run ${FCSBIN} baserecal \
     -r ${ref_genome} \
     -i $WORKDIR/A15_sample_baseline/A15_sample_marked.bam \
@@ -69,6 +70,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 }
 
 @test "Compare BQSR table against baseline" {
+  skip
   BQSR="$WORKDIR/A15_BQSR.table"
   compare_bqsr "$BQSR"
 
