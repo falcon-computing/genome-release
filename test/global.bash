@@ -259,7 +259,7 @@ function compare_pr_flagstat {
 }
 
 
-function compare_pr_flagstat {
+function compare_pr_idxstat {
   local BAM=$1;
 
   #Declare array 
