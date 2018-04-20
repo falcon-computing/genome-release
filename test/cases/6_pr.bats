@@ -48,6 +48,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 }
 
 @test "normal run of printReads" {
+  skip
   run ${FCSBIN} printreads \
     -r $ref_genome \
     -b $WORKDIR/A15_sample_baseline/A15_sample_BQSR.table \
@@ -59,6 +60,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 }
 
 @test "Compare BAM files against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample_final_BAM.bam"
   compare_pr_BAM "$BAM"
 
@@ -66,6 +68,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 }
 
 @test "Compare BAM flagstats against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample_final_BAM.bam"
   compare_pr_flagstat "$BAM"
   
@@ -73,6 +76,7 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
 } 
 
 @test "Compare BAM idxstats against baseline" {
+  skip
   BAM="$WORKDIR/A15_sample_final_BAM.bam"
   compare_pr_idxstat "$BAM"
 
