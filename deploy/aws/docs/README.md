@@ -115,7 +115,7 @@ In /local, create the ref/ folder:
 Populate ref/ folder:
    ```
    [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
-   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138_b37.vcf ref/
+   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138.b37.vcf ref/
    ```
 If aws command needs to be installed, follow these steps and have the credentials handy:
    ```
@@ -176,12 +176,12 @@ lumina -f
    [2018-04-10 22:25:43 fcs-genome] INFO: Mark Duplicates finishes in 1 seconds
    + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/small.bam -o /local/small.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
    [2018-04-10 22:25:43 fcs-genome] INFO: Start doing Base Recalibration
-   [2018-04-10 23:03:21 fcs-genome] INFO: Base Recalibration finishes in 2258 seconds
+   [2018-04-10 23:03:21 fcs-genome] INFO: Base Recalibration finishes in 650 seconds
    + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/small.recal.bam -o small.vcf -v -f
    [2018-04-10 23:03:21 fcs-genome] INFO: Start doing Haplotype Caller
    [2018-04-10 23:07:40 fcs-genome] INFO: Haplotype Caller finishes in 259 seconds
    + set +x
-   Pipeline finishes in 2526 seconds 
+   Pipeline finishes in 918 seconds 
    ```
 
 
