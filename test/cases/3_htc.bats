@@ -48,4 +48,4 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
    run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_RECALBAMDIR}/doesnotexist -o ${OUTPUT_VCF}
    [ "$status" -gt 1 ]
    #[[ "${output}" == *"ERROR: Cannot find"* ]]
-}  
+}
