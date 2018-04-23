@@ -259,9 +259,11 @@ function compare_pr_flagstat {
 
 }
 
+
 function compare_pr_idxstat {
   local BAM=$1
   local id=$2
+
   #Declare array 
   declare -A pid_table1
   declare -A pid_table2
