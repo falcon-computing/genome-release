@@ -87,5 +87,3 @@ LIB=SMALL_TEST
    [ "$status" -gt 1 ]
    [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
 }
-
-
