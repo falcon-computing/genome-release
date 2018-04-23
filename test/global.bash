@@ -21,14 +21,12 @@ db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 
-baseline=$WORKDIR/A15_sample_baseline
-BAM_baseline=$baseline/A15_sample_marked.bam
-BQSR_baseline=$baseline/A15_sample_BQSR.table
-VCF_baseline=$baseline/A15_sample.vcf.gz
-PR_baseline=$baseline/A15_sample_final_BAM.bam 
+data_list=data.list
+
+baseline=$WORKDIR/baseline/
 
 function check_dev_version {
-  local bin=$1;
+  local bin=$1
   local version="$($bin --version | grep -i 'version' | awk '{print $NF}')";
   if [ "${version: -4}" == "-dev" ]; then
     return 0
@@ -38,13 +36,14 @@ function check_dev_version {
 }
 
 function compare_BAM {
-  local BAM=$1;
+  local BAM=$1
+  local id=$2
   #convert BAM to SAM
-  samtools view -h "$BAM" > $WORKDIR/subject_bwa.sam
-  samtools view -h "$BAM_baseline" > $WORKDIR/baseline_bwa.sam 
+  samtools view -h "$BAM"  > $WORKDIR/subject_bwa.sam
+  samtools view -h "$baseline/${id}/${id}_marked.bam" > $WORKDIR/baseline_bwa.sam 
   
   DIFF=$(diff $WORKDIR/subject_bwa.sam $WORKDIR/baseline_bwa.sam)
-  if [ "DIFF" == "" ]; then
+  if [ "$DIFF" == "" ]; then
     result_bam=0
   else
     result_bam=1
@@ -52,9 +51,10 @@ function compare_BAM {
 }
 
 function compare_flagstat {
-  local BAM=$1;
+  local BAM=$1
+  local id=$2
   samtools flagstat $BAM > $WORKDIR/subject_flagstat
-  samtools flagstat $BAM_baseline > $WORKDIR/baseline_flagstat
+  samtools flagstat $baseline/${id}/${id}_marked.bam > $WORKDIR/baseline_flagstat
   
   DIFF=$(diff $WORKDIR/subject_flagstat $WORKDIR/baseline_flagstat)
   if [ "$DIFF" == "" ]; then
@@ -65,9 +65,10 @@ function compare_flagstat {
 }
 
 function compare_idxstats {
-  local BAM=$1;
+  local BAM=$1
+  local id=$2
   samtools idxstats $BAM > $WORKDIR/subject_idxstats
-  samtools idxstats $BAM_baseline > $WORKDIR/baseline_idxstats
+  samtools idxstats $baseline/${id}/${id}_marked.bam > $WORKDIR/baseline_idxstats
   
   DIFF=$(diff $WORKDIR/subject_idxstats $WORKDIR/baseline_idxstats)
   if [ "$DIFF" == "" ]; then
@@ -78,8 +79,9 @@ function compare_idxstats {
 }
 
 function compare_bqsr {
-  local BQSR=$1;
-  DIFF=$(diff $BQSR $BQSR_baseline)
+  local BQSR=$1
+  local id=$2
+  DIFF=$(diff $BQSR $baseline/${id}/${id}_BQSR.table)
   
   if [ "$DIFF" == "" ]; then
     result_bqsr=0
@@ -89,10 +91,9 @@ function compare_bqsr {
 }
 
 function compare_vcf {
-  local VCF=$1;
-  if [[ $VCF_baseline == *.vcf.gz ]]; then
-    gunzip -c $VCF_baseline > $WORKDIR/base.vcf
-  fi
+  local VCF=$1
+  local id=$2
+  gunzip -c "$baseline/${id}/${id}.vcf.gz" > $WORKDIR/base.vcf
   grep "^[^#]" $WORKDIR/base.vcf > $WORKDIR/base_grep.vcf
 
   if [[ $VCF == *.vcf.gz ]];then
@@ -109,8 +110,8 @@ function compare_vcf {
 }
 
 function compare_pr_BAM {
-  local BAM=$1;
-
+  local BAM=$1
+  local id=$2
   #Declare array 
   declare -A pid_table1
   declare -A pid_table2
@@ -122,10 +123,10 @@ function compare_pr_BAM {
   proc_id2=0
   proc_id3=0
 
-  for file in $(ls $PR_baseline/*.bam)
+  for file in $(ls $baseline/${id}/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
-    samtools view -h $file | sort > $WORKDIR/${part}_base_bwa.sam &
+    samtools view -h $file > $WORKDIR/${part}_base_bwa.sam &
 
     pid_table1["$proc_id1"]=$!
     proc_id1=$(($proc_id1 + 1))
@@ -184,8 +185,8 @@ function compare_pr_BAM {
 }
 
 function compare_pr_flagstat {
-  local BAM=$1;
-  
+  local BAM=$1
+  local id=$2
   #Declare array 
   declare -A pid_table1
   declare -A pid_table2
@@ -197,7 +198,7 @@ function compare_pr_flagstat {
   proc_id2=0
   proc_id3=0
 
-  for file in $(ls $PR_baseline/*.bam)
+  for file in $(ls $baseline/${id}/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
     samtools flagstat $file > $WORKDIR/${part}_base_flagstat &
@@ -258,10 +259,9 @@ function compare_pr_flagstat {
 
 }
 
-
 function compare_pr_idxstat {
-  local BAM=$1;
-
+  local BAM=$1
+  local id=$2
   #Declare array 
   declare -A pid_table1
   declare -A pid_table2
@@ -273,7 +273,7 @@ function compare_pr_idxstat {
   proc_id2=0
   proc_id3=0
 
-  for file in $(ls $PR_baseline/*.bam)
+  for file in $(ls $baseline/${id}/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
     samtools idxstats $file > $WORKDIR/${part}_base_idxstats &

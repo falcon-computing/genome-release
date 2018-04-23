@@ -2,46 +2,40 @@
 load ../global
 
 fastq_dir=$WORKDIR/fastq
-fastq1=$fastq_dir/A15_sample_1.fastq.gz
-fastq2=$fastq_dir/A15_sample_2.fastq.gz
-fastq_input=$fastq_dir/A15_sample
 
 @test "Download test data" { 
  
   mkdir -p $WORKDIR/fastq/
-  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WORKDIR/fastq/
-  aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WORKDIR/fastq/
-  fastq_input=$WORKDIR/fastq/A15_sample
-  
-  mkdir -p $WORKDIR/A15_sample_baseline
-  aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/A15_sample/ $WORKDIR/A15_sample_baseline
-  BAM_baseline=$WORKDIR/A15_sample_baseline/A15_sample_marked.bam
+  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/
+  mkdir -p $WORKDIR/baseline
+  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
 }
 
-@test "normal run for alignment" { 
+helper_normalRun() {
+  #"normal run for alignment"
+  local -r id="$1"
   run mkdir -p $WORKDIR
   [ -f $ref_genome ]
-  [ -f ${fastq_input}_1.fastq.gz ]
-  [ -f ${fastq_input}_2.fastq.gz ]
-
-  set -x
+  [ -f ${fastq_dir}/${id}_1.fastq.gz ]
+  [ -f ${fastq_dir}/${id}_2.fastq.gz ]
+  
   # run with configuration settings
-  FCS_TEMP_DIR=$WORKDIR
-  $FCSBIN align \
+  run $FCSBIN align \
     -r $ref_genome \
-    -1 ${fastq_input}_1.fastq.gz \
-    -2 ${fastq_input}_2.fastq.gz \
-    -o $WORKDIR/A15_sample.bam \
-    --extra-options "-inorder_output" --rg sample --sp sample --pl illumina --lb sample -f
-  set +x
+    -1 ${fastq_dir}/${id}_1.fastq.gz \
+    -2 ${fastq_dir}/${id}_2.fastq.gz \
+    -o $WORKDIR/${id}.bam \
+    --extra-options "-inorder_output" --rg ${id} --sp ${id} --pl Illumina --lb $id -f
 
   [ "$status" -eq 0 ]
-  [ -f "$WORKDIR/A15_sample.bam" ]
+  [ -f "$WORKDIR/${id}.bam" ]
 }
 
-@test "Compare BAM file against baseline" { 
-  BAM="$WORKDIR/A15_sample.bam"
-  compare_BAM "$BAM"
+helper_bamCompare() {
+  #"Compare BAM file against baseline" 
+  local -r id="$1"
+  BAM="$WORKDIR/${id}.bam"
+  compare_BAM "$BAM" "$id"
   
   [ "$result_bam" -eq 0 ]
   
@@ -49,9 +43,11 @@ fastq_input=$fastq_dir/A15_sample
   rm $WORKDIR/baseline_bwa.sam
 }
 
-@test "Compare flagstat against baseline" {
-  BAM="$WORKDIR/A15_sample.bam"
-  compare_flagstat "$BAM"
+helper_flagstatCompare() {
+  #"Compare flagstat against baseline"
+  local -r id="$1"
+  BAM="$WORKDIR/${id}.bam"
+  compare_flagstat "$BAM" "$id"
   
   [ "$result_flagstat" -eq 0 ]
 
@@ -59,9 +55,11 @@ fastq_input=$fastq_dir/A15_sample
   rm $WORKDIR/baseline_flagstat
 }
 
-@test "Compare idxstats against baseline" {
-  BAM="$WORKDIR/A15_sample.bam"
-  compare_idxstats "$BAM"
+helper_idxstatCompare() {
+  #"Compare idxstats against baseline"
+  local -r id="$1"
+  BAM="$WORKDIR/${id}.bam"
+  compare_idxstats "$BAM" "$id"
   
   [ "$result_idxstats" -eq 0 ]
   
@@ -69,4 +67,162 @@ fastq_input=$fastq_dir/A15_sample
   rm $WORKDIR/baseline_idxstats
 }
 
+@test "Normal run for alignment: A15" {
+  helper_normalRun "A15_sample"
+}
 
+@test "Compare BAM file against baseline: A15" {
+  helper_bamCompare "A15_sample"
+}
+
+@test "Compare flagstat against baseline: A15" {
+  helper_flagstatCompare "A15_sample"
+}
+
+@test "Compare idxstats against baseline: A15" {
+  helper_idxstatCompare "A15_sample"
+}
+
+@test "Normal run for alignment: CDMD1015" {
+  helper_normalRun "CDMD1015_sample"
+}
+
+@test "Compare BAM file against baseline: CDMD1015" {
+  helper_bamCompare "CDMD1015_sample"
+}
+
+@test "Compare flagstat against baseline: CDMD1015" {
+  helper_flagstatCompare "CDMD1015_sample"
+}
+
+@test "Compare idxstats against baseline: CDMD1015" {
+  helper_idxstatCompare "CDMD1015_sample"
+}
+
+@test "Normal run for alignment: DSDEX72" {
+  helper_normalRun "DSDEX72_sample"
+}
+
+@test "Compare BAM file against baseline: DSDEX72" {
+  helper_bamCompare "DSDEX72_sample"
+}
+
+@test "Compare flagstat against baseline: DSDEX72" {
+  helper_flagstatCompare "DSDEX72_sample"
+}
+
+@test "Compare idxstats against baseline: DSDEX72" {
+  helper_idxstatCompare "DSDEX72_sample"
+}
+
+@test "Normal run for alignment: SRR098359" {
+  helper_normalRun "SRR098359_sample"
+}
+
+@test "Compare BAM file against baseline: SRR098359" {
+  helper_bamCompare "SRR098359_sample"
+}
+
+@test "Compare flagstat against baseline: SRR098359" {
+  helper_flagstatCompare "SRR098359_sample"
+}
+
+@test "Compare idxstats against baseline: SRR098359" {
+  helper_idxstatCompare "SRR098359_sample"
+}
+
+@test "Normal run for alignment: SRR098401" {
+  helper_normalRun "SRR098401_sample"
+}
+
+@test "Compare BAM file against baseline: SRR098401" {
+  helper_bamCompare "SRR098401_sample"
+}
+
+@test "Compare flagstat against baseline: SRR098401" {
+  helper_flagstatCompare "SRR098401_sample"
+}
+
+@test "Compare idxstats against baseline: SRR098401" {
+  helper_idxstatCompare "SRR098401_sample"
+}
+
+@test "Normal run for alignment: father-23100078" {
+  helper_normalRun "father-23100078_sample"
+}
+
+@test "Compare BAM file against baseline: father-23100078" {
+  helper_bamCompare "father-23100078_sample"
+}
+
+@test "Compare flagstat against baseline: father-23100078" {
+  helper_flagstatCompare "father-23100078_sample"
+}
+
+@test "Compare idxstats against baseline: father-23100078" {
+  helper_idxstatCompare "father-23100078_sample"
+}
+
+@test "Normal run for alignment: father-23110108" {
+  helper_normalRun "father-23110108_sample"
+}
+
+@test "Compare BAM file against baseline: father-23110108" {
+  helper_bamCompare "father-23110108_sample"
+}
+
+@test "Compare flagstat against baseline: father-23110108" {
+  helper_flagstatCompare "father-23110108_sample"
+}
+
+@test "Compare idxstats against baseline: father-23110108" {
+  helper_idxstatCompare "father-23110108_sample"
+}
+
+@test "Normal run for alignment: son-23100077" {
+  helper_normalRun "son-23100077_sample"
+}
+
+@test "Compare BAM file against baseline: son-23100077" {
+  helper_bamCompare "son-23100077_sample"
+}
+
+@test "Compare flagstat against baseline: son-23100077" {
+  helper_flagstatCompare "son-23100077_sample"
+}
+
+@test "Compare idxstats against baseline: son-23100077" {
+  helper_idxstatCompare "son-23100077_sample"
+}
+
+@test "Normal run for alignment: son-23110107" {
+  helper_normalRun "son-23110107_sample"
+}
+
+@test "Compare BAM file against baseline: son-23110107" {
+  helper_bamCompare "son-23110107_sample"
+}
+
+@test "Compare flagstat against baseline: son-23110107" {
+  helper_flagstatCompare "son-23110107_sample"
+}
+
+@test "Compare idxstats against baseline: son-23110107" {
+  helper_idxstatCompare "son-23110107_sample"
+}
+
+@test "Normal run for alignment: NA12878" {
+  helper_normalRun "NA12878_sample"
+}
+
+@test "Compare BAM file against baseline: NA12878" {
+  helper_bamCompare "NA12878_sample"
+}
+
+@test "Compare flagstat against baseline: NA12878" {
+  helper_flagstatCompare "NA12878_sample"
+}
+
+@test "Compare idxstats against baseline: NA12878" {
+  helper_idxstatCompare "NA12878_sample"
+}
