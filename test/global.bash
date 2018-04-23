@@ -7,7 +7,7 @@ fi
 
 FALCON_DIR=$DIR/../release/falcon
 com
-FALCON_DIR=/curr/niveda/falcon-genome/
+FALCON_DIR=/usr/local/falcon/
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
@@ -15,7 +15,7 @@ GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
 WORKDIR=$DIR/temp
 
-ref_dir=/pool/local/ref/
+ref_dir=/curr/niveda/ref/
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
@@ -40,8 +40,8 @@ function check_dev_version {
 function compare_BAM {
   local BAM=$1;
   #convert BAM to SAM
-  samtools view -h "$BAM" | sort > $WORKDIR/subject_bwa.sam
-  samtools view -h "$BAM_baseline" | sort > $WORKDIR/baseline_bwa.sam 
+  samtools view -h "$BAM" > $WORKDIR/subject_bwa.sam
+  samtools view -h "$BAM_baseline" > $WORKDIR/baseline_bwa.sam 
   
   DIFF=$(diff $WORKDIR/subject_bwa.sam $WORKDIR/baseline_bwa.sam)
   if [ "DIFF" == "" ]; then
@@ -176,7 +176,7 @@ function compare_pr_BAM {
  done
 
  if [ "$DIFF" == "" ]; then
-   results_pr_BAMs=0
+   results_pr_BAM=0
  else
    results_pr_BAM=1
  fi
