@@ -1,12 +1,11 @@
-# Step-by-Step Guide for AWS Image
+# Step-by-Step Guide for Using Falcon Genomics Image on AWS
 
 ## Create Instance
-Go to the AWS marketplace and find the Falcon Accelerated Genomics Pipelines
-
+Go to the AWS Marketplace and find the Falcon Accelerated Genomics Pipelines
 
 ![alt text](img/SubscribePage.png)
 
-Click the yellow bottom "Continue to Subscribe". The top on the next page looks like as follow:
+Click the yellow button "Continue to Subscribe". The top on the next page looks like as follow:
 
 ![alt text](img/LaunchPage1.png)
 
@@ -14,7 +13,7 @@ Choose your instance in the Software Pricing section. Scroll down and set the Ke
 
 ![alt text](img/LaunchPage2.png)
 
-Once it is set, go to the top of the page and click the yellow bottom "Launch with 1-click". The next page should look like:
+Once it is set, go to the top of the page and click the yellow button "Launch with 1-click". The next page should look like:
 
 ![alt text](img/LaunchPage3.png)
 
@@ -24,15 +23,15 @@ Go to the console and check the IP that is assigned to this instance:
 
 
 ## Login to Instance
-Assume the user has a login account in AWS. To access to the instance recently created in AWS, ssh as centos user to the the IP address shown in the console which is in this case 172.31.41.148:
+Access to the instances can be done with SSH with a private key. The key needs to be created separated in AWS. In this example, we use the key 'user'. Below shows an example of the SSH command: 
    ```
-   [customer@ip-172-31-59-238:10~]$ ssh -i ~/.ssh/user.pem centos@172.31.41.148
+   [customer@localhost ~]$ ssh -i ~/.ssh/user.pem centos@172.31.41.148
    ```
 ## Setup Instance
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
    ```
    [centos@ip-172-31-41-148~]$ /usr/local/falcon/bin/fcs-genome 
-   Falcon Genome Analysis Toolkit v1.1.2-13
+   Falcon Genome Analysis Toolkit v1.1.3
    Usage: fcs-genome [command] <options>
    
    Commands: 
@@ -58,14 +57,7 @@ NOTE: if user desires to use the fpga feature, login as root is required:
    [centos@ip-172-31-41-148 local]$ sudo bash
    [root@ip-172-31-11-209 local]# 
    ```
-Two extra lines need to be included in the /usr/local/falcon/fcs-genome.conf file:
-   ```
-   bwa.use_fpga = true
-   bwa.fpga.bit_path = /usr/local/falcon/tools/package/bitstream.awsxclbin
-   ```
-And the rest of the protocol remains intact.
-
-A storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this instance, a BASH script (setup.sh) and a README.md file are located in the working directory:
+A storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this example, a BASH script (setup.sh) and a README.md file are located in the working directory:
    ```
    [centos@ip-172-31-41-148 ~]$ ls
    README.md  setup.sh
@@ -114,8 +106,8 @@ In /local, create the ref/ folder:
    ```
 Populate ref/ folder:
    ```
-   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
-   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/ref/dbsnp_138.b37.vcf ref/
+   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/ 
+   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-data/ref/dbsnp_138.b37.vcf ref/
    ```
 If aws command needs to be installed, follow these steps and have the credentials handy:
    ```
