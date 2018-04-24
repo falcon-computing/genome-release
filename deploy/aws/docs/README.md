@@ -23,7 +23,7 @@ Go to the console and check the IP that is assigned to this instance:
 
 
 ## Login to Instance
-Access to the instances can be done with SSH with a private key. The key needs to be created separated in AWS. In this example, we use the key 'user'. Below shows an example of the SSH command: 
+Access to the instances can be done with SSH with a private key. The key needs to be created separately in AWS. In this example, we use the key 'user'. Below shows an example of the SSH command: 
    ```
    [customer@localhost ~]$ ssh -i ~/.ssh/user.pem centos@172.31.41.148
    ```
