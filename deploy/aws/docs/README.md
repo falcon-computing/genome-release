@@ -1,7 +1,7 @@
 # Step-by-Step Guide for Using Falcon Genomics Image on AWS
 
 ## Create Instance
-Go to the AWS Marketplace and find the [Falcon Accelerated Genomics Pipelines] (https://aws.amazon.com/marketplace/pp/B07C3NV88G)
+Go to the AWS Marketplace and find the [Falcon Accelerated Genomics Pipelines](https://aws.amazon.com/marketplace/pp/B07C3NV88G)
 
 ![alt text](img/SubscribePage.png)
 
