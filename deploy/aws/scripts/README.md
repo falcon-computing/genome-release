@@ -3,6 +3,7 @@
 ## Pre-requisites
 To perform the performance test in the AWS instance, the following need to be in place:
 
+- In AWS, folder /genome/ with some key data should be mounted.
 - Configure aws such that messages can be sent out.
 
 - Storage Device should be defined in /local/ with two sub-folders : fastq/ and ref/
@@ -69,7 +70,7 @@ Three pairs of FASTQ files for NA12878 with 100000 paired reads each are in the 
 
 Submitting the job:
 
-    [centos@ip-123-45-67-890 /local ]$ nohup ./benchmark_merge.sh m4.10x aws NA12878 /genome/Logs/ & 
+    [centos@ip-123-45-67-890 /local ]$ nohup ./benchmark_merge.sh m4.10x aws NA12878 /genome/Logs/m4.10x/ & 
      
 This script looks for the FASTQ files in the /local/fastq folder, align each pair using bwa-bin, and post the outputs
 in the folder /local/NA12878/. Subsequently, all the bwa outputs are merged, mark duplicates is performed, and one single
@@ -77,8 +78,14 @@ BAM file is generated, which is the input for BQSR. THe base quality score recal
 used to generate the VCF file using HaplotypeCaller method. 
 
 In each step, log files are posted in /local/NA12878. Once the script completes its tasks, a message is sent out
-with a brief summary of the results. The logs are compressed and sent to /genome/Logs/ for records.
+with a brief summary of the results. The logs are compressed and sent to /genome/Logs/YourInstance/ for records.
 
+The other script runbenchmark.sh follows a similar procedure. But this time, it processes different samples and 
+generates results separately. The command is executed as follows:
+
+    [centos@ip-123-45-67-890 /local ]$ nohup ./runbenchmark.sh  m4.10x aws /genome/Logs/m4.10x/ 0
+
+In the example above, the log file is posted at /genome/Logs/m4.10x/  
 
 
 
