@@ -1,4 +1,4 @@
-# Submitting Jobs to Falcon Genomics Image on AWS
+# Submitting Benchmarking Jobs to Falcon Genomics Image on AWS
 
 ## Pre-requisites
 To perform the performance test in the AWS instance, the following need to be in place:
@@ -26,36 +26,37 @@ To perform the performance test in the AWS instance, the following need to be in
      ```
      aws s3 --no-sign-request cp s3://fcs-genome-data/fastq/mock/ . --recursive --exclude "*" --include "*sh"
      ```
-  Three BASH scripts are copied:
-  benchmark_merge.sh
-  globals.sh
-  runbenchmark.sh 
+Three BASH scripts are copied: benchmark_merge.sh, globals.sh, and runbenchmark.sh .
 
-## Test Settings
-To check if the executables in /usr/local/falcon/ and files in ref/ folder are in place, type:
-    ```
+## Check if Executables and Input Files are in place:
+     ```
      [centos@ip-123-45-67-890 /local ]$ ./globals.sh
      Check if fcs-exome exists:
      /usr/local/falcon/bin/fcs-genome OK
-     
-     Verify License PATH: 
+
+     Verify License PATH:
      /usr/local/falcon/license.lic OK
-     
+
      Check BWA_BIN and GATK in FCS:
      /usr/local/falcon/tools/bin/bwa-bin OK
      /usr/local/falcon/tools/package/GenomeAnalysisTK.jar OK
-     
+
      Checking Global Variables
-     
+
      Files
-     
-     /local/ref/human_g1k_v37.fasta OK 
-     /local/ref/dbsnp_138.b37.vcf OK 
-     /local/ref/1000G_phase1.indels.b37.vcf OK 
+
+     /local/ref/human_g1k_v37.fasta OK
+     /local/ref/dbsnp_138.b37.vcf OK
+     /local/ref/1000G_phase1.indels.b37.vcf OK
      /local/ref/Mills_and_1000G_gold_standard.indels.b37.vcf OK
-    ```
+     ```
+
+
+
+
 
 ## Run the Performance Test
+
 The BASH script benchmark_merge.sh is used for the case where a sample with a given ID has several 
 paired-end of FASTQ files sequenced in different flowcells or lanes. As a mock test, a small dataset posted 
 in AWS is available:
