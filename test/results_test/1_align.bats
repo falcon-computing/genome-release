@@ -35,9 +35,9 @@ helper_bamCompare() {
   #"Compare BAM file against baseline" 
   local -r id="$1"
   BAM="$WORKDIR/${id}.bam"
-  compare_BAM "$BAM" "$id"
+  run compare_BAM "$BAM" "$id"
   
-  [ "$result_bam" -eq 0 ]
+  [ "$status" -eq 0 ]
   
   rm $WORKDIR/subject_bwa.sam
   rm $WORKDIR/baseline_bwa.sam
@@ -47,24 +47,12 @@ helper_flagstatCompare() {
   #"Compare flagstat against baseline"
   local -r id="$1"
   BAM="$WORKDIR/${id}.bam"
-  compare_flagstat "$BAM" "$id"
+  run compare_flagstat "$BAM" "$id"
   
-  [ "$result_flagstat" -eq 0 ]
+  [ "$status" -eq 0 ]
 
   rm $WORKDIR/subject_flagstat
   rm $WORKDIR/baseline_flagstat
-}
-
-helper_idxstatCompare() {
-  #"Compare idxstats against baseline"
-  local -r id="$1"
-  BAM="$WORKDIR/${id}.bam"
-  compare_idxstats "$BAM" "$id"
-  
-  [ "$result_idxstats" -eq 0 ]
-  
-  rm $WORKDIR/subject_idxstats
-  rm $WORKDIR/baseline_idxstats
 }
 
 @test "Normal run for alignment: A15" {
@@ -79,10 +67,6 @@ helper_idxstatCompare() {
   helper_flagstatCompare "A15_sample"
 }
 
-@test "Compare idxstats against baseline: A15" {
-  helper_idxstatCompare "A15_sample"
-}
-
 @test "Normal run for alignment: CDMD1015" {
   helper_normalRun "CDMD1015_sample"
 }
@@ -95,134 +79,122 @@ helper_idxstatCompare() {
   helper_flagstatCompare "CDMD1015_sample"
 }
 
-@test "Compare idxstats against baseline: CDMD1015" {
-  helper_idxstatCompare "CDMD1015_sample"
-}
-
 @test "Normal run for alignment: DSDEX72" {
+  skip
   helper_normalRun "DSDEX72_sample"
 }
 
 @test "Compare BAM file against baseline: DSDEX72" {
+  skip
   helper_bamCompare "DSDEX72_sample"
 }
 
 @test "Compare flagstat against baseline: DSDEX72" {
+  skip
   helper_flagstatCompare "DSDEX72_sample"
 }
 
-@test "Compare idxstats against baseline: DSDEX72" {
-  helper_idxstatCompare "DSDEX72_sample"
-}
-
 @test "Normal run for alignment: SRR098359" {
+  skip
   helper_normalRun "SRR098359_sample"
 }
 
 @test "Compare BAM file against baseline: SRR098359" {
+  skip
   helper_bamCompare "SRR098359_sample"
 }
 
 @test "Compare flagstat against baseline: SRR098359" {
+  skip
   helper_flagstatCompare "SRR098359_sample"
 }
 
-@test "Compare idxstats against baseline: SRR098359" {
-  helper_idxstatCompare "SRR098359_sample"
-}
-
 @test "Normal run for alignment: SRR098401" {
+  skip
   helper_normalRun "SRR098401_sample"
 }
 
 @test "Compare BAM file against baseline: SRR098401" {
+  skip
   helper_bamCompare "SRR098401_sample"
 }
 
 @test "Compare flagstat against baseline: SRR098401" {
+  skip
   helper_flagstatCompare "SRR098401_sample"
 }
 
-@test "Compare idxstats against baseline: SRR098401" {
-  helper_idxstatCompare "SRR098401_sample"
-}
-
 @test "Normal run for alignment: father-23100078" {
+  skip
   helper_normalRun "father-23100078_sample"
 }
 
 @test "Compare BAM file against baseline: father-23100078" {
+  skip
   helper_bamCompare "father-23100078_sample"
 }
 
 @test "Compare flagstat against baseline: father-23100078" {
+  skip
   helper_flagstatCompare "father-23100078_sample"
 }
 
-@test "Compare idxstats against baseline: father-23100078" {
-  helper_idxstatCompare "father-23100078_sample"
-}
-
 @test "Normal run for alignment: father-23110108" {
+  skip
   helper_normalRun "father-23110108_sample"
 }
 
 @test "Compare BAM file against baseline: father-23110108" {
+  skip
   helper_bamCompare "father-23110108_sample"
 }
 
 @test "Compare flagstat against baseline: father-23110108" {
+  skip
   helper_flagstatCompare "father-23110108_sample"
 }
 
-@test "Compare idxstats against baseline: father-23110108" {
-  helper_idxstatCompare "father-23110108_sample"
-}
-
 @test "Normal run for alignment: son-23100077" {
+  skip
   helper_normalRun "son-23100077_sample"
 }
 
 @test "Compare BAM file against baseline: son-23100077" {
+  skip
   helper_bamCompare "son-23100077_sample"
 }
 
 @test "Compare flagstat against baseline: son-23100077" {
+  skip
   helper_flagstatCompare "son-23100077_sample"
 }
 
-@test "Compare idxstats against baseline: son-23100077" {
-  helper_idxstatCompare "son-23100077_sample"
-}
-
 @test "Normal run for alignment: son-23110107" {
+  skip
   helper_normalRun "son-23110107_sample"
 }
 
 @test "Compare BAM file against baseline: son-23110107" {
+  skip
   helper_bamCompare "son-23110107_sample"
 }
 
 @test "Compare flagstat against baseline: son-23110107" {
+  skip
   helper_flagstatCompare "son-23110107_sample"
 }
 
-@test "Compare idxstats against baseline: son-23110107" {
-  helper_idxstatCompare "son-23110107_sample"
-}
-
 @test "Normal run for alignment: NA12878" {
+  skip
   helper_normalRun "NA12878_sample"
 }
 
 @test "Compare BAM file against baseline: NA12878" {
+  skip
   helper_bamCompare "NA12878_sample"
 }
 
 @test "Compare flagstat against baseline: NA12878" {
+  skip
   helper_flagstatCompare "NA12878_sample"
-}
-
-@test "Compare idxstats against baseline: NA12878" {
-  helper_idxstatCompare "NA12878_sample"
 }
