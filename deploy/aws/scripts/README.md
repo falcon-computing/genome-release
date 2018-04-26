@@ -1,9 +1,9 @@
 # Submitting Benchmarking Jobs to Falcon Genomics Image on AWS
 
 ## Pre-requisites
-To perform the performance test in the AWS instance, the following need to be in place:
+To run the performance test in the AWS instance, the following need to be in place:
 
-- In AWS, folder /genome/ with some key data should be mounted.
+- In AWS, folder /genome/ with some key data should be mounted. Something similar should be in place for others clouds.
 - Configure aws such that messages can be sent out.
 
 - Storage Device should be defined in /local/ with two sub-folders : fastq/ and ref/
@@ -23,11 +23,11 @@ To perform the performance test in the AWS instance, the following need to be in
   
 - Falcon Executables must be located at: /usr/local/falcon 
 
-- Get the performance scripts:
+- Download the performance scripts:
      ```
      aws s3 --no-sign-request cp s3://fcs-genome-data/fastq/mock/ . --recursive --exclude "*" --include "*sh"
      ```
-Three BASH scripts are copied: benchmark_merge.sh, globals.sh, and runbenchmark.sh .
+Three BASH scripts are copied in /local : benchmark_merge.sh, globals.sh, and runbenchmark.sh .
 
 ## Check if Executables and Input Files are in place: 
      [centos@ip-123-45-67-890 /local ]$ ./globals.sh
@@ -86,6 +86,9 @@ generates results separately. The command is executed as follows:
     [centos@ip-123-45-67-890 /local ]$ nohup ./runbenchmark.sh  m4.10x aws /genome/Logs/m4.10x/ 0
 
 In the example above, the log file is posted at /genome/Logs/m4.10x/  
+
+These scripts can be used in Huawei and Alicloud as long as the location of the executables and the settings 
+defined in these instructions are the same. 
 
 
 
