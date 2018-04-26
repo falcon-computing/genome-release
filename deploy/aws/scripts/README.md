@@ -87,8 +87,8 @@ generates results separately. The command is executed as follows:
 
 In the example above, the log file is posted at /genome/Logs/m4.10x/  
 
-These scripts can be used in Huawei and Alicloud as long as the location of the executables and the settings 
-defined in these instructions are the same. 
+These instructions can be adapted very quickly in Huawei and Alicloud as long as the location of the executables are 
+located in /usr/local/falcon/ and the location of the input files is clearly set.
 
 
 
