@@ -21,11 +21,9 @@ helper_compareBQSR() {
   #"Compare BQSR table against baseline"
   local -r id="$1"
   BQSR="$WORKDIR/${id}_BQSR.table"
-  compare_bqsr "$BQSR" "$id"
+  run compare_bqsr "$BQSR" "$id"
 
-  [ "$result_bqsr" -eq 0 ]
-  
-  rm $WORKDIR/${id}_BQSR.table
+  [ "$status" -eq 0 ]
 }
 
 @test "Normal run for BQSR: A15" {
@@ -45,65 +43,81 @@ helper_compareBQSR() {
 }
 
 @test "Normal run for BQSR: DSDEX72" {
+  skip
   helper_normalRun "DSDEX72_sample"
 }
 
 @test "Compare BQSR table against baseline: DSDEX72" {
+  skip
   helper_compareBQSR "DSDEX72_sample"
 }
 
 @test "Normal run for BQSR: SRR098359" {
+  skip
   helper_normalRun "SRR098359_sample"
 }
 
 @test "Compare BQSR table against baseline: SRR098359" {
+  skip
   helper_compareBQSR "SRR098359_sample"
 }
 
 @test "Normal run for BQSR: SRR098401" {
+  skip
   helper_normalRun "SRR098401_sample"
 }
 
 @test "Compare BQSR table against baseline: SRR098401" {
+  skip
   helper_compareBQSR "SRR098401_sample"
 }
 
 @test "Normal run for BQSR: father-23100078" {
+  skip
   helper_normalRun "father-23100078_sample"
 }
 
 @test "Compare BQSR table against baseline: father-23100078" {
+  skip
   helper_compareBQSR "father-23100078_sample"
 }
 
 @test "Normal run for BQSR: father-23110108" {
+  skip
   helper_normalRun "father-23110108_sample"
 }
 
 @test "Compare BQSR table against baseline: father-23110108" {
+  skip
   helper_compareBQSR "father-23110108_sample"
 }
 
 @test "Normal run for BQSR: son-23100077" {
+  skip
   helper_normalRun "son-23100077_sample"
 }
 
 @test "Compare BQSR table against baseline: son-23100077" {
+  skip
   helper_compareBQSR "son-23100077_sample"
 }
 
 @test "Normal run for BQSR: son-23110107" {
+  skip
   helper_normalRun "son-23110107_sample"
 }
 
 @test "Compare BQSR table against baseline: son-23110107" {
+  skip
   helper_compareBQSR "son-23110107_sample"
 }
 
 @test "Normal run for BQSR: NA12878" {
+  skip
   helper_normalRun "NA12878_sample"
 }
 
 @test "Compare BQSR table against baseline: NA12878" {
+  skip
   helper_compareBQSR "NA12878_sample"
 }
