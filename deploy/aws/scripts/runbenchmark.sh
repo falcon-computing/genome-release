@@ -318,17 +318,7 @@ for R1 in ${FASTQ_SET[@]}
 
       if [ "$count" == "1" ];then
          BATCH_LOG=${INSTANCE}_$(date +%Y%m%d_%H%M%S)_log
-         echo "========"    > $BATCH_LOG
-         echo "INSTANCE: ${INSTANCE}" >> $BATCH_LOG
-         echo "========"    >> $BATCH_LOG
-         echo "MEMORY INFO" >> $BATCH_LOG
-         echo "===========" >> $BATCH_LOG
-         cat /proc/meminfo  >> $BATCH_LOG
-         echo "===========" >> $BATCH_LOG
-         echo "CPU INFO"    >> $BATCH_LOG
-         echo "========"    >> $BATCH_LOG
-         lscpu              >> $BATCH_LOG
-         echo "===========================" >> $BATCH_LOG
+         echo "==========================="  > $BATCH_LOG
          echo "BWA VERSION $BWABIN_VERSION" >> $BATCH_LOG
          echo "GATK version $GATK_VERSION"  >> $BATCH_LOG
          echo "===========================" >> $BATCH_LOG
@@ -339,6 +329,17 @@ for R1 in ${FASTQ_SET[@]}
          let count=$count+1
       fi 
 done
+
+echo "========"    >> $BATCH_LOG
+echo "INSTANCE: ${INSTANCE}" >> $BATCH_LOG
+echo "========"    >> $BATCH_LOG
+echo "MEMORY INFO" >> $BATCH_LOG
+echo "===========" >> $BATCH_LOG
+cat /proc/meminfo  >> $BATCH_LOG
+echo "===========" >> $BATCH_LOG
+echo "CPU INFO"    >> $BATCH_LOG
+echo "========"    >> $BATCH_LOG
+lscpu              >> $BATCH_LOG
 
 echo "cp ${BATCH_LOG} ${OUTPUT}/${BATCH_LOG}"
 cp ${BATCH_LOG} ${OUTPUT}/${BATCH_LOG}
