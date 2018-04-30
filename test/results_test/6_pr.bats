@@ -44,12 +44,10 @@ helper_compareFlagstat() {
 }
 
 @test "Compare BAM file against baseline: A15" {
-  skip
   helper_compareBAM "A15_sample"
 }
 
 @test "Compare flagstat against baseline: A15" {
-  skip
   helper_compareFlagstat "A15_sample"
 }
 

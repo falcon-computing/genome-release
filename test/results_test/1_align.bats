@@ -6,9 +6,9 @@ fastq_dir=$WORKDIR/fastq
 @test "Download test data" { 
  
   mkdir -p $WORKDIR/fastq/
-  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/
+  aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/
   mkdir -p $WORKDIR/baseline
-  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
+  aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
 }
 
 helper_normalRun() {
