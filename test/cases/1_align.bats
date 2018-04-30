@@ -87,15 +87,3 @@ LIB=SMALL_TEST
    [ "$status" -gt 1 ]
    [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
 }
-
-@test "Download test data" { 
- 
-  #mkdir -p $WORKDIR/fastq/
-  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_1.fastq.gz $WORKDIR/fastq/
-  #aws s3 cp s3://fcs-genome-data/data-suite/Performance-testing/daily/A15_sample_2.fastq.gz $WORKDIR/fastq/
-  fastq_input=$WORKDIR/fastq/A15_sample
-  
-  #mkdir -p $WORKDIR/A15_sample_baseline
-  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/A15_sample/ $WORKDIR/A15_sample_baseline
-  BAM_baseline=$WORKDIR/A15_sample_baseline/A15_sample_marked.bam
-}
