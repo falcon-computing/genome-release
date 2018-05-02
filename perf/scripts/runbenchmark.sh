@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Help :
-if [[ $# -ne "4" ]];then
+if [[ $# -ne "5" ]];then
   clear
   echo "The following script executes FCS pipeline (accelerated bwa and gatk).                       "
   echo "It requires to run globals.sh BASH script                                                    "
@@ -15,11 +15,12 @@ if [[ $# -ne "4" ]];then
   echo "InstanceName   :  Name of the Instance which the job is submitted                            "
   echo "Cloud          :  aws, hwcloud or alicloud                                                   "
   echo "Output         :  Place where the log data will be delivered                                 "
+  echo "Group          :  Currently WES or WGS                                                       "
   echo "AlignOnly      :  Perform Alignment and Mark Duplicates Separately                           "
   echo "                  0: Align and Mark Duplicates Together                                      "
   echo -e "                  1: Align and Mark Duplicates Separately                               \n"
   echo "Example:                                                                                     "
-  echo "./$0 m4.4x aws /curr/myAccount 0                                                             "
+  echo "./$0 m4.4x aws /curr/myAccount WGS 0                                                         "
   exit 1
 fi
 
@@ -35,8 +36,10 @@ else
 fi
 
 # FCS, BWA_BIN and GLOBAL VARIABLES defined in globals.sh 
+FCS_VERSION=`$FCS | grep -e Falcon`
 BWABIN_VERSION=$($BWA_BIN --version)
 GATK_VERSION=$($FCS gatk --version)
+echo "$FCS_VERSION"
 echo "BWA VERSION $BWABIN_VERSION"
 echo "GATK version $GATK_VERSION"
 
@@ -50,7 +53,8 @@ fi
 INSTANCE=$1
 CLOUD=$2
 OUTPUT=$3
-ALIGN_ONLY=$4
+GROUP=$4
+ALIGN_ONLY=$5
 
 echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject \"From ${INSTANCE} in ${CLOUD}\" --message \"${INSTANCE} in ${CLOUD} running now\""
 aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message "${INSTANCE} in ${CLOUD} running now"
@@ -74,6 +78,7 @@ function extra_info {
 FASTQ_SET=(`ls -1 $fastq_dir/*[R,_]1*fastq.gz`)
 PLATFORM="Illumina"
 count=1
+log_count=1
 for R1 in ${FASTQ_SET[@]}
    do
       R2=`echo $R1 | sed -e 's/_1./_2./g' -e 's/_R1/_R2/g'`
@@ -90,6 +95,13 @@ for R1 in ${FASTQ_SET[@]}
 
       TMP_DIR=$output_dir/${SAMPLE_ID}
       mkdir -p ${TMP_DIR}
+      if [ "$count" == "1" ] ;then
+         LOGFILES="${TMP_DIR}/*log "
+      else
+         LOGFILES=$LOGFILES" ${TMP_DIR}/*log "
+         let log_count=$log_count+1
+      fi
+
       # Alignment to Reference
       echo "Alignment to Reference for ${SAMPLE_ID} starts `date`"
       ALIGNED_BAM=$TMP_DIR/${SAMPLE_ID}_aligned
@@ -103,7 +115,7 @@ for R1 in ${FASTQ_SET[@]}
       if [ "${ALIGN_ONLY}" == "1" ]; then
           echo -e "#SAMPLE\tALIGNMENT_TIME\tMARK_DUPLICATES_TIME\tBASE_RECAL_TIME\tPRINT_READS_TIME\tHTC_TIME" > ${TMP_DIR}/${SAMPLE_ID}_Time.log
       else
-          echo -e "#SAMPLE\tALIGNMENT_TIME\tBASE_RECAL_TIME\tPRINT_READS_TIME\tHTC_TIME" > ${TMP_DIR}/${SAMPLE_ID}_Time.log
+          echo -e "#SAMPLE\tALIGNMENT_TIME\tMARK_DUPLICATES_TIME\tBASE_RECAL_TIME\tPRINT_READS_TIME\tHTC_TIME" > ${TMP_DIR}/${SAMPLE_ID}_Time.log
       fi 
       
       align_count=0
@@ -127,8 +139,8 @@ for R1 in ${FASTQ_SET[@]}
               echo "Alignment Round $align_count to Reference FAILED for ${SAMPLE_ID} `date`" >> temp.log
               echo "Alignment for ${SAMPLE_ID} will be re-submitted again" >> temp.log
               extra_info;
-              if [ "${align_count}" == "10" ]; then
-                  aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+              if [ "${align_count}" == "3" ]; then
+                  aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN BWA : ${SAMPLE_ID} From ${INSTANCE} in ${CLOUD}" --message file://temp.log
               fi
               cat temp.log
            else
@@ -163,7 +175,7 @@ for R1 in ${FASTQ_SET[@]}
                      echo "Mark Duplicates for ${SAMPLE_ID} will be re-submitted again" >> temp.log
                      extra_info;
                      if [ "${markdups_count}" == "3" ]; then                     
-                        aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+                        aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN MD : ${SAMPLE_ID} From ${INSTANCE} in ${CLOUD}" --message file://temp.log
                      fi
                      cat temp.log
                  else
@@ -212,7 +224,7 @@ for R1 in ${FASTQ_SET[@]}
              echo "Base Recalibration for ${SAMPLE_ID} will be re-submitted again" >> temp.log
              extra_info;
              if [ "${base_recal_count}" == "3" ]; then
-                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN BASERECAL : ${SAMPLE_ID} From ${INSTANCE} in ${CLOUD}" --message file://temp.log
              fi
              cat temp.log
           else
@@ -248,7 +260,7 @@ for R1 in ${FASTQ_SET[@]}
              echo "Print Reads for ${SAMPLE_ID} will be re-submitted again" >> temp.log
              extra_info;
              if [ "${print_reads_count}" == "3" ]; then
-                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN PRINTREADS : ${SAMPLE_ID} From ${INSTANCE} in ${CLOUD}" --message file://temp.log
              fi
              cat temp.log
           else
@@ -263,6 +275,10 @@ for R1 in ${FASTQ_SET[@]}
           fi
           let print_reads_count=$print_reads_count+1
         done
+
+      echo "Removing FASTQ Files:"
+      echo "rm -rf /local/fastq/${SAMPLE_ID}*fastq.gz"
+      rm -rf /local/fastq/${SAMPLE_ID}*fastq.gz
       echo "Removing Marked Duplicates BAM file for ${SAMPLE_ID}: "
       echo "rm -rf ${TMP_DIR}/${SAMPLE_ID}_marked.bam*"
       rm -rf ${TMP_DIR}/${SAMPLE_ID}_marked.bam*
@@ -287,7 +303,7 @@ for R1 in ${FASTQ_SET[@]}
              echo "Haplotype Caller for ${SAMPLE_ID} will be re-submitted again" >> temp.log
              extra_info;
              if [ "${htc_reads_count}" == "3" ]; then
-                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+                aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN HTC : ${SAMPLE_ID} From ${INSTANCE} in ${CLOUD}" --message file://temp.log
              fi
              cat temp.log 
           else
@@ -309,7 +325,7 @@ for R1 in ${FASTQ_SET[@]}
       rm -rf $TMP_DIR/${SAMPLE_ID}.vcf* $TMP_DIR/${SAMPLE_ID}.*table*
 
       # Grab all the results:
-      GRAB_TIME=${SAMPLE_ID}"\t"${ALIGNMENT_TIME}"\t"$MARK_DUPS_TIME"\t"$BASE_RECAL_TIME"\t"$PRINT_READS_TIME"\t"$HTC_TIME
+      GRAB_TIME=${SAMPLE_ID}"\t"${ALIGNMENT_TIME}"\t"$MARKED_DUPS_TIME"\t"$BASE_RECAL_TIME"\t"$PRINT_READS_TIME"\t"$HTC_TIME
       echo -e ${GRAB_TIME} >> ${TMP_DIR}/${SAMPLE_ID}_Time.log
 
       # Remove Intermediate
@@ -318,7 +334,11 @@ for R1 in ${FASTQ_SET[@]}
 
       if [ "$count" == "1" ];then
          BATCH_LOG=${INSTANCE}_$(date +%Y%m%d_%H%M%S)_log
-         echo "==========================="  > $BATCH_LOG
+         echo "========"    > $BATCH_LOG
+         echo "INSTANCE: ${INSTANCE}" >> $BATCH_LOG
+         echo "========"    >> $BATCH_LOG
+         echo "===========================" >> $BATCH_LOG
+         echo "$FCS_VERSION"                >> $BATCH_LOG
          echo "BWA VERSION $BWABIN_VERSION" >> $BATCH_LOG
          echo "GATK version $GATK_VERSION"  >> $BATCH_LOG
          echo "===========================" >> $BATCH_LOG
@@ -330,16 +350,25 @@ for R1 in ${FASTQ_SET[@]}
       fi 
 done
 
-echo "========"    >> $BATCH_LOG
-echo "INSTANCE: ${INSTANCE}" >> $BATCH_LOG
-echo "========"    >> $BATCH_LOG
-echo "MEMORY INFO" >> $BATCH_LOG
-echo "===========" >> $BATCH_LOG
-cat /proc/meminfo  >> $BATCH_LOG
-echo "===========" >> $BATCH_LOG
-echo "CPU INFO"    >> $BATCH_LOG
-echo "========"    >> $BATCH_LOG
-lscpu              >> $BATCH_LOG
+echo "==============" >> $BATCH_LOG
+echo "CPU INFO      " >> $BATCH_LOG
+echo "==============" >> $BATCH_LOG
+lscpu  | grep -e ^CPU\(s\): | awk '{print "Number of CPUs : \t"$NF}' >> $BATCH_LOG
+lscpu  | grep -e "^Thread"  >> $BATCH_LOG
+lscpu  | grep -e "^Model name:"  >> $BATCH_LOG
+echo "==============" >> $BATCH_LOG
+echo "MEM INFO      " >> $BATCH_LOG
+echo "==============" >> $BATCH_LOG
+cat /proc/meminfo | head -n3  >> $BATCH_LOG
+
+FCSversion=`${FCS} | grep -e Falcon | awk '{print $NF}'`
+
+TAR=${INSTANCE}_fcs${FCSversion}_$GROUP_$(date +%Y%m%d_%H%M%S).tar
+echo "Compressing Log Files:"
+echo "tar -cvf $TAR  $BATCH_LOG $LOGFILES  nohup.out"
+tar -cvf $TAR  $BATCH_LOG  $LOGFILES nohup.out
+echo "cp $TAR  $BACKUP"
+cp $TAR  $BACKUP
 
 echo "cp ${BATCH_LOG} ${OUTPUT}/${BATCH_LOG}"
 cp ${BATCH_LOG} ${OUTPUT}/${BATCH_LOG}
