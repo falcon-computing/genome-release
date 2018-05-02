@@ -24,7 +24,7 @@ Go to the console and check the IP that is assigned to this instance:
 ## Login to Instance
 Access to the instances can be done with SSH with a private key. The key needs to be created separately in AWS. In this example, we use the key 'user'. Below shows an example of the SSH command:
    ```
-   [customer@localhost ~]$ ssh -i ~/.ssh/user.pem centos@54.210.52.157
+   [customer@localhost ~]$ ssh -i ~/.ssh/user.pem centos@172.31.41.148
    ```
 ## Checking Instance Settings
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
@@ -100,6 +100,8 @@ After completion, the following files should be present in the ref/ folder:
    human_g1k_v37.fasta.sa
   ```
 
+NOTE: User can upload easily other reference files using aws commands such as cp and sync. 
+
 ## Run Pipeline
 For testing purposes, a BASH script with a mock pipeline is provided in this instance:
    ```
@@ -117,28 +119,27 @@ Create the folder fastq/ in /local/
    ```
    [centos@ip-172-31-41-148 /local]$ mkdir fastq/
    ```
-Populate fastq/ folder with test data from AWS S3:
-   ```
-   [centos@ip-172-31-41-148 /local]$ aws s3 cp s3://fcs-genome-data/fastq/wes/ fastq/ --recursive --exclude "*" --include "small_*fastq.gz"
-   ```
+Populate fastq/ folder with fastq files. Keep in mind the fastq filenames should have the format fname_1.fastq.gz and fname_2.fastq.gz. 
+
 Once all input files are in place, the test can be run easily:
    ```
-   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh small &
+   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh MyOutput &
    ```
-After finishing the whole process (for this instance, we test align, bqsr and htc), the nohup.out file displays the log:
+After finishing the process (for this instance, we test align, bqsr and htc), the nohup.out file displays some information regarding to the run:
    ```
-   + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/small_1.fastq.gz -2 /local/fastq/small_2.fastq.gz -o /local/small.bam -R small -S small -L small -P il
-lumina -f
+   + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/myfile_1.fastq.gz -2 /local/fastq/myfile_2.fastq.gz -o /local/mybam.bam -R MyReadGroup -S MySample -L MyLibrary -P illumina -f
    [2018-04-10 22:25:34 fcs-genome] INFO: Start doing bwa mem
    [2018-04-10 22:25:42 fcs-genome] INFO: bwa mem finishes in 8 seconds
    [2018-04-10 22:25:42 fcs-genome] INFO: Start doing Mark Duplicates
    [2018-04-10 22:25:43 fcs-genome] INFO: Mark Duplicates finishes in 1 seconds
-   + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/small.bam -o /local/small.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
+   + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/mybam.bam -o /local/mybam.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
    [2018-04-10 22:25:43 fcs-genome] INFO: Start doing Base Recalibration
    [2018-04-10 23:03:21 fcs-genome] INFO: Base Recalibration finishes in 125 seconds
-   + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/small.recal.bam -o small.vcf -v -f
+   + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/mybam.recal.bam -o mybam.vcf -v -f
    [2018-04-10 23:03:21 fcs-genome] INFO: Start doing Haplotype Caller
    [2018-04-10 23:07:40 fcs-genome] INFO: Haplotype Caller finishes in 259 seconds
    + set +x
    Pipeline finishes in 393 seconds
    ```
+
+For more details about other features available in fcs-genome, please refers to the full User Guide
