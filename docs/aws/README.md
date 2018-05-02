@@ -26,7 +26,7 @@ Access to the instances can be done with SSH with a private key. The key needs t
    ```
    [customer@localhost ~]$ ssh -i ~/.ssh/user.pem centos@54.210.52.157
    ```
-## Setup Instance
+## Checking Instance Settings
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
    ```
    [centos@ip-172-31-41-148~]$ /usr/local/falcon/bin/fcs-genome
@@ -47,43 +47,8 @@ The fcs-genome executables should be located at /usr/local/falcon/. The version 
      ug              variant calling with GATK UnifiedGenotyper            
      gatk            call GATK routines                                    
    ```
-Setting key variables in the environment:
-   ```
-   [centos@ip-172-31-41-148~]$ /usr/local/falcon/setup.sh
-   ```
-NOTE: if user desires to use the fpga feature, login as root is required:
-   ```
-   [centos@ip-172-31-41-148 local]$ sudo bash
-   [root@ip-172-31-11-209 local]#
-   ```
-A storage device needs to be set up in order to run the pipeline. Assume no storage device is defined yet. In this example, a BASH script (setup.sh) and a README.md file are located in the working directory:
-   ```
-   [centos@ip-172-31-41-148 ~]$ ls
-   README.md  setup.sh
-   ```
-Visualize storage devices currently available using lsblk:
-   ```
-   [centos@ip-172-31-41-148 ~]$ lsblk
-   NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
-   xvda    202:0    0     8G  0 disk
-   └─xvda1 202:1    0     8G  0 part /
-   nvme0n1 259:0    0 437.7G  0 disk
-   ```
-In this example, nvme0n1 is available and ready to be used. Execute setup.sh and follow the instructions:
-   ```
-   [centos@ip-172-31-41-148 ~]$ ./setup.sh
-   #############################
-   # Falcon Genome Image Setup #
-   #############################
-   Setting up working dir...
-   If you already have the working directory ready please enter
-   the dir path, otherwise, please enter 'continue' or 'c': c
-
-   Please enter the storage device: /dev/nvme0n1
-   Please enter the path of the work dir: /local
-   Please enter the path of the reference genome, or leave it blank to skip this step:
-
-   Configuration Successful.
+In the created instance, a storage device is assigned to /local.
+```
    [centos@ip-172-31-41-148 ~]$ df -h
    Filesystem      Size  Used Avail Use% Mounted on
    /dev/xvda1      8.0G  2.0G  6.1G  25% /
@@ -93,10 +58,13 @@ In this example, nvme0n1 is available and ready to be used. Execute setup.sh and
    tmpfs            60G     0   60G   0% /sys/fs/cgroup
    /dev/nvme0n1    431G   73M  409G  22% /local
    tmpfs            12G     0   12G   0% /run/user/1000
-
-   [centos@ip-172-31-41-148 ~]$ sudo chown -R centos /local
    ```
-The device /dev/nvme0n1 was mounted on /local and centos user should have full access.
+
+NOTE: if user desires to use the fpga feature, login as root is required:
+   ```
+   [centos@ip-172-31-41-148 local]$ sudo bash
+   [root@ip-172-31-11-209 local]#
+   ```
 
 ## Prepare Reference Genome
 In /local, create the ref/ folder:
