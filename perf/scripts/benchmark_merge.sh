@@ -9,9 +9,12 @@ else
    source $CURR_DIR/globals.sh
 fi
 
-# FCS, BWA_BIN and GLOBAL VARIABLES defined in globals.sh                                                                                                                                                                                       
+# FCS, BWA_BIN and GLOBAL VARIABLES defined in globals.sh                                                                                                                                                                                      
+
+FCS_VERSION=`$FCS | grep -e Falcon` 
 BWABIN_VERSION=$($BWA_BIN --version)
 GATK_VERSION=$($FCS gatk --version)
+echo "$FCS_VERSION "
 echo "BWA VERSION $BWABIN_VERSION"
 echo "GATK version $GATK_VERSION"
 
@@ -69,7 +72,7 @@ for r1 in ${array[@]};
      if [[ $? -ne 0 ]];then 
         cat $logfile > temp.log
         extra_info;
-        aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+        aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN BWA : $sample_id from ${INSTANCE} in ${CLOUD}" --message file://temp.log
         cat temp.log
      fi
      let count=$count+1
@@ -83,7 +86,7 @@ ${FCS} markDup  -i ${tmp_dir}/$sample_id  -o ${tmp_dir}/${sample_id}.bam  -f 2>>
 if [[ $? -ne 0 ]];then
    cat $logfile > temp.log
    extra_info;
-   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN MD: $sample_id from ${INSTANCE} in ${CLOUD}" --message file://temp.log
    cat temp.log
 else
    let status=$status+1
@@ -95,7 +98,7 @@ ${FCS} bqsr --ref ${ref_genome} --input $tmp_dir/${sample_id}.bam -o $tmp_dir/${
 if [[ $? -ne 0 ]];then
    cat $logfile > temp.log
    extra_info;
-   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN BQSR: $sample_id From ${INSTANCE} in ${CLOUD}" --message file://temp.log
    cat temp.log
 else
    let status=$status+1
@@ -107,13 +110,14 @@ ${FCS} htc -r ${ref_genome} --input $tmp_dir/${sample_id}_recal.bam --output $tm
 if [[ $? -ne 0 ]];then
    cat $logfile > temp.log
    extra_info;
-   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "From ${INSTANCE} in ${CLOUD}" --message file://temp.log
+   aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "ERROR IN HTC: From ${INSTANCE} in ${CLOUD}" --message file://temp.log
    cat temp.log
 else
    let status=$status+1
 fi
 
 echo "===========================" >> temp.log
+echo "$FCS_VERSION" >> temp.log
 echo "BWA VERSION $BWABIN_VERSION" >> temp.log
 echo "GATK version $GATK_VERSION"  >> temp.log
 echo "===========================" >> temp.log
@@ -135,16 +139,22 @@ cat $tmp_dir/${sample_id}_htc.log >> temp.log
 echo "==============" >>  temp.log
 echo "CPU INFO      " >> temp.log
 echo "==============" >> temp.log
-lscpu >> temp.log
-echo "==============" >  temp.log
+lscpu  | grep -e ^CPU\(s\): | awk '{print "Number of CPUs : \t"$NF}' >> temp.log 
+lscpu  | grep -e "^Thread"  >> temp.log
+lscpu  | grep -e "^Model name:"  >> temp.log
+echo "==============" >> temp.log
 echo "MEM INFO      " >> temp.log
 echo "==============" >> temp.log
-cat /proc/meminfo     >> temp.log
+cat /proc/meminfo | head -n3  >> temp.log
 
-TAR=${sample_id}_${INSTANCE}_$(date +%Y%m%d_%H%M%S).tar
+cp temp.log ${sample_id}.log
+
+FCSversion=`${FCS} | grep -e Falcon | awk '{print $NF}'`
+
+TAR=${INSTANCE}_fcs${FCSversion}_${sample_id}_$(date +%Y%m%d_%H%M%S).tar
 echo "Compressing Log Files:"
-echo "tar -cvf $TAR  temp.log  ${tmp_dir}/*log  nohup.out"
-tar -cvf $TAR  temp.log  ${tmp_dir}/*log  nohup.out  
+echo "tar -cvf $TAR  ${sample_id}.log  log/*log ${tmp_dir}/*log  nohup.out"
+tar -cvf $TAR  ${sample_id}.log  ${tmp_dir}/*log  nohup.out  
 echo "cp $TAR  $BACKUP"
 cp $TAR  $BACKUP
 
