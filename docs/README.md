@@ -18,7 +18,7 @@
 	- [fcs-genome baserecal](#fcs-genome-baserecal)
 	- [fcs-genome printreads](#fcs-genome-printreads)
 	- [fcs-genome htc](#fcs-genome-htc)
-        - [fcs-genome mutect2](#fcs-genome-mutect2)
+	- [fcs-genome mutect2](#fcs-genome-mutect2)
 	- [fcs-genome ug](#fcs-genome-ug)
 	- [fcs-genome joint](#fcs-genome-joint)
 	- [fcs-genome gatk](#fcs-genome-gatk)
