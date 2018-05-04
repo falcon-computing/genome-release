@@ -18,6 +18,7 @@
 	- [fcs-genome baserecal](#fcs-genome-baserecal)
 	- [fcs-genome printreads](#fcs-genome-printreads)
 	- [fcs-genome htc](#fcs-genome-htc)
+        - [fcs-genome mutect2](#fcs-genome-mutect2)
 	- [fcs-genome ug](#fcs-genome-ug)
 	- [fcs-genome joint](#fcs-genome-joint)
 	- [fcs-genome gatk](#fcs-genome-gatk)
@@ -41,6 +42,8 @@ The second step is to recalibrate base quality score to account for biases cause
 ![Falcon Workflow](resources/fcs-genome-workflow.jpeg)
 Figure 1. Side-by-side analysis of the Falcon Accelerated Pipeline and the GATK Best Practices Pipeline: The middle panel indicates the general workflow starting with 1. Mapping the FASTQ sequences to the reference 2. Recalibrating base quality score and finally 3. Calling germline variants. The upper and lower panels illustrate the command-line implementation of the workflow using the Falcon Accelerated Pipeline and GATK Best Practices Pipeline respectively.
 
+A similar pipeline for somatic mutation call is also available through the use of another of GATK's Best Practices pipeline tool- Mutect2. The initial steps of the pipeline remain the same, beginning with fcs-genome align and followed by fcs-genome bqsr. The primary difference is that in the case of Mutect2, two paired-end fastq sequence files are used as input- that of the tumor sample and the normal sample. fcs-genome mutect2, which is the Falcon accelerated equivalent of GATK's Mutect2, takes as input BAM files of the tumor and normal samples. The resulting output is a VCF file comprising of somatic variant calls. 
+
 The table below shows which of the components of the GATK best practices have a Falcon accelerated counterpart and which ones are left in their original forms:
 
 | Original Tool | Original Version | Command | Falcon Accelerated Command |
@@ -51,6 +54,7 @@ The table below shows which of the components of the GATK best practices have a 
 | GATK | 3.8 | BaseRecalibrator | baserecal |
 | | | PrintReads | printreads |
 | | | HaplotypeCaller | htc |
+| | | Mutect2 | mutect2 |
 | | | IndelRealigner | indel |
 | | | UnifiedGenotyper | ug |
 | | | CombinedGVCFs | joint |
@@ -102,6 +106,7 @@ fcs-genome baserecal -r ref.fasta -i indel.bam -o recalibration_report.grp
 fcs-genome printreads -r ref.fasta -b recalibration_report.grp -i indel.bam \
   -o recal.bam
 fcs-genome htc -r ref.fasta -i recal.bam -o final.gvcf
+fcs-genome mutect2 -r ref.fasta -n normal.bam -t tumor.bam -o somatic_calls.vcf
 fcs-genome joint -r ref.fasta -i final.gvcf.gz -o final.vcf
 fcs-genome ug -r ref.fasta -i recal.bam -o final.vcf
 ```
@@ -200,6 +205,19 @@ Take a BAM file and generate a gVCF file by default.  If --produce-vcf is set, a
 | -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
 | -s | --skip-concat | | (deprecated) produce a set of gVCF/VCF files instead of one |
 
+### fcs-genome mutect2
+Equivalent to GATK's Mutect2, this tool calls somatic variants- both somatic single nucleotide (SNVs) as well as insertion and deletion variants. In addition to taking tumor BAM files as input, the tool also requires the inclusion of a matched normal. Mutect2 uses the normals as prefilters for the allelic sites.
+
+| Option | Alternative | Argument | Description |
+| --- | --- | --- | --- |
+| -r | --ref | String(\*) | reference genome path |
+| -n | --normal | String(\*) | input normal BAM file or directory |
+| -t | --tumor | String(\*) | input tumor BAM file or directory |
+| -o | --output | String(\*) | output VCF file |
+| --dbsnp | | | list of dbsnp files for mutect2 |
+|--cosmic | | | list of cosmic files for mutect2 |
+| -s | --skip-concat | | produce a set of VCF files instead of one |
+ 
 ### fcs-genome ug
 This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as an input and generates a VCF file.  It accepts options from GATK through `--extra-option`
 
@@ -365,6 +383,9 @@ The GATK steps, such as BaseRecalibratior, PrintReads and HaplotypeCaller, are r
 | gatk.htc.nprocs | int | | default process num in GATK HaplotypeCaller |
 | gatk.htc.nct | int | | default thread num in GATK HaplotypeCaller |
 | gatk.htc.memory | int | | default heap memory in GATK HaplotypeCaller |
+| gatk.mutect2.nprocs | int | | default process num in GATK Mutect2 |
+| gatk.mutect2.nct | int | | default thread num in GATK Mutect2 |
+| gatk.mutect2.memory | int | | default heap memory in GATK Mutect2 |
 | gatk.indel.nprocs | int | | default process num in GATK IndelRealigner |
 | gatk.indel.memory | int | | default heap memory in GATK IndelRealigner |
 | gatk.ug.nprocs | int | | default process num in GATK UnifiedGenotyper |
