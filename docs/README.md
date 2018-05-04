@@ -243,18 +243,20 @@ This method performs a joint variant calling from a set of VCF files.
 This method emulates the original GATK command and as such, there is no Falcon provided acceleration. Please refer the GATK documentation for additional details.
 
 ## Quick Start
-The examples below are BASH scripts that can be implemented sequentially in any instance. Each example below can be saved in a file and be submitted as follows:
+The examples below are BASH scripts that can be implemented sequentially in any instance. Each example can be saved in a file and be submitted as follows:
 ```
 chmod a+x myscript.sh ; nohup ./myscript.sh &
 ```
-For illustration purposes, the FASTQ files (small_1.fastq.gz and small_2.fastq.gz) defined in the examples below contain 10K paired-end reads. The user can generate them from any paired-end reads FASTQ files using the following Linux commands:  
+For a full test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/ or from Illumina BaseSpace (account required). A set those FASTQ files available in the AWS S3 repository:
+```
+aws s3 cp s3://fcs-genome-data/fastq/WES/ . --recursive --exclude "*" --include "NA*gz"
+```
+To test quickly the executables, a small sample of 10K paired-end reads of those FASTQ files would be good enough to start. The user can generate them from any FASTQ file using the following Linux commands: 
 ```
 zcat originalFASTQ_R1.fastq.gz | head -n 40000 > small_1.fastq ; gzip small_1.fastq
 zcat originalFASTQ_R2.fastq.gz | head -n 40000 > small_2.fastq ; gzip small_2.fastq
 ```
 In FASTQ format, each DNA read consists of 4 lines. Therefore, to get 10,000 DNA reads, 40,000 lines need to be extracted from the original FASTQ file.
-
-For more exhaustive test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/.
 
 ### Generating a Marked Duplicates BAM file from Paired-End FASTQ files
 fcs-genome align performs alignment to the reference, sorts, marks duplicates, and save the mapped reads in a BAM file. If --align-only is set, no marking duplicates is performed. The BASH script below illustrates the usage of the align method:
