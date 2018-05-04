@@ -243,17 +243,18 @@ This method performs a joint variant calling from a set of VCF files.
 This method emulates the original GATK command and as such, there is no Falcon provided acceleration. Please refer the GATK documentation for additional details.
 
 ## Quick Start
-The examples below were written in BASH script and quickly tested using an instance of 16-cores (Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz, 2 threads per core).   Each example below can be saved in a file and be submitted to the server as follows:
+The examples below are BASH scripts that can be implemented sequentially in any instance. Each example below can be saved in a file and be submitted as follows:
 ```
 chmod a+x myscript.sh ; nohup ./myscript.sh &
 ```
-For illustration purposes, the FASTQ files (small_1.fastq.gz and small_2.fastq.gz) used in the examples below contain 10K paired-end reads. They can be generated easily from any paired-end reads FASTQ files using the following Linux commands:  
+For illustration purposes, the FASTQ files (small_1.fastq.gz and small_2.fastq.gz) defined in the examples below contain 10K paired-end reads. The user can generate them from any paired-end reads FASTQ files using the following Linux commands:  
 ```
 zcat originalFASTQ_R1.fastq.gz | head -n 40000 > small_1.fastq ; gzip small_1.fastq
 zcat originalFASTQ_R2.fastq.gz | head -n 40000 > small_2.fastq ; gzip small_2.fastq
 ```
 In FASTQ format, each DNA read consists of 4 lines. Therefore, to get 10,000 DNA reads, 40,000 lines need to be extracted from the original FASTQ file.
-For more exhaustive test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/.  Alternatively, Illumina BaseSpace (account required) provides Public Data sequenced with the most recent technology.
+
+For more exhaustive test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/.
 
 ### Generating a Marked Duplicates BAM file from Paired-End FASTQ files
 fcs-genome align performs alignment to the reference, sorts, marks duplicates, and save the mapped reads in a BAM file. If --align-only is set, no marking duplicates is performed. The BASH script below illustrates the usage of the align method:
@@ -273,7 +274,7 @@ fcs-genome align \
   --rg $RG_ID --sp ${SAMPLE_ID} \
   --pl ${PLATFORM} --lb ${LIB}
 ```
-For 10K paired-reads contained in the FASTQ files, it took 13 seconds for alignment and 1 second for marking duplicates.  The BAM file is generated with its respective index.
+The BAM file is generated with its respective index.
 
 ### Performing Indel Re-alignment from a Marked Duplicates BAM file
 Once the alignment is completed,  indel-realignment is perfomed.  The BASH script below demonstrates the usage of the indel method:
@@ -288,7 +289,7 @@ fcs-genome indel \
   -i ${BAM_INPUT} \
   -o ${BAM_OUTPUT}
 ```
-A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned. It takes 100 seconds to perform.
+A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned. 
 Performing Base Quality Score Recalibration (BQSR) from BAM file with pre-defined known sites
 fcs-genome bqsr performs GATK's Base Quality Score Recalibration and Print Reads in a single command. Per-base quality scores produced by the sequencing machine are checked for errors and corrected. The recalibrated reads are written into a folder that contains a BAM files set. During the process, a recalibration report is generated. The script below illustrates the usage of bqsr method:
 ```
@@ -306,7 +307,6 @@ fcs-genome bqsr \
   -b recalibration_report.grp \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
-For this example, it took 1203 seconds to complete.
 
 ### Generating Base Quality Recalibration Report (BQSR) from a BAM file with known sites
 In this example, the BQSR analysis was performed using as an input a folder that contained BAM files and their respective bai files.  A base recalibration report is generated.
@@ -323,7 +323,7 @@ fcs-genome baserecal \
   -i ${BAM_INPUT} -o recalibration_report.grp \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
-The command also works with a single BAM file.  It takes around 1177 seconds to complete.
+The command also works with a single BAM file. 
 
 ### Generating Genomic VCF (gVCF) file from a BAM file with Haplotype Caller
 fcs-genome htc performs germline variant calling using the input BAM file with default output format as gVCF. if --produce-vcf is set, a VCF file is produced.
@@ -338,7 +338,7 @@ fcs-genome htc \
   -i ${BAM_INPUT} \
   -o ${OutputVCF}
 ```
-For this example, it takes 415 seconds to complete. The htc option accepts multiple BAM files as input.
+The htc option accepts multiple BAM files as input.
 
 ## Tuning Configurations
 Configurations can be tuned to define the settings for each command-line option during the run. The default configuration settings are stored in /usr/local/fcs-genome.conf. If a file with the same name `fcs-genome.conf` is presented in the present directory, its values will be used to overwrite the default values. In addition, environmental variables can be used to overwrite both default configurations and the configurations in `fcs-genome.conf` in the present directory.
@@ -359,10 +359,8 @@ The GATK steps, such as BaseRecalibratior, PrintReads and HaplotypeCaller, are r
 | bwa.verbose | int | 0 | verbose level of bwa output |
 | bwa.nt | int | -1 | number of threads for bwa, default is set to use all available threads in the system |
 | bwa.num_batches_per_part | int | 20 | max num records in each BAM file |
-| bwa.use_fpga | bool | true | option to enable FPGA for bwa-mem |
 | bwa.use_sort | bool | true | enable sorting in bwa-mem |
 | bwa.enforce_order | bool | true | enforce strict sorting ordering |
-| bwa.fpga.bit_path | string | "" | path to FPGA bitstream for bwa |
 | bwa.scaleout_mode | bool | | enable scale-out mode for bwa |
 | markdup.max_files | int | 4096 | max opened files in markdup |
 | markdup.nt | int | 16 | thread num in markdup |
