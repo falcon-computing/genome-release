@@ -119,9 +119,16 @@ Create the folder fastq/ in /local/
    ```
    [centos@ip-172-31-41-148 /local]$ mkdir fastq/
    ```
-Populate fastq/ folder with fastq files. Keep in mind the fastq filenames should have the format fname_1.fastq.gz and fname_2.fastq.gz. 
-
-Once all input files are in place, the test can be run easily:
+Populate fastq/ folder with fastq files. In AWS S3 repository, a set of WES FASTQ files (NA12878, NA12891, and NA12892) can be used for testing. 
+   ```
+   aws s3 cp s3://fcs-genome-data/fastq/WES/ . --recursive --exclude "*" --include "NA*gz"
+   ```
+For a quick test, a small sample of 10K paired-end reads of those FASTQ files would be good enough to start. They can be generated using the following Linux commands: 
+   ```
+   zcat originalFASTQ_R1.fastq.gz | head -n 40000 > myfile_1.fastq ; gzip myfile_1.fastq
+   zcat originalFASTQ_R2.fastq.gz | head -n 40000 > myfile_2.fastq ; gzip myfile_2.fastq
+   ```
+Assuming that myfile_1.fastq.gz and myfile_2.fastq.gz are posted in /local/fastq/, the test can be run easily:
    ```
    [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh MyOutput &
    ```
