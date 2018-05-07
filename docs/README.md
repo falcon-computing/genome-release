@@ -18,6 +18,7 @@
 	- [fcs-genome baserecal](#fcs-genome-baserecal)
 	- [fcs-genome printreads](#fcs-genome-printreads)
 	- [fcs-genome htc](#fcs-genome-htc)
+	- [fcs-genome mutect2](#fcs-genome-mutect2)
 	- [fcs-genome ug](#fcs-genome-ug)
 	- [fcs-genome joint](#fcs-genome-joint)
 	- [fcs-genome gatk](#fcs-genome-gatk)
@@ -41,6 +42,8 @@ The second step is to recalibrate base quality score to account for biases cause
 ![Falcon Workflow](resources/fcs-genome-workflow.jpeg)
 Figure 1. Side-by-side analysis of the Falcon Accelerated Pipeline and the GATK Best Practices Pipeline: The middle panel indicates the general workflow starting with 1. Mapping the FASTQ sequences to the reference 2. Recalibrating base quality score and finally 3. Calling germline variants. The upper and lower panels illustrate the command-line implementation of the workflow using the Falcon Accelerated Pipeline and GATK Best Practices Pipeline respectively.
 
+A similar pipeline for somatic mutation call is also available through the use of another of GATK's Best Practices pipeline tool- Mutect2. The initial steps of the pipeline remain the same, beginning with fcs-genome align and followed by fcs-genome bqsr. The primary difference is that in the case of Mutect2, two paired-end fastq sequence files are used as input- that of the tumor sample and the normal sample. fcs-genome mutect2, which is the Falcon accelerated equivalent of GATK's Mutect2, takes as input BAM files of the tumor and normal samples. The resulting output is a VCF file comprising of somatic variant calls. 
+
 The table below shows which of the components of the GATK best practices have a Falcon accelerated counterpart and which ones are left in their original forms:
 
 | Original Tool | Original Version | Command | Falcon Accelerated Command |
@@ -51,6 +54,7 @@ The table below shows which of the components of the GATK best practices have a 
 | GATK | 3.8 | BaseRecalibrator | baserecal |
 | | | PrintReads | printreads |
 | | | HaplotypeCaller | htc |
+| | | Mutect2 | mutect2 |
 | | | IndelRealigner | indel |
 | | | UnifiedGenotyper | ug |
 | | | CombinedGVCFs | joint |
@@ -102,6 +106,7 @@ fcs-genome baserecal -r ref.fasta -i indel.bam -o recalibration_report.grp
 fcs-genome printreads -r ref.fasta -b recalibration_report.grp -i indel.bam \
   -o recal.bam
 fcs-genome htc -r ref.fasta -i recal.bam -o final.gvcf
+fcs-genome mutect2 -r ref.fasta -n normal.bam -t tumor.bam -o somatic_calls.vcf
 fcs-genome joint -r ref.fasta -i final.gvcf.gz -o final.vcf
 fcs-genome ug -r ref.fasta -i recal.bam -o final.vcf
 ```
@@ -200,6 +205,19 @@ Take a BAM file and generate a gVCF file by default.  If --produce-vcf is set, a
 | -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
 | -s | --skip-concat | | (deprecated) produce a set of gVCF/VCF files instead of one |
 
+### fcs-genome mutect2
+Equivalent to GATK's Mutect2, this tool calls somatic variants- both somatic single nucleotide (SNVs) as well as insertion and deletion variants. In addition to taking tumor BAM files as input, the tool also requires the inclusion of a matched normal. Mutect2 uses the normals as prefilters for the allelic sites.
+
+| Option | Alternative | Argument | Description |
+| --- | --- | --- | --- |
+| -r | --ref | String(\*) | reference genome path |
+| -n | --normal | String(\*) | input normal BAM file or directory |
+| -t | --tumor | String(\*) | input tumor BAM file or directory |
+| -o | --output | String(\*) | output VCF file |
+| --dbsnp | | | list of dbsnp files for mutect2 |
+|--cosmic | | | list of cosmic files for mutect2 |
+| -s | --skip-concat | | produce a set of VCF files instead of one |
+ 
 ### fcs-genome ug
 This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as an input and generates a VCF file.  It accepts options from GATK through `--extra-option`
 
@@ -225,17 +243,18 @@ This method performs a joint variant calling from a set of VCF files.
 This method emulates the original GATK command and as such, there is no Falcon provided acceleration. Please refer the GATK documentation for additional details.
 
 ## Quick Start
-The examples below were written in BASH script and quickly tested using an instance of 16-cores (Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz, 2 threads per core).   Each example below can be saved in a file and be submitted to the server as follows:
+The examples below are BASH scripts that can be implemented sequentially in any instance. Each example below can be saved in a file and be submitted as follows:
 ```
 chmod a+x myscript.sh ; nohup ./myscript.sh &
 ```
-For illustration purposes, the FASTQ files (small_1.fastq.gz and small_2.fastq.gz) used in the examples below contain 10K paired-end reads. They can be generated easily from any paired-end reads FASTQ files using the following Linux commands:  
+For illustration purposes, the FASTQ files (small_1.fastq.gz and small_2.fastq.gz) defined in the examples below contain 10K paired-end reads. The user can generate them from any paired-end reads FASTQ files using the following Linux commands:  
 ```
 zcat originalFASTQ_R1.fastq.gz | head -n 40000 > small_1.fastq ; gzip small_1.fastq
 zcat originalFASTQ_R2.fastq.gz | head -n 40000 > small_2.fastq ; gzip small_2.fastq
 ```
 In FASTQ format, each DNA read consists of 4 lines. Therefore, to get 10,000 DNA reads, 40,000 lines need to be extracted from the original FASTQ file.
-For more exhaustive test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/.  Alternatively, Illumina BaseSpace (account required) provides Public Data sequenced with the most recent technology.
+
+For more exhaustive test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/.
 
 ### Generating a Marked Duplicates BAM file from Paired-End FASTQ files
 fcs-genome align performs alignment to the reference, sorts, marks duplicates, and save the mapped reads in a BAM file. If --align-only is set, no marking duplicates is performed. The BASH script below illustrates the usage of the align method:
@@ -255,7 +274,7 @@ fcs-genome align \
   --rg $RG_ID --sp ${SAMPLE_ID} \
   --pl ${PLATFORM} --lb ${LIB}
 ```
-For 10K paired-reads contained in the FASTQ files, it took 13 seconds for alignment and 1 second for marking duplicates.  The BAM file is generated with its respective index.
+The BAM file is generated with its respective index.
 
 ### Performing Indel Re-alignment from a Marked Duplicates BAM file
 Once the alignment is completed,  indel-realignment is perfomed.  The BASH script below demonstrates the usage of the indel method:
@@ -270,7 +289,7 @@ fcs-genome indel \
   -i ${BAM_INPUT} \
   -o ${BAM_OUTPUT}
 ```
-A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned. It takes 100 seconds to perform.
+A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned. 
 Performing Base Quality Score Recalibration (BQSR) from BAM file with pre-defined known sites
 fcs-genome bqsr performs GATK's Base Quality Score Recalibration and Print Reads in a single command. Per-base quality scores produced by the sequencing machine are checked for errors and corrected. The recalibrated reads are written into a folder that contains a BAM files set. During the process, a recalibration report is generated. The script below illustrates the usage of bqsr method:
 ```
@@ -288,7 +307,6 @@ fcs-genome bqsr \
   -b recalibration_report.grp \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
-For this example, it took 1203 seconds to complete.
 
 ### Generating Base Quality Recalibration Report (BQSR) from a BAM file with known sites
 In this example, the BQSR analysis was performed using as an input a folder that contained BAM files and their respective bai files.  A base recalibration report is generated.
@@ -305,7 +323,7 @@ fcs-genome baserecal \
   -i ${BAM_INPUT} -o recalibration_report.grp \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
-The command also works with a single BAM file.  It takes around 1177 seconds to complete.
+The command also works with a single BAM file. 
 
 ### Generating Genomic VCF (gVCF) file from a BAM file with Haplotype Caller
 fcs-genome htc performs germline variant calling using the input BAM file with default output format as gVCF. if --produce-vcf is set, a VCF file is produced.
@@ -320,7 +338,7 @@ fcs-genome htc \
   -i ${BAM_INPUT} \
   -o ${OutputVCF}
 ```
-For this example, it takes 415 seconds to complete. The htc option accepts multiple BAM files as input.
+The htc option accepts multiple BAM files as input.
 
 ## Tuning Configurations
 Configurations can be tuned to define the settings for each command-line option during the run. The default configuration settings are stored in /usr/local/fcs-genome.conf. If a file with the same name `fcs-genome.conf` is presented in the present directory, its values will be used to overwrite the default values. In addition, environmental variables can be used to overwrite both default configurations and the configurations in `fcs-genome.conf` in the present directory.
@@ -341,10 +359,8 @@ The GATK steps, such as BaseRecalibratior, PrintReads and HaplotypeCaller, are r
 | bwa.verbose | int | 0 | verbose level of bwa output |
 | bwa.nt | int | -1 | number of threads for bwa, default is set to use all available threads in the system |
 | bwa.num_batches_per_part | int | 20 | max num records in each BAM file |
-| bwa.use_fpga | bool | true | option to enable FPGA for bwa-mem |
 | bwa.use_sort | bool | true | enable sorting in bwa-mem |
 | bwa.enforce_order | bool | true | enforce strict sorting ordering |
-| bwa.fpga.bit_path | string | "" | path to FPGA bitstream for bwa |
 | bwa.scaleout_mode | bool | | enable scale-out mode for bwa |
 | markdup.max_files | int | 4096 | max opened files in markdup |
 | markdup.nt | int | 16 | thread num in markdup |
@@ -365,6 +381,9 @@ The GATK steps, such as BaseRecalibratior, PrintReads and HaplotypeCaller, are r
 | gatk.htc.nprocs | int | | default process num in GATK HaplotypeCaller |
 | gatk.htc.nct | int | | default thread num in GATK HaplotypeCaller |
 | gatk.htc.memory | int | | default heap memory in GATK HaplotypeCaller |
+| gatk.mutect2.nprocs | int | | default process num in GATK Mutect2 |
+| gatk.mutect2.nct | int | | default thread num in GATK Mutect2 |
+| gatk.mutect2.memory | int | | default heap memory in GATK Mutect2 |
 | gatk.indel.nprocs | int | | default process num in GATK IndelRealigner |
 | gatk.indel.memory | int | | default heap memory in GATK IndelRealigner |
 | gatk.ug.nprocs | int | | default process num in GATK UnifiedGenotyper |
