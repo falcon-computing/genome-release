@@ -119,52 +119,35 @@ Create the folder fastq/ in /local/
    ```
    [centos@ip-172-31-41-148 /local]$ mkdir fastq/
    ```
-Populate fastq/ folder with fastq files. In AWS S3 repository, there are sets of FASTQ files (WES, WGS, and Mutect2) that can be used for testing. Cell lines FASTQ files are publicly available in many places such as Illumina BaseSpace (account required), 1000Genome Project, etc.
+Populate fastq/ folder with fastq files. In AWS S3 repository, there are sets of FASTQ files (WES and WGS) that can be used for testing. Cell lines FASTQ files are publicly available in many places such as [Illumina BaseSpace](https://basespace.illumina.com/home/index) (account required), [1000Genome Project](http://www.internationalgenome.org), etc.
 
-For WES samples (NA12878, NA12891, and NA12892):
+For WES (NA12878 - HiSeqX: Nextera DNA Flex):
    ```
    aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ . --recursive --exclude "*" --include "NA*gz"
    ```
-For WGS samples (NA12878-Garvan):
+For WGS samples ([NA12878-Garvan](garvan.org.au)):
    ```
    aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WGS/ . --recursive --exclude "*" --include "NA*gz"
    ```
-For Mutect2 analysis (Normal and Tumor):
+Assuming that a pair of FASTQ files (say myfile_1.fastq.gz and myfile_2.fastq.gz) is posted in /local/fastq/, any WES and WGS sample test can be run easily:
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/mutect2/ . --recursive --exclude "*" --include "*gz"
-   ```
-   
-For a quick test, a small sampling of 10K paired-end reads of those FASTQ files would be good enough to start. They can be generated using the following Linux commands: 
-   ```
-   zcat originalFASTQ_R1.fastq.gz | head -n 40000 > myfile_1.fastq ; gzip myfile_1.fastq
-   zcat originalFASTQ_R2.fastq.gz | head -n 40000 > myfile_2.fastq ; gzip myfile_2.fastq
-   ```
-Assuming that myfile_1.fastq.gz and myfile_2.fastq.gz are posted in /local/fastq/, WES and WGS test can be run easily:
-   ```
-   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh MyOutput &
+   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh  /path/to/output/ &
    ```
 After finishing the process (for this instance, we test align, bqsr and htc), the nohup.out file displays some information regarding to the run:
    ```
    + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/myfile_1.fastq.gz -2 /local/fastq/myfile_2.fastq.gz -o /local/mybam.bam -R MyReadGroup -S MySample -L MyLibrary -P illumina -f
    [2018-04-10 22:25:34 fcs-genome] INFO: Start doing bwa mem
-   [2018-04-10 22:25:42 fcs-genome] INFO: bwa mem finishes in 8 seconds
+   ...
    [2018-04-10 22:25:42 fcs-genome] INFO: Start doing Mark Duplicates
-   [2018-04-10 22:25:43 fcs-genome] INFO: Mark Duplicates finishes in 1 seconds
+   ...
    + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/mybam.bam -o /local/mybam.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
    [2018-04-10 22:25:43 fcs-genome] INFO: Start doing Base Recalibration
-   [2018-04-10 23:03:21 fcs-genome] INFO: Base Recalibration finishes in 125 seconds
+   ...
    + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/mybam.recal.bam -o mybam.vcf -v -f
    [2018-04-10 23:03:21 fcs-genome] INFO: Start doing Haplotype Caller
-   [2018-04-10 23:07:40 fcs-genome] INFO: Haplotype Caller finishes in 259 seconds
+   ...
    + set +x
-   Pipeline finishes in 393 seconds
-   ```
 
-For mutect2, Normal and Tumor samples must have their respective recalibrated BAM file. Once they are generated, the mutetc2 variant calling can be executed as follows:
-   ```
-   NORMAL_BAM=/local/normal/normal_recalibrated.bam 
-   TUMOR_BAM=/local/tumor/tumor_recalibrated.bam 
-   fcs-genome mutect2 --ref /local/ref/human_g1k_v37.fasta --normal $NORMAL_BAM --tumor $TUMOR_BAM --dbsnp $db138_SNPs --output mutect2.vcf -f 2>>mutect2.log
    ```
 
 For more details about other features available in fcs-genome, please refers to the full User Guide
