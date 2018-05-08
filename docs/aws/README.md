@@ -131,7 +131,7 @@ For WGS samples (NA12878-Garvan):
    ```
 For Mutect2 analysis (Normal and Tumor):
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/Mutect2/ . --recursive --exclude "*" --include "*gz"
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/mutect2/ . --recursive --exclude "*" --include "*gz"
    ```
    
 For a quick test, a small sampling of 10K paired-end reads of those FASTQ files would be good enough to start. They can be generated using the following Linux commands: 
