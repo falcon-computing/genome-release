@@ -79,9 +79,11 @@ export ref_genome=$ref_dir/human_g1k_v37.fasta
 export db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 export g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 export g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
+export cosmicVCF=$ref_dir/b37_cosmic_v54_120711.vcf
+
 # Check if Key Files are available:
-check_ref_files=`ls -1 $ref_genome $db138_SNPs $g1000_indels $g1000_gold_standard_indels | wc -l`
-if [ "${check_ref_files}" == "4" ];then
+check_ref_files=`ls -1 $ref_genome $db138_SNPs $g1000_indels $g1000_gold_standard_indels ${cosmicVCF} | wc -l`
+if [ "${check_ref_files}" == "5" ];then
    echo -e "Files\n"
    echo -e "$ref_genome OK \n$db138_SNPs OK \n$g1000_indels OK \n$g1000_gold_standard_indels OK\n\n"
 else
