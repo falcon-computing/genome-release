@@ -73,8 +73,8 @@ In /local, create the ref/ folder:
    ```
 Populate ref/ folder:
    ```
-   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-data/ref/human_g1k_v37.fasta ref/
-   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-data/ref/dbsnp_138.b37.vcf ref/
+   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/human_g1k_v37.fasta ref/
+   [centos@ip-172-31-41-148 /local]$ aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/dbsnp_138.b37.vcf ref/
    ```
 If aws command needs to be installed, follow these steps and have the credentials handy:
    ```
@@ -123,18 +123,18 @@ Populate fastq/ folder with fastq files. In AWS S3 repository, there are sets of
 
 For WES samples (NA12878, NA12891, and NA12892):
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-public/samples/WES/ . --recursive --exclude "*" --include "NA*gz"
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ . --recursive --exclude "*" --include "NA*gz"
    ```
 For WGS samples (NA12878-Garvan):
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-public/samples/WGS/ . --recursive --exclude "*" --include "NA*gz"
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WGS/ . --recursive --exclude "*" --include "NA*gz"
    ```
 For Mutect2 analysis (Normal and Tumor):
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-public/samples/Mutect2/ . --recursive --exclude "*" --include "*gz"
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/Mutect2/ . --recursive --exclude "*" --include "*gz"
    ```
    
-For a quick test, a small sample of 10K paired-end reads of those FASTQ files would be good enough to start. They can be generated using the following Linux commands: 
+For a quick test, a small sampling of 10K paired-end reads of those FASTQ files would be good enough to start. They can be generated using the following Linux commands: 
    ```
    zcat originalFASTQ_R1.fastq.gz | head -n 40000 > myfile_1.fastq ; gzip myfile_1.fastq
    zcat originalFASTQ_R2.fastq.gz | head -n 40000 > myfile_2.fastq ; gzip myfile_2.fastq
