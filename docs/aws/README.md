@@ -146,8 +146,6 @@ After finishing the process (for this instance, we test align, bqsr and htc), th
    + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/mybam.recal.bam -o mybam.vcf -v -f
    [2018-04-10 23:03:21 fcs-genome] INFO: Start doing Haplotype Caller
    ...
-   + set +x
-
-   ```
+   
 
 For more details about other features available in fcs-genome, please refers to the full User Guide
