@@ -118,6 +118,7 @@ fcs-genome printreads -r ref.fasta -b recalibration_report.grp -i indel.bam \
   -o recal.bam --extra-options "-n 100000"
 ```
 
+
 Please check the GATK documentation for all extra options available. The tables below show all options available in each method.  
 
 (\*): Required
@@ -128,7 +129,7 @@ Please check the GATK documentation for all extra options available. The tables 
 | --- | --- | --- | --- |
 | -h | --help | | print help messages |
 | -f | --force | | overwrite output files if they exist |
-| -O | --extra-options | String(\*) | extra options in GATK for the command. Use " " to enclose the GATK command. Example "--TheOption arg" |
+| -O | --extra-options | String(\*) | access to GATK tools extra options. Use " " to enclose the GATK command. Example "--TheOption arg" |
 
 ### fcs-genome align
 Perform alignment using the Burrows-Wheeler Algorithm. It is the equivalent of bwa-mem. By default, mark duplicates are performed. If `--align-only` is set, no mark duplicate will be performed.
@@ -144,6 +145,11 @@ Perform alignment using the Burrows-Wheeler Algorithm. It is the equivalent of b
 | -P | --pl | String(\*) | platform ID ('PL' in BAM header) |
 | -L | --lb | String(\*) | library ID ('LB' in BAM header) |
 | -l | --align-only | | skip mark duplicates |
+
+Note: Currently, -O [ --extra-options] supports only fcs-genome align options. Extra options in bwa original not displayed in the fcs-genome align help are not available.
+
+
+
 
 ### fcs-genome markdup
 Takes a BAM file and mark duplicates the reads.
@@ -249,7 +255,7 @@ chmod a+x myscript.sh ; nohup ./myscript.sh &
 ```
 For a full test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/ or from Illumina BaseSpace (account required). A set those FASTQ files available in the AWS S3 repository:
 ```
-aws s3 cp s3://fcs-genome-data/fastq/WES/ . --recursive --exclude "*" --include "NA*gz"
+aws s3 cp s3://fcs-genome-pub/fastq/WES/ . --recursive --exclude "*" --include "NA*gz"
 ```
 To test quickly the executables, a small sample of 10K paired-end reads of those FASTQ files would be good enough to start. The user can generate them from any FASTQ file using the following Linux commands: 
 ```
