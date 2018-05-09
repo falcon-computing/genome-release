@@ -129,21 +129,23 @@ For WGS samples ([NA12878-Garvan](garvan.org.au)):
    ```
    aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WGS/ . --recursive --exclude "*" --include "NA*gz"
    ```
-Assuming that a pair of FASTQ files (say myfile_1.fastq.gz and myfile_2.fastq.gz) is posted in /local/fastq/, any WES and WGS sample test can be run easily:
+Suppose the WES FASTQ files are downloaded and posted in /local/fastq/ (NA12878-Rep01_S1_L001_R1_001.fastq.gz and NA12878-Rep01_S1_L001_R2_001.fastq.gz). The test can be run easily as follows:
    ```
-   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh  /path/to/output/ &
+   [centos@ip-172-31-41-148 local]$ ln -s /local/fastq/NA12878-Rep01_S1_L001_R1_001.fastq.gz /local/fastq/NA12878_1.fastq.gz
+   [centos@ip-172-31-41-148 local]$ ln -s /local/fastq/NA12878-Rep01_S1_L001_R2_001.fastq.gz /local/fastq/NA12878_2.fastq.gz
+   [centos@ip-172-31-41-148 local]$ nohup ./example-wgs-germline.sh  NA12878 &
    ```
 After finishing the process (for this instance, we test align, bqsr and htc), the nohup.out file displays some information regarding to the run:
    ```
-   + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/myfile_1.fastq.gz -2 /local/fastq/myfile_2.fastq.gz -o /local/mybam.bam -R MyReadGroup -S MySample -L MyLibrary -P illumina -f
+   + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/NA12878_1.fastq.gz -2 /local/fastq/NA12878_2.fastq.gz -o /local/NA12878.bam -R NA12878 -S NA12878 -L NA12878 -P illumina -f
    [2018-04-10 22:25:34 fcs-genome] INFO: Start doing bwa mem
    ...
    [2018-04-10 22:25:42 fcs-genome] INFO: Start doing Mark Duplicates
    ...
-   + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/mybam.bam -o /local/mybam.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
+   + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/NA12878.bam -o /local/NA12878.recal.bam -K /local/ref/dbsnp_138.b37.vcf -f
    [2018-04-10 22:25:43 fcs-genome] INFO: Start doing Base Recalibration
    ...
-   + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/mybam.recal.bam -o mybam.vcf -v -f
+   + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/NA12878.recal.bam -o NA12878.vcf -v -f
    [2018-04-10 23:03:21 fcs-genome] INFO: Start doing Haplotype Caller
    ...
    
