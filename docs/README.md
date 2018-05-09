@@ -118,7 +118,6 @@ fcs-genome printreads -r ref.fasta -b recalibration_report.grp -i indel.bam \
   -o recal.bam --extra-options "-n 100000"
 ```
 
-
 Please check the GATK documentation for all extra options available. The tables below show all options available in each method.  
 
 (\*): Required
@@ -146,10 +145,14 @@ Perform alignment using the Burrows-Wheeler Algorithm. It is the equivalent of b
 | -L | --lb | String(\*) | library ID ('LB' in BAM header) |
 | -l | --align-only | | skip mark duplicates |
 
-Note: Currently, -O [ --extra-options] supports only fcs-genome align options. Extra options in bwa original not displayed in the fcs-genome align help are not available.
+Note: Currently, -O [ --extra-options] supports only fcs-genome align options. The extra options available are:
 
-
-
+| Option | Argument | Description |
+ --- | --- | --- |
+| -M | bool | like in -M arg in original BWA (default: true) |
+| -R | String | like in -R arg in original BWA (default: "")|
+| -filter | Int32 | Filtering out records with INT bit seton the FLAG field, similar to the -F argument in samtools (default: 0)|
+| -t | int32 | like in -t arg in original BWA, total number of parallel threads (default: 32) |
 
 ### fcs-genome markdup
 Takes a BAM file and mark duplicates the reads.
@@ -253,28 +256,26 @@ The examples below are BASH scripts that can be implemented sequentially in any 
 ```
 chmod a+x myscript.sh ; nohup ./myscript.sh &
 ```
-For a full test, the platinum pedigree samples (NA12878, NA12891 and NA12892) can be used as examples. They can be downloaded from http://www.internationalgenome.org/data-portal/sample/ or from Illumina BaseSpace (account required). A set those FASTQ files available in the AWS S3 repository:
+For a full test, a set of WES FASTQ files are available in the aws s3 repository:
 ```
-aws s3 cp s3://fcs-genome-pub/fastq/WES/ . --recursive --exclude "*" --include "NA*gz"
+aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ . --recursive --exclude "*" --include "NA*gz"
 ```
-To test quickly the executables, a small sample of 10K paired-end reads of those FASTQ files would be good enough to start. The user can generate them from any FASTQ file using the following Linux commands: 
+This set of FASTQ files (NA12878-Rep01_S1_L001_R1_001.fastq.gz and NA12878-Rep01_S1_L001_R2_001.fastq.gz) comes from the Public Data repository in [Illumina BaseSpace](https://basespace.illumina.com) (account required). The scripts below sets SAMPLE_ID=NA12878. So, symbolic links for each FASTQ file need to be generated before using the alignment script below:
 ```
-zcat originalFASTQ_R1.fastq.gz | head -n 40000 > small_1.fastq ; gzip small_1.fastq
-zcat originalFASTQ_R2.fastq.gz | head -n 40000 > small_2.fastq ; gzip small_2.fastq
+ln -s NA12878-Rep01_S1_L001_R1_001.fastq.gz  NA12878_1.fastq.gz
+ln -s NA12878-Rep01_S1_L001_R2_001.fastq.gz  NA12878_2.fastq.gz
 ```
-In FASTQ format, each DNA read consists of 4 lines. Therefore, to get 10,000 DNA reads, 40,000 lines need to be extracted from the original FASTQ file.
-
 ### Generating a Marked Duplicates BAM file from Paired-End FASTQ files
 fcs-genome align performs alignment to the reference, sorts, marks duplicates, and save the mapped reads in a BAM file. If --align-only is set, no marking duplicates is performed. The BASH script below illustrates the usage of the align method:
 ```
-SAMPLE_ID="small"
+SAMPLE_ID="NA12878"
 R1=${SAMPLE_ID}_1.fastq.gz
 R2=${SAMPLE_ID}_2.fastq.gz"
 REF="/local/ref/human_g1k_v37.fasta
 BAMFILE=${SAMPLE_ID}_marked_sorted.bam
-RG_ID="H0BA0ADXX"
+RG_ID="NA12878"
 PLATFORM="Illumina"
-LIB="RD001"
+LIB="NA12878"
 
 fcs-genome align \
   -r $REF -1 $R1 -2 $R2 \
@@ -288,7 +289,7 @@ The BAM file is generated with its respective index.
 Once the alignment is completed,  indel-realignment is perfomed.  The BASH script below demonstrates the usage of the indel method:
 ```
 REF="/local/ref/human_g1k_v37.fasta
-SAMPLE_ID="small"
+SAMPLE_ID="NA12878"
 BAM_INPUT=${SAMPLE_ID}_marked_sorted.bam
 BAM_OUTPUT=${SAMPLE_ID}_marked_sorted_indel_realign
 
@@ -305,7 +306,7 @@ REF="/local/ref/human_g1k_v37.fasta
 ThousandGen="/local/ref/1000G_phase1.indels.b37.vcf"
 Mills="/local/ref/Mills_and_1000G_gold_standard.indels.b37.vcf"
 SNP="/local/ref/dbsnp_138.b37.vcf"
-SAMPLE_ID="small"
+SAMPLE_ID="NA12878"
 BAM_INPUT=${SAMPLE_ID}_marked_sorted_indel_realign
 BAM_OUTPUT=${SAMPLE_ID}_recalibrated
 
@@ -320,7 +321,7 @@ fcs-genome bqsr \
 In this example, the BQSR analysis was performed using as an input a folder that contained BAM files and their respective bai files.  A base recalibration report is generated.
 ```
 REF="/local/ref/human_g1k_v37.fasta
-SAMPLE_ID="small"
+SAMPLE_ID="NA12878"
 BAM_INPUT=${SAMPLE_ID}_marked_sorted_indel_realign
 ThousandGen="/local/ref/1000G_phase1.indels.b37.vcf"
 Mills="/local/ref/Mills_and_1000G_gold_standard.indels.b37.vcf"
@@ -336,7 +337,7 @@ The command also works with a single BAM file.
 ### Generating Genomic VCF (gVCF) file from a BAM file with Haplotype Caller
 fcs-genome htc performs germline variant calling using the input BAM file with default output format as gVCF. if --produce-vcf is set, a VCF file is produced.
 ```
-SAMPLE_ID="small"
+SAMPLE_ID="NA12878"
 REF="/local/ref/human_g1k_v37.fasta
 BAM_INPUT=${SAMPLE_ID}_recalibrated.bam
 OutputVCF=${SAMPLE_ID}_final.gvcf
