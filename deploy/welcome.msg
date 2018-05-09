@@ -1,5 +1,5 @@
 ##################################################################
-#           Falcon Accelerated Genomics Image v1.0               #
+#          Falcon Accelerated Genomics Image v1.0.1              #
 #                                                                #
 #  The Falcon Accelerated Genomics Data Analysis Solutions       #
 #  comprising the fcs-genome software allows for variant         #

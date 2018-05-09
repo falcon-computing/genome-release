@@ -2,6 +2,8 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $DIR/common.bash
 
+cloud=$1
+
 # install system packages
 sudo yum install -y epel-release
 sudo yum install -y boost glog gflags java
@@ -10,7 +12,7 @@ sudo yum install -y screen vim emacs nmap jq
 # install falcon package
 FALCON_DIR=/usr/local/falcon
 
-tar zxf falcon-genome.tgz
+tar zxf $DIR/falcon-genome*.tgz
 sudo mv ./falcon $FALCON_DIR
 
 # patch files
@@ -25,9 +27,14 @@ patch_file $file "* soft nofile 8192" "*\s\+soft\s\+nofile"
 patch_file $file "* hard nofile 20000" "*\s\+hard\s\+nofile"
 
 # install cloud-specific packages
-if [ -f $DIR/setup-extra.sh ]; then
-  $DIR/setup-extra/setup.sh
+if [ -f $DIR/$cloud/setup.sh ]; then
+  $DIR/$cloud/setup.sh
 fi
+
+sudo cp $DIR/welcome.msg /etc/motd
+
+cp ./setup.sh ~/
+cp ./README.md ~/
 
 # run tests
 $DIR/test/ami-test.sh
