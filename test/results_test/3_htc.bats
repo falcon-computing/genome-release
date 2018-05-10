@@ -62,121 +62,97 @@ helper_vcfdiff() {
 } 
 
 @test "Normal run for HTC: DSDEX72" {
-  skip
   helper_normalRun "DSDEX72_sample"
 }
 
 @test "Compare VCF file against baseline: DSDEX72" {
-  skip
   helper_compareVCF "DSDEX72_sample"
 }
 
 @test "Compare using vcfdiff: DSDEX72" {
-  skip
   helper_vcfdiff "DSDEX72_sample"
 } 
 
 @test "Normal run for HTC: SRR098359" {
-  skip
   helper_normalRun "SRR098359_sample"
 }
 
 @test "Compare VCF file against baseline: SRR098359" {
-  skip
   helper_compareVCF "SRR098359_sample"
 }
 
 @test "Compare using vcfdiff: SRR098359" {
-  skip
   helper_vcfdiff "SRR098359_sample"
 } 
 
 @test "Normal run for HTC: SRR098401" {
-  skip
   helper_normalRun "SRR098401_sample"
 }
 
 @test "Compare VCF file against baseline: SRR098401" {
-  skip
   helper_compareVCF "SRR098401_sample"
 }  
 
 @test "Compare using vcfdiff: SRR098401" {
-  skip
   helper_vcfdiff "SRR098401_sample"
 }
 
 @test "Normal run for HTC: father-23100078" {
-  skip
   helper_normalRun "father-23100078_sample"
 }
 
 @test "Compare VCF file against baseline: father-23100078" {
-  skip
   helper_compareVCF "father-23100078_sample"
 }
 
 @test "Compare using vcfdiff: father-23100078" {
-  skip
   helper_vcfdiff "father-23100078_sample"
 }
 
 @test "Normal run for HTC: father-23110108" {
-  skip
   helper_normalRun "father-23110108_sample"
 }
 
 @test "Compare VCF file against baseline: father-23110108" {
-  skip
   helper_compareVCF "father-23110108_sample"
 }
 
 @test "Compare using vcfdiff: father-23110108" {
-  skip
   helper_vcfdiff "father-23110108_sample"
 }
 
 @test "Normal run for HTC: son-23100077" {
-  skip
   helper_normalRun "son-23100077_sample"
 }
 
 @test "Compare VCF file against baseline: son-23100077" {
-  skip
   helper_compareVCF "son-23100077_sample"
 }
 
 @test "Compare using vcfdiff: son-23100077" {
-  skip
   helper_vcfdiff "son-23100077_sample"
 }
 
 @test "Normal run for HTC: son-23110107" {
-  skip
   helper_normalRun "son-23110107_sample"
 }
 
 @test "Compare VCF file against baseline: son-23110107" {
-  skip
   helper_compareVCF "son-23110107_sample"
 }
 
 @test "Compare using vcfdiff: son-23110107" {
-  skip
   helper_vcfdiff "son-23110107_sample"
 }
 
 @test "Normal run for HTC: NA12878" {
-  skip
   helper_normalRun "NA12878_sample"
 }
 
 @test "Compare VCF file against baseline: NA12878" {
-  skip
   helper_compareVCF "NA12878_sample"
 }
 
 @test "Compare using vcfdiff: NA12878" {
-  skip
   helper_vcfdiff "NA12878_sample"
 }
