@@ -92,7 +92,8 @@ In this example, nvme0n1 is available and ready to be used. Execute setup.sh and
     tmpfs            12G     0   12G   0% /run/user/1000
 
     [centos@ip-172-31-41-148 ~]$ sudo chown -R centos /local
-    ```
+
+```
 NOTE: if user desires to use the fpga feature, login as root is required:
     ```
     [centos@ip-172-31-41-148 local]$ sudo bash
