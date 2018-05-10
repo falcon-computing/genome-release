@@ -200,7 +200,7 @@ Using sed, the user set the variables in the script as follows:
 ### 7. Populate /local/fastq/ folder with WES samples from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository. 
 A paired-end of FASTQ files are posted in /local/fastq/: NA12878-Rep01_S1_L001_R1_001.fastq.gz and NA12878-Rep01_S1_L001_R2_001.fastq.gz. This set of FASTQ files comes from the Public Data repository in [Illumina BaseSpace](https://basespace.illumina.com) (account required). Please refer to the README file posted in the bucket s3://fcs-genome-pub/samples/WES/ for additional details. 
    ```
-   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES /local/fastq/  --recursive  --exclude "*" --include "NA*gz"
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ /local/fastq/  --recursive  --exclude "*" --include "NA*gz"
    ```
 Here, the user can use any set of FASTQ files to perform the test if it chooses to do so.
 
