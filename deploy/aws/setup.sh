@@ -20,6 +20,7 @@ cd -
 
 # load fpga bitstream automatically
 patch_file /etc/rc.local "/usr/bin/fpga-load-local-image -S 0 -I agfi-0de2404adf4335d8e" "/usr/bin/fpga-load-local-image"
+sudo chmod +x /etc/rc.local
 
 # Xilinx environment settings
 file=/etc/profile.d/sdx.sh
