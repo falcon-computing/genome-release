@@ -80,121 +80,97 @@ helper_flagstatCompare() {
 }
 
 @test "Normal run for alignment: DSDEX72" {
-  skip
   helper_normalRun "DSDEX72_sample"
 }
 
 @test "Compare BAM file against baseline: DSDEX72" {
-  skip
   helper_bamCompare "DSDEX72_sample"
 }
 
 @test "Compare flagstat against baseline: DSDEX72" {
-  skip
   helper_flagstatCompare "DSDEX72_sample"
 }
 
 @test "Normal run for alignment: SRR098359" {
-  skip
   helper_normalRun "SRR098359_sample"
 }
 
 @test "Compare BAM file against baseline: SRR098359" {
-  skip
   helper_bamCompare "SRR098359_sample"
 }
 
 @test "Compare flagstat against baseline: SRR098359" {
-  skip
   helper_flagstatCompare "SRR098359_sample"
 }
 
 @test "Normal run for alignment: SRR098401" {
-  skip
   helper_normalRun "SRR098401_sample"
 }
 
 @test "Compare BAM file against baseline: SRR098401" {
-  skip
   helper_bamCompare "SRR098401_sample"
 }
 
 @test "Compare flagstat against baseline: SRR098401" {
-  skip
   helper_flagstatCompare "SRR098401_sample"
 }
 
 @test "Normal run for alignment: father-23100078" {
-  skip
   helper_normalRun "father-23100078_sample"
 }
 
 @test "Compare BAM file against baseline: father-23100078" {
-  skip
   helper_bamCompare "father-23100078_sample"
 }
 
 @test "Compare flagstat against baseline: father-23100078" {
-  skip
   helper_flagstatCompare "father-23100078_sample"
 }
 
 @test "Normal run for alignment: father-23110108" {
-  skip
   helper_normalRun "father-23110108_sample"
 }
 
 @test "Compare BAM file against baseline: father-23110108" {
-  skip
   helper_bamCompare "father-23110108_sample"
 }
 
 @test "Compare flagstat against baseline: father-23110108" {
-  skip
   helper_flagstatCompare "father-23110108_sample"
 }
 
 @test "Normal run for alignment: son-23100077" {
-  skip
   helper_normalRun "son-23100077_sample"
 }
 
 @test "Compare BAM file against baseline: son-23100077" {
-  skip
   helper_bamCompare "son-23100077_sample"
 }
 
 @test "Compare flagstat against baseline: son-23100077" {
-  skip
   helper_flagstatCompare "son-23100077_sample"
 }
 
 @test "Normal run for alignment: son-23110107" {
-  skip
   helper_normalRun "son-23110107_sample"
 }
 
 @test "Compare BAM file against baseline: son-23110107" {
-  skip
   helper_bamCompare "son-23110107_sample"
 }
 
 @test "Compare flagstat against baseline: son-23110107" {
-  skip
   helper_flagstatCompare "son-23110107_sample"
 }
 
 @test "Normal run for alignment: NA12878" {
-  skip
   helper_normalRun "NA12878_sample"
 }
 
 @test "Compare BAM file against baseline: NA12878" {
-  skip
   helper_bamCompare "NA12878_sample"
 }
 
 @test "Compare flagstat against baseline: NA12878" {
-  skip
   helper_flagstatCompare "NA12878_sample"
 }
