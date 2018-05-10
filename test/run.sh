@@ -18,7 +18,7 @@ echo -e "Begin Test\n" >> test.log
 
 #Install vcfdiff
 mkdir -p vcfdiff
-aws s3 cp --recursive s3://fcs-genome-data/tools/vcfdiff/ vcfdiff
+aws s3 cp --recursive s3://fcs-genome-data/tools/vcfdiff/ vcfdiff > /dev/null
 
 start_ts=$(date +%s)
 
@@ -27,4 +27,4 @@ ${DIR}/../bats/bats results_test/ >> test.log
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> test.log
 
-aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
+aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
