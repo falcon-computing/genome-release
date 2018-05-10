@@ -30,7 +30,7 @@ Access to the instances can be done with SSH with a private key. The key needs t
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
    ```
    [centos@ip-172-31-41-148~]$ /usr/local/falcon/bin/fcs-genome
-   Falcon Genome Analysis Toolkit v1.1.3
+   Falcon Genome Analysis Toolkit v1.1.2-13
    Usage: fcs-genome [command] <options>
 
    Commands:
@@ -62,9 +62,9 @@ Visualize storage devices currently available using lsblk:
    ```
    [centos@ip-172-31-41-148 ~]$ lsblk
     NAME    MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
-    xvda    202:0    0     8G  0 disk
-      └─xvda1 202:1    0     8G  0 part /
-    nvme0n1 259:0    0 437.7G  0 disk
+    xvda    202:0      0     8G  0 disk
+      └─xvda1 202:1    0     8G  0 part/
+    nvme0n1 259:0      0 437.7G  0 disk
    ```
 In this example, nvme0n1 is available and ready to be used. Execute setup.sh and follow the instructions:
    ```
@@ -94,19 +94,6 @@ In this example, nvme0n1 is available and ready to be used. Execute setup.sh and
     [centos@ip-172-31-41-148 ~]$ sudo chown -R centos /local
     ```
 
-In the created instance, a storage device is assigned to /local.
-   ```
-   [centos@ip-172-31-41-148 ~]$ df -h
-   Filesystem      Size  Used Avail Use% Mounted on
-   /dev/xvda1      8.0G  2.0G  6.1G  25% /
-   devtmpfs         60G     0   60G   0% /dev
-   tmpfs            60G     0   60G   0% /dev/shm
-   tmpfs            60G   17M   60G   1% /run
-   tmpfs            60G     0   60G   0% /sys/fs/cgroup
-   /dev/nvme0n1    431G   73M  409G  22% /local
-   tmpfs            12G     0   12G   0% /run/user/1000
-   ```
-
 NOTE: if user desires to use the fpga feature, login as root is required:
    ```
    [centos@ip-172-31-41-148 local]$ sudo bash
@@ -132,6 +119,7 @@ All the files associated to the reference fasta file human_g1k_v37.fasta are pos
    ```
    [centos@ip-172-31-41-148 local]$ ls -1 /local/ref
    dbsnp_138.b37.vcf
+   dbsnp_138.b37.vcf.idx
    human_g1k_v37.dict
    human_g1k_v37.fasta
    human_g1k_v37.fasta.amb
