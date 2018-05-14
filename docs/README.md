@@ -178,7 +178,7 @@ Take a BAM file and perform Base Quality Score Recalibration. It can be performe
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
 | -r | --ref | String(\*) | reference genome path |
-| -b | --bqsr | String(\*) | output BQSR file (if left blank, no file will be produced) |
+| -b | --bqsr |            | output BQSR file (if left blank, no file will be produced) |
 | -i | --input | String(\*) | input BAM file |
 | -o | --output | String(\*) | output BAM file |
 | -K | --knownSites | String(\*) | known indels for realignment (VCF format). If more VCF are considered, add -K for each file |
@@ -238,7 +238,7 @@ This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as
 | -s | --skip-concat | String(\*) | produce a set of vcf files instead of one |
 
 ### fcs-genome joint
-This method performs a joint variant calling from a set of VCF files.
+This method performs a joint variant calling from a set of gVCF files.
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
