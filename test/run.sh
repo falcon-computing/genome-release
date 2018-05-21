@@ -1,6 +1,15 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+source $DIR/aws-helper.sh
 
+#Mount local
+mount_local;
+
+#Copy references to /local
+mkdir -p /local/ref/
+aws s3 cp --recursive s3://fcs-genome-data/ref/ /local/ref/
+
+#Print versions
 echo -e "\n"  >> test.log
 echo "=====================================================" >> test.log
 echo "Testing Falcon Genome Release Package" >> test.log

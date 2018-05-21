@@ -7,15 +7,15 @@ fi
 
 FALCON_DIR=$DIR/../release/falcon
 com
-FALCON_DIR=/usr/local/falcon/
+FALCON_DIR=/curr/niveda/falcon-genome/
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
-WORKDIR=$DIR/temp
+WORKDIR=/pool/storage/niveda/Results_validation/temp
 
-ref_dir=/genome/ref/
+ref_dir=/pool/local/ref/
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
@@ -32,6 +32,7 @@ function check_dev_version {
   if [ "${version: -4}" == "-dev" ]; then
     return 0
   else
+    echo "Incorrect dev version"
     return 1
   fi;
 }
@@ -51,25 +52,42 @@ function compare_BAM {
   if [ "$md5sum1" == "$md5sum2" ]; then
     return 0
   else
+    echo "Failed BAM compare for $id"
     return 1
   fi;
   set +x;
 }
 
 function compare_flagstat {
-  set -x;
+  #set -x;
   local BAM=$1;
   local id=$2;
+  threshold=0.05;
+  equal=0.00;
   samtools flagstat $BAM > $WORKDIR/subject_flagstat;
   samtools flagstat $baseline/${id}/${id}_marked.bam > $WORKDIR/baseline_flagstat;
   
-  DIFF=$(diff $WORKDIR/subject_flagstat $WORKDIR/baseline_flagstat);
-  if [ "$DIFF" == "" ]; then
-    return 0
-  else
-    return 1
-  fi;
-  set +x;
+  b_array=( $(cat $WORKDIR/baseline_flagstat | awk '{print $1}') );
+  s_array=( $(cat $WORKDIR/subject_flagstat | awk '{print $1}') );
+  
+  #IFS=$'\n' echo ${b_array[*]};
+  #echo "subject";
+  #IFS=$'\n' echo ${s_array[*]};
+  for idx in ${!b_array[*]}; do
+    DIFF=$(( ${b_array[$idx]} - ${s_array[$idx]} ))
+    
+    if [ $DIFF -ne 0 ]; then
+      #return 0
+    #else
+       #equal= $((echo "scale=6; sqrt(($DIFF / ${b_array[$idx]})^2)" | bc))
+      equal=$(awk -v dividend="$DIFF" -v divisor="${b_array[$idx]}" 'BEGIN {printf "%.6f",sqrt((dividend/divisor)^2); exit(0)}')
+      if (( $(echo "$equal $threshold" | awk '{print ($1 >= $2)}') )); then
+        echo "Failed flagstat compare for $id"
+        return 1
+      fi
+    fi
+  done;
+  return 0;
 }
 
 function compare_bqsr {
@@ -81,6 +99,7 @@ function compare_bqsr {
   if [ "$DIFF" == "" ]; then
     return 0
   else
+    echo "Failed BQSR compare for $id"
     return 1
   fi;
   set +x
@@ -102,6 +121,7 @@ function compare_vcf {
   if [ "$DIFF" == "" ]; then
     return 0
   else
+    echo "Failed VCF compare for $id"
     return 1
   fi;
   set +x;
@@ -119,8 +139,9 @@ function compare_vcfdiff {
   min=0.9999;
   #if (( $(echo "$recall >= $min" | bc -l) )) ; then
   if (( $(echo "$recall $min" | awk '{print ($1 >= $2)}') ));then
-   return 0
+    return 0
   else
+    echo "Failed vcfdiff compare for $id"
     return 1
   fi;
   set +x;
@@ -199,6 +220,7 @@ function compare_pr_BAM {
  if [ "$md5sum1" == "$md5sum2" ]; then
    return 0
  else
+   echo "Failed BAM compare for $id"
    return 1
  fi;
  set +x;
@@ -275,6 +297,7 @@ function compare_pr_flagstat {
  if [ "$DIFF" == "" ]; then
    return 0
  else
+   echo "Failed flagstat compare for $id"
    return 1
  fi;
  set +x;
