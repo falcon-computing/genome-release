@@ -51,7 +51,7 @@ mkdir -p $WORKDIR/baseline
 #aws s3 sync --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
 
 #Run environment tests
-$CURR_DIR../bats/bats cases/ >> test.log
+$CURR_DIR/../bats/bats cases/ >> test.log
 
 #Run results validation tests
 while read id; do 
