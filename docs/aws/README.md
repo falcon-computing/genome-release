@@ -73,6 +73,11 @@ The script workflow is the following:
 7. Populate /local/fastq/ folder with WES samples (NA12878) from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository. 
 8. Extract few reads for testing purposes and save the outputs as NA12878_1.fastq and NA12878_2.fastq.
 9. Submit test :  ./example-wgs-germline.sh  NA12878 
+10. Populate /local/fastq/ folder with Pair Samples (Normal and Tumor) from bucket s3://fcs-genome-pub/samples/mutect2/pair/ in aws s3 repository.
+11. Extract few reads for testing purposes and save the outputs as normal_1.fastq, normal_2.fastq, tumor_1.fastq, and tumor_2.fastq.
+12. Submit jobs: ./example-wgs-germline.sh  normal; ./example-wgs-germline.sh  tumor.
+13. Once normal and tumor have their BAM files recalibrated, run fcs-genome mutect2:
+fcs-genome mutect2 -r ${REF} -n ${NORMAL_BAM} -t ${TUMOR_BAM} -o ${VCF} --dbsnp ${SNP} --cosmic ${COSMIC}
 
 Copy the script to the working directory (/local/) and submit job:
   ```
@@ -159,6 +164,10 @@ In this instance, all the files associated to the reference (9 in total for huma
 For HaplotypeCaller (htc), the VCF file dbsnp_138.b37.vcf is obtained also from the aws s3 repository:
 ```
 aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/ /local/ref/  --recursive  --exclude "*" --include "dbsnp_138.b37*"
+```
+For mutect2, the COSMIC VCF is used:
+```
+aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/ /local/ref/  --recursive  --exclude "*" --include "b37_cosmic_v54_120711.vcf*"
 ```
 
 Here, the user can use other reference fasta file to perform alignment, and use other or include additional VCF files for htc. To generate the files associated to the reference fasta file, the BASH script below helps to achieve the task:
@@ -251,5 +260,34 @@ end_ts=$(date +%s)
 echo "Pipeline finishes in $((end_ts - start_ts)) seconds"
 
 ```
-
+### 10. Populate /local/fastq/ folder with Pair Samples (Normal and Tumor) from bucket s3://fcs-genome-pub/samples/mutect2/pair/ in aws s3 repository.
+```
+aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/mutect2/pair/ /local/fastq/  --recursive  --exclude "*" --include "MP*gz"
+```
+### 11. Extract few reads for testing purposes and save the outputs as normal_1.fastq, normal_2.fastq, tumor_1.fastq, and tumor_2.fastq.
+```
+NORMAL_R1=MPHG004_S3_L003_R1_001.fastq.gz
+NORMAL_R2=MPHG004_S3_L003_R2_001.fastq.gz
+TUMOR_R1=MPHG005_S4_L004_R1_001.fastq.gz
+TUMOR_R2=MPHG005_S4_L004_R2_001.fastq.gz
+zcat /local/fastq/${NORMAL_R1} | head -n 400000 > /local/fastq/normal_1.fastq; gzip /local/fastq/normal_1.fastq
+zcat /local/fastq/${NORMAL_R2} | head -n 400000 > /local/fastq/normal_2.fastq; gzip /local/fastq/normal_2.fastq
+zcat /local/fastq/${TUMOR_R1} | head -n 400000 > /local/fastq/tumor_1.fastq; gzip /local/fastq/tumor_1.fastq
+zcat /local/fastq/${TUMOR_R2} | head -n 400000 > /local/fastq/tumor_2.fastq; gzip /local/fastq/tumor_2.fastq
+```
+### 12. Submit jobs: 
+```
+./example-wgs-germline.sh  normal 
+./example-wgs-germline.sh  tumor
+```
+### 13. Once normal and tumor have their BAM files recalibrated, run fcs-genome mutect2:
+```
+REF=ref/human_g1k_v37.fasta
+NORMAL_BAM=/local/normal.recal.bam
+TUMOR_BAM=/local/tumor.recal.bam
+VCF=/local/somatic_calls.vcf
+SNP=/local/ref/dbsnp_138.b37.vcf
+COSMIC=/local/ref/dbsnp_138.b37.vcf
+fcs-genome mutect2 -r ${REF} -n ${NORMAL_BAM} -t ${TUMOR_BAM} -o ${VCF} --dbsnp ${SNP} --cosmic ${COSMIC}
+```
 For more details about other features available in fcs-genome, please refers to the full User Guide
