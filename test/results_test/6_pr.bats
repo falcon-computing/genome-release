@@ -43,19 +43,13 @@ helper_compareFlagstat() {
 } 
 
 @test "Normal run for print reads: A15" {
- while read id; do
-   helper_normalRun "$id"
-  done <$data_list
+  helper_normalRun "$id"
 }
 
 @test "Compare BAM file against baseline: A15" {
-  while read id; do
-    helper_compareBAM "$id"
-  done <$data_list
+  helper_compareBAM "$id"
 }
 
 @test "Compare flagstat against baseline: A15" {
-  while read id; do
-    helper_compareFlagstat "$id"
-  done <$data_list
+  helper_compareFlagstat "$id"
 }

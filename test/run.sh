@@ -1,13 +1,14 @@
 #!/bin/bash
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source $DIR/aws-helper.sh
+CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+#source $CURR_DIR/aws-helper.sh
+source $CURR_DIR/global.bash
 
 #Mount local
-mount_local;
+#mount_local;
 
 #Copy references to /local
-mkdir -p /local/ref/
-aws s3 cp --recursive s3://fcs-genome-data/ref/ /local/ref/
+#mkdir -p /local/ref/
+#aws s3 sync s3://fcs-genome-data/ref/ /local/ref/
 
 #Print versions
 echo -e "\n"  >> test.log
@@ -16,7 +17,7 @@ echo "Testing Falcon Genome Release Package" >> test.log
 echo "=====================================================" >> test.log
 echo -e "\n" >> test.log
 
-FALCON_DIR=/usr/local/falcon/
+FALCON_DIR=/curr/niveda/falcon-genome/
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
@@ -39,13 +40,26 @@ echo -e "Begin Test\n" >> test.log
 
 #Install vcfdiff
 mkdir -p vcfdiff
-aws s3 cp --recursive s3://fcs-genome-data/tools/vcfdiff/ vcfdiff > /dev/null
+aws s3 cp --recursive s3://fcs-genome-data/tools/vcfdiff/ vcfdiff
 
 start_ts=$(date +%s)
 
-${DIR}/../bats/bats results_test/ >> test.log
+# Download FASTQ and Baseline
+mkdir -p $WORKDIR/fastq/
+#aws s3 sync --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/
+mkdir -p $WORKDIR/baseline
+#aws s3 sync --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
+
+#Run environment tests
+$CURR_DIR../bats/bats cases/ >> test.log
+
+#Run results validation tests
+while read id; do 
+  export id=$id
+  $CURR_DIR/../bats/bats results_test/ >> test.log
+done <$data_list
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> test.log
 
-aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
+#aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log

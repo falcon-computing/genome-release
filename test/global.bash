@@ -1,19 +1,17 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-<<com
-if [ -z "$FALCON_DIR" ]; then
-  FALCON_DIR=$DIR/../release/falcon
-fi
 
-FALCON_DIR=$DIR/../release/falcon
-com
-FALCON_DIR=/curr/niveda/falcon-genome/
+if [ -z "$FALCON_DIR" ]; then
+  FALCON_DIR=/curr/niveda/falcon-genome/
+fi
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
 WORKDIR=/pool/storage/niveda/Results_validation/temp
+fastq_dir=$WORKDIR/fastq
+baseline=$WORKDIR/baseline/
 
 ref_dir=/pool/local/ref/
 ref_genome=$ref_dir/human_g1k_v37.fasta
@@ -23,8 +21,6 @@ g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 VCFDIFF=${DIR}/vcfdiff
 
 data_list=data.list
-
-baseline=$WORKDIR/baseline/
 
 function check_dev_version {
   local bin=$1;
@@ -38,7 +34,7 @@ function check_dev_version {
 }
 
 function compare_BAM {
-  set -x;
+
   local BAM=$1;
   local id=$2;
   #convert BAM to SAM
@@ -55,11 +51,11 @@ function compare_BAM {
     echo "Failed BAM compare for $id"
     return 1
   fi;
-  set +x;
+
 }
 
 function compare_flagstat {
-  #set -x;
+
   local BAM=$1;
   local id=$2;
   threshold=0.05;
@@ -91,7 +87,7 @@ function compare_flagstat {
 }
 
 function compare_bqsr {
-  set -x;
+
   local BQSR=$1;
   local id=$2;
   DIFF=$(diff $BQSR $baseline/${id}/${id}_BQSR.table);
@@ -102,11 +98,11 @@ function compare_bqsr {
     echo "Failed BQSR compare for $id"
     return 1
   fi;
-  set +x
+
 }
 
 function compare_vcf {
-  set -x;
+
   local VCF=$1;
   local id=$2;
   gunzip -c "$baseline/${id}/${id}.vcf.gz" > $WORKDIR/base.vcf;
@@ -124,11 +120,11 @@ function compare_vcf {
     echo "Failed VCF compare for $id"
     return 1
   fi;
-  set +x;
+
 }
 
 function compare_vcfdiff {
-  set -x;
+
   local VCF=$1;
   local id=$2;
 
@@ -144,11 +140,11 @@ function compare_vcfdiff {
     echo "Failed vcfdiff compare for $id"
     return 1
   fi;
-  set +x;
+
 }
 
 function compare_pr_BAM {
-  set -x;
+
   local BAM=$1;
   local id=$2;
   #Declare array 
@@ -223,11 +219,11 @@ function compare_pr_BAM {
    echo "Failed BAM compare for $id"
    return 1
  fi;
- set +x;
+
 }
 
 function compare_pr_flagstat {
-  set -x;
+
   local BAM=$1;
   local id=$2;
   #Declare array 
@@ -300,5 +296,5 @@ function compare_pr_flagstat {
    echo "Failed flagstat compare for $id"
    return 1
  fi;
- set +x;
+
 }

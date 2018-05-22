@@ -41,19 +41,13 @@ helper_vcfdiff() {
 }
        
 @test "Normal run for HTC: A15" {
- while read id; do 
-   helper_normalRun "$id"
- done <$data_list
+  helper_normalRun "$id"
 }
   
 @test "Compare VCF file against baseline: A15" {
- while read id; do
-   helper_compareVCF "$id"
- done <$data_list
+  helper_compareVCF "$id"
 }
 
 @test "Compare using vcfdiff: A15" {
-  while read id; do
-    helper_vcfdiff "A15_sample"
-  done <$data_list
+  helper_vcfdiff "A15_sample"
 }

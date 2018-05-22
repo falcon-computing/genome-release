@@ -29,12 +29,9 @@ helper_compareBQSR() {
 }
 
 @test "Normal run for BQSR: A15" {
-  while read id; do
-    helper_normalRun "$id"
-  done <$data_list
+  helper_normalRun "$id"
 }
 
 @test "Compare BQSR table against baseline: A15" {
-  while read id; do
-    helper_compareBQSR "$id"
+  helper_compareBQSR "$id"
 }

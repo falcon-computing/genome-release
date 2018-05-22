@@ -3,13 +3,6 @@ load ../global
 
 fastq_dir=$WORKDIR/fastq
 
-@test "Download test data" {
-  mkdir -p $WORKDIR/fastq/
-  #aws s3 cp --recursive s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/
-  mkdir -p $WORKDIR/baseline
-  #aws s3 cp --recursive s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/
-}
-
 helper_normalRun() {
   #"normal run for alignment"
   local -r id="$1"
@@ -55,26 +48,18 @@ helper_flagstatCompare() {
   echo "${output}"
   [ "$status" -eq 0 ]
 
-  #rm $WORKDIR/subject_flagstat
-  #rm $WORKDIR/baseline_flagstat
+  rm $WORKDIR/subject_flagstat
+  rm $WORKDIR/baseline_flagstat
 }
 
-@test "Normal run for alignment" {
-  skip
-  while read id; do
-    helper_normalRun "$id" 
-  done <$data_list
+@test "Normal run for alignment: $id" {
+  helper_normalRun "$id" 
 }
 
-@test "Compare BAM file against baseline: A15" {
-  skip
-  while read id; do
-    helper_bamCompare "$id"
-  done <$data_list
+@test "Compare BAM file against baseline: $id" {
+  helper_bamCompare "$id"
 }
 
-@test "Compare flagstat against baseline: A15" {
-  while read id; do
-    helper_flagstatCompare "$id"
-  done <$data_list
+@test "Compare flagstat against baseline: $id" {
+  helper_flagstatCompare "$id"
 }
