@@ -2,18 +2,18 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 if [ -z "$FALCON_DIR" ]; then
-  FALCON_DIR=/curr/niveda/falcon-genome/
+  FALCON_DIR=/usr/local/falcon/
 fi
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
-WORKDIR=/pool/storage/niveda/Results_validation/temp
+WORKDIR=/local/work_dir/
 fastq_dir=$WORKDIR/fastq
 baseline=$WORKDIR/baseline/
 
-ref_dir=/pool/local/ref/
+ref_dir=/local/ref/
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf

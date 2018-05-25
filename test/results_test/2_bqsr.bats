@@ -28,10 +28,10 @@ helper_compareBQSR() {
   [ "$status" -eq 0 ]
 }
 
-@test "Normal run for BQSR: A15" {
+@test "Normal run for BQSR: $id" {
   helper_normalRun "$id"
 }
 
-@test "Compare BQSR table against baseline: A15" {
+@test "Compare BQSR table against baseline: $id" {
   helper_compareBQSR "$id"
 }

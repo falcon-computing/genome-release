@@ -40,14 +40,14 @@ helper_vcfdiff() {
   [ "$status" -eq 0 ]
 }
        
-@test "Normal run for HTC: A15" {
+@test "Normal run for HTC: $id" {
   helper_normalRun "$id"
 }
   
-@test "Compare VCF file against baseline: A15" {
+@test "Compare VCF file against baseline: $id" {
   helper_compareVCF "$id"
 }
 
-@test "Compare using vcfdiff: A15" {
-  helper_vcfdiff "A15_sample"
+@test "Compare using vcfdiff: $id" {
+  helper_vcfdiff "$id"
 }

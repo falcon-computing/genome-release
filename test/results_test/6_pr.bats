@@ -42,14 +42,14 @@ helper_compareFlagstat() {
   rm $WORKDIR/part*_base_flagstat
 } 
 
-@test "Normal run for print reads: A15" {
+@test "Normal run for print reads: $id" {
   helper_normalRun "$id"
 }
 
-@test "Compare BAM file against baseline: A15" {
+@test "Compare BAM file against baseline: $id" {
   helper_compareBAM "$id"
 }
 
-@test "Compare flagstat against baseline: A15" {
+@test "Compare flagstat against baseline: $id" {
   helper_compareFlagstat "$id"
 }
