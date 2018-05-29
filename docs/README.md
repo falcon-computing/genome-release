@@ -42,7 +42,7 @@ The second step is to recalibrate base quality score to account for biases cause
 ![Falcon Workflow](resources/fcs-genome-workflow.jpeg)
 Figure 1. Side-by-side analysis of the Falcon Accelerated Pipeline and the GATK Best Practices Pipeline: The middle panel indicates the general workflow starting with 1. Mapping the FASTQ sequences to the reference 2. Recalibrating base quality score and finally 3. Calling germline variants. The upper and lower panels illustrate the command-line implementation of the workflow using the Falcon Accelerated Pipeline and GATK Best Practices Pipeline respectively.
 
-A similar pipeline for somatic mutation call is also available through the use of another of GATK's Best Practices pipeline tool- Mutect2. The initial steps of the pipeline remain the same, beginning with fcs-genome align and followed by fcs-genome bqsr. The primary difference is that in the case of Mutect2, two paired-end fastq sequence files are used as input- that of the tumor sample and the normal sample. fcs-genome mutect2, which is the Falcon accelerated equivalent of GATK's Mutect2, takes as input BAM files of the tumor and normal samples. The resulting output is a VCF file comprising of somatic variant calls. 
+A similar pipeline for somatic mutation call is also available through the use of another of GATK's Best Practices pipeline tool- Mutect2. The initial steps of the pipeline remain the same, beginning with fcs-genome align and followed by fcs-genome bqsr. The primary difference is that in the case of Mutect2, two paired-end fastq sequence files are used as input- that of the tumor sample and the normal sample. fcs-genome mutect2, which is the Falcon accelerated equivalent of GATK's Mutect2, takes as input BAM files of the tumor and normal samples. The resulting output is a VCF file comprising of somatic variant calls.
 
 The table below shows which of the components of the GATK best practices have a Falcon accelerated counterpart and which ones are left in their original forms:
 
@@ -217,7 +217,7 @@ Equivalent to GATK's Mutect2, this tool calls somatic variants- both somatic sin
 | --dbsnp | | | list of dbsnp files for mutect2 |
 |--cosmic | | | list of cosmic files for mutect2 |
 | -s | --skip-concat | | produce a set of VCF files instead of one |
- 
+
 ### fcs-genome ug
 This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as an input and generates a VCF file.  It accepts options from GATK through `--extra-option`
 
@@ -229,7 +229,7 @@ This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as
 | -s | --skip-concat | String(\*) | produce a set of vcf files instead of one |
 
 ### fcs-genome joint
-This method performs a joint variant calling from a set of VCF files.
+This method performs a joint variant calling from a set of compressed gVCF files located at the folder defined in --input-dir.
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
@@ -289,7 +289,7 @@ fcs-genome indel \
   -i ${BAM_INPUT} \
   -o ${BAM_OUTPUT}
 ```
-A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned. 
+A folder called ${SAMPLE_ID}_marked_sorted_indel_realign/ is created with a set of BAM and bai files with indels re-aligned.
 Performing Base Quality Score Recalibration (BQSR) from BAM file with pre-defined known sites
 fcs-genome bqsr performs GATK's Base Quality Score Recalibration and Print Reads in a single command. Per-base quality scores produced by the sequencing machine are checked for errors and corrected. The recalibrated reads are written into a folder that contains a BAM files set. During the process, a recalibration report is generated. The script below illustrates the usage of bqsr method:
 ```
@@ -323,7 +323,7 @@ fcs-genome baserecal \
   -i ${BAM_INPUT} -o recalibration_report.grp \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
-The command also works with a single BAM file. 
+The command also works with a single BAM file.
 
 ### Generating Genomic VCF (gVCF) file from a BAM file with Haplotype Caller
 fcs-genome htc performs germline variant calling using the input BAM file with default output format as gVCF. if --produce-vcf is set, a VCF file is produced.
