@@ -132,7 +132,7 @@ function compare_vcfdiff {
 
   recall=$(tail -n 1 $WORKDIR/vcfdiff.txt | awk '{print $5}');
   echo $recall;
-  min=0.9999;
+  min=0.99;
   #if (( $(echo "$recall >= $min" | bc -l) )) ; then
   if (( $(echo "$recall $min" | awk '{print ($1 >= $2)}') ));then
     return 0
