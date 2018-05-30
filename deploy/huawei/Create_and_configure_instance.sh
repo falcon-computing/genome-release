@@ -64,6 +64,33 @@ sed -i "s/OS_TENANT_NAME=.*/OS_TENANT_NAME=$tenant_name/g" ./novarc
 sed -i "s/OS_PROJECT_NAME=.*/OS_PROJECT_NAME=$tenant_name/g" ./novarc
 sed -i "s!OS_AUTH_URL=.*!OS_AUTH_URL=$auth_url!g" ./novarc
 
+#--create user_data.file
+user_data_info="#cloud-config\nwrite_files:\n  - path: /root/.ssh/authorized_keys"
+if [[ -f "/root/.ssh/id_rsa.pub" ]] 
+then
+	if [[ "$(cat /root/.ssh/authorized_keys)" != "" ]]
+	then
+		ssh_key=$(cat /root/.ssh/id_rsa.pub)
+	else
+		cat id_rsa.pub >> /root/.ssh/authorized_keys
+	fi
+	
+else
+	ssh-keygen -t rsa -P ""
+	cat id_rsa.pub >> /root/.ssh/authorized_keys
+	ssh_key=$(cat /root/.ssh/id_rsa.pub)
+fi
+
+if [[ -f "user_data.file" ]]
+then
+        cat /dev/null > user_data.file
+        echo -e "$user_data_info" >> user_data.file
+	echo -e "    content: $ssh_key" >> user_data.file
+else
+        touch ./novarc
+        echo -e "$user_data_info" >> user_data.file
+	echo -e "    content: $ssh_key" >> user_data.file
+fi
 
 #---enter fpga_image id
 while [[ "$fpga_image_id" == "" ]]
@@ -207,6 +234,7 @@ if [[ "$image_status" != "" ]]
 then
 	#--relate fpga image'id and image'id
 	fis fpga-image-relation-create --fpga-image-id $fpga_image_id --image-id $image_id
+	echo -e "$image_name is ready!"
 else
 	echo "Image's status is not active! Pls login huawei cloud to check it!"
 	exit 1
@@ -214,3 +242,4 @@ fi
 
 #--delete instance
 nova delete $vm_uuid
+rm -f user_data.file
