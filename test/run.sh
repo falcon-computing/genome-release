@@ -54,7 +54,12 @@ while read id; do
   $CURR_DIR/../bats/bats results_test/ >> test.log
 done <$data_list
 
+#Run mutect2 test
+$CURR_DIR/../bats/bats results_test/7_mutect.bats
+
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> test.log
 
 aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
+
+
