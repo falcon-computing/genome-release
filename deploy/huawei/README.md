@@ -1,6 +1,6 @@
 ## Preparation
 ### Install openstack-Client
-The command line interface uses the Openstack Client tool. The tool provides a command line Client, which can use API to get Huawei Cloud' resource. Ubuntu 16.04 (64bit) operating system is recommended. Other version of os need to solve the issue of dependent.  
+The command line interface uses the Openstack Client tool. The tool provides a command line Client, which can use API to get Huawei Cloud' resource. Ubuntu 16.04 (64bit) operating system is recommended. Other version of OS need to solve the issue of dependent.  
 Operations of preparing the environment are as follows.
 - Lanch an instance of Ubuntu 16.04 (64bit)
 - Upgrade OS
@@ -11,12 +11,12 @@ Operations of preparing the environment are as follows.
 - Install Openstack Client and Neutron Client
   - pip install python-openstackclient==3.2.1
   - apt-get install python-neutronclient
-- Using openstack command to check
+- Use openstack command to check
   - openstack -h
-- Instal fisclent
+- Install fisclient
   - Download the source code package
     -  git clone https://github.com/Huawei/huaweicloud-fpga.git
-  - Install fisclent
+  - Install fisclient
     - Run the *cd huaweicloud-fpga/cli/fisclient* command to go to the huaweicloud-fpga/cli/fisclient directory of the FPGA Development Suite.
     - Run the *bash install.sh* command to install fisclient.
   - Configuring fisclient
