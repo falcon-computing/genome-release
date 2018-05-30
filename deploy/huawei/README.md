@@ -1,5 +1,4 @@
 ## Preparation
-### Install openstack-Client
 The command line interface uses the Openstack Client tool. The tool provides a command line Client, which can use API to get Huawei Cloud' resource. Ubuntu 16.04 (64bit) operating system is recommended. Other version of OS need to solve the issue of dependent.  
 Operations of preparing the environment are as follows.
 - Launch an instance of Ubuntu 16.04 (64bit)
