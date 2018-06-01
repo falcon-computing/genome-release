@@ -2,16 +2,16 @@
 
 load ../global
 
-DIR=/genome/example/small
+#DIR=/genome/example/small
 
-INPUT_BAMDIR=$DIR/indel_realign
-INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam
+#INPUT_BAMDIR=$DIR/indel_realign
+#INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam
 
-OUTPUT_BAMDIR=$DIR/bqsr
-OUTPUT_BAM=${OUTPUT_BAMDIR}/small_recalibrated
+#OUTPUT_BAMDIR=$DIR/bqsr
+#OUTPUT_BAM=${OUTPUT_BAMDIR}/small_recalibrated
 
-REPORT=${DIR}/baserecal/recalibration_report.grp
-VCF=/local/ref/1000G_phase1.indels.b37.vcf
+#REPORT=${DIR}/baserecal/recalibration_report.grp
+#VCF=/local/ref/1000G_phase1.indels.b37.vcf
 
 @test "BQSR without input arg" {
    run ${FCSBIN} bqsr
@@ -53,4 +53,33 @@ VCF=/local/ref/1000G_phase1.indels.b37.vcf
    run ${FCSBIN} bqsr -r ${ref_genome} -i ${INPUT_BAMDIR}/doesnotexist -o ${OUTPUT_BAM} -K ${VCF} -b ${REPORT}
    [ "$status" -eq 1 ]
    [[ "${output}" == *"ERROR: Input file /merlin_fs/merlin2/ssd1/yaoh/bams_al/dontexist does not exist"* ]]
+}
+
+@test "BQSR with empty reference argument" {
+  run ${FCSBIN} bqsr -r "" -i ${INPUT_BAM} -o ${OUTPUT_BAM} -K ${VCF} 
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--ref'|'-r' cannot be empty"* ]]
+}
+
+@test "BQSR with empty input argument" {
+  run ${FCSBIN} bqsr -r ${ref_genome} -i "" -o ${OUTPUT_BAM} -K ${VCF}
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--input'|'-i' cannot be empty"* ]]
+}
+ 
+@test "BQSR with empty output argument" {
+  run ${FCSBIN} bqsr -r ${ref_genome} -i ${INPUT_BAM} -o "" -K ${VCF}
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--output'|'-o' cannot be empty"* ]]
+}
+
+@test "BQSR with -bqsr argument specified" {
+  run ${FCSBIN} bqsr -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_BAM} -K ${VCF} --bqsr ${REPORT} 
+  [ "$status" == "0"]
+  [ -f "${REPORT}" ]
+}
+
+@test "BQSR without -bqsr argument specified" {
+  run ${FCSBIN} bqsr -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_BAM} -K ${VCF}
+  [ "$status" == "0" ]
 }
