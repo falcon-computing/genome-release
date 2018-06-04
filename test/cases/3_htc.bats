@@ -43,7 +43,6 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
 }
 
 @test "HTC input file does not exist" {
-   skip
    run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_RECALBAMDIR}/doesnotexist -o ${OUTPUT_VCF}
    [ "$status" != "0" ]
    #[[ "${output}" == *"ERROR: Cannot find"* ]]
