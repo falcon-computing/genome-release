@@ -2,16 +2,16 @@
 
 load ../global
 
-#DIR=/genome/example/small
+DIR=/genome/example/small
 
-#INPUT_BAMDIR=$DIR/indel_realign
-#INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam
+INPUT_BAMDIR=$DIR/indel_realign
+INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam
 
-#OUTPUT_BAMDIR=$DIR/bqsr
-#OUTPUT_BAM=${OUTPUT_BAMDIR}/small_recalibrated
+OUTPUT_BAMDIR=$DIR/bqsr
+OUTPUT_BAM=${OUTPUT_BAMDIR}/small_recalibrated
 
-#REPORT=${DIR}/baserecal/recalibration_report.grp
-#VCF=/local/ref/1000G_phase1.indels.b37.vcf
+REPORT=${DIR}/baserecal/recalibration_report.grp
+VCF=/local/ref/1000G_phase1.indels.b37.vcf
 
 @test "BQSR without input arg" {
    run ${FCSBIN} bqsr
