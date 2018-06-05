@@ -207,6 +207,8 @@ fi
 #----install falcon software---
 ssh $ip 'echo 123456|passwd --stdin root'
 ssh "$ip" 'yum makecache fast'
+ssh "$ip" 'echo vm.oom-kill = 0 >> /etc/sysctl.conf'
+ssh "$ip" 'echo vm.overcommit_memory = 2 >> /etc/sysctl.conf'
 ssh $ip 'bash /root/image-setup/setup.sh'
 
 echo "$ip has been ready. Pls check it"
