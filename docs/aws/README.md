@@ -61,167 +61,34 @@ In the created instance, a storage device is assigned to /local.
    ```
 
 ## Do It Yourself : All-In-One Single BASH Script
-The BASH script /usr/local/falcon/set_instance.sh was designed to test the image from the beginning to the end in one single command line. The script assumes two premises: 1) /local/ is the working directory and 2) Executables are located at FALCON_DIR=/usr/local/falcon/.  Working directory can be customized by user.  
+The BASH script /local/SetupInstance.sh was designed to test the image from the beginning to the end in one single command line. The script assumes two premises: 1) /local/ is the working directory with two folders fastq/ and ref/, and 2) Executables are located at FALCON_DIR=/usr/local/falcon/.  
 
 The script workflow is the following:
-1. Install awscli.
-2. Check existence of executables: fcs-genome, bwa, samtools and picard.
-3. Setup temp folder and license.
-4. Create fastq and ref folders in working directory (/local/).
-5. Populate /local/ref/ folder with input files from bucket s3://fcs-genome-pub/ref/ in aws s3 repository. 
-6. Copy example-wgs-germline.sh from /usr/local/falcon/ to /local/. Set /local/ref /local/fastq folders in example-wgs-germline.sh.
-7. Populate /local/fastq/ folder with WES samples (NA12878) from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository. 
-8. Extract few reads for testing purposes and save the outputs as NA12878_1.fastq and NA12878_2.fastq.
-9. Submit test :  ./example-wgs-germline.sh  NA12878 
-10. Populate /local/fastq/ folder with Pair Samples (Normal and Tumor) from bucket s3://fcs-genome-pub/samples/mutect2/pair/ in aws s3 repository.
-11. Extract few reads for testing purposes and save the outputs as normal_1.fastq, normal_2.fastq, tumor_1.fastq, and tumor_2.fastq.
-12. Submit jobs: ./example-wgs-germline.sh  normal; ./example-wgs-germline.sh  tumor.
-13. Once normal and tumor have their BAM files recalibrated, run fcs-genome mutect2:
-fcs-genome mutect2 -r ${REF} -n ${NORMAL_BAM} -t ${TUMOR_BAM} -o ${VCF} --dbsnp ${SNP} --cosmic ${COSMIC}
+1. Populate /local/ref/ folder with input files from bucket s3://fcs-genome-pub/ref/ in aws s3 repository. 
+2. Copy example-wgs-germline.sh from /usr/local/falcon/ to /local/.
+3. Populate /local/fastq/ folder with WES samples (NA12878) from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository.
+4. Extract few reads for testing purposes and save the outputs as NA12878_1.fastq and NA12878_2.fastq.
+5. Submit test :  ./example-wgs-germline.sh  NA12878  (Testing align, bqsr and htc).
+6. Download trio BAM files (NA12878, NA12891 and NA12892) from aws s3 public repository and test fcs-genome ug. 
+7. Download gvcf files from aws s3 public repository (NA12878, NA12891 and NA12892) and test fcs-genome htc. 
+8. Download normal/tumor pair from aws s3 public repository, and extract some reads for sampling. Test fcs-genome mutect2. 
 
-Copy the script to the working directory (/local/) and submit job:
-  ```
-  [centos@ip-172-31-41-148 /local]$ cp /usr/local/falcon/set_instance.sh /local/set_instance.sh 
-  [centos@ip-172-31-41-148 /local]$ nohup ./set_instance.sh &
-  ```
-The nohup.out log file displays all the steps executed by example-wgs-germline.sh:
-  ```
-  [centos@ip-172-31-41-148 /local]$ tail -n20 nohup.out
-  
-  ===========================================================
-  Setting Instance Complete
-  Testing Image:
-  ===========================================================
 
-  ./example-wgs-germline.sh  NA12878 
-  + fcs-genome align -r /local/ref/human_g1k_v37.fasta -1 /local/fastq/NA12878_1.fastq.gz -2 /local/fastq/NA12878_2.fastq.gz -o /local/NA12878.bam -R NA12878 -S NA12878 -L NA12878 -P illumina -f
-  [2018-05-09 11:44:29 fcs-genome] INFO: Start doing bwa mem
-  [2018-05-09 11:44:46 fcs-genome] INFO: bwa mem finishes in 17 seconds
-  [2018-05-09 11:44:46 fcs-genome] INFO: Start doing Mark Duplicates
-  [2018-05-09 11:44:46 fcs-genome] INFO: Mark Duplicates finishes in 0 seconds
-  + fcs-genome bqsr -r /local/ref/human_g1k_v37.fasta -i /local/NA12878.bam -o /local/NA12878.recal.bam -K  /local/ref/dbsnp_138.b37.vcf -f
-  [2018-05-09 11:44:47 fcs-genome] INFO: Start doing Base Recalibration
-  [2018-05-09 11:45:45 fcs-genome] INFO: Base Recalibration finishes in 58 seconds
-  + fcs-genome htc -r /local/ref/human_g1k_v37.fasta -i /local/NA12878.recal.bam -o NA12878.vcf -v -f
-  [2018-05-09 11:45:46 fcs-genome] INFO: Start doing Haplotype Caller
-  [2018-05-09 11:48:11 fcs-genome] INFO: Haplotype Caller finishes in 145 seconds
-  + set +x
-  Pipeline finishes in 223 seconds
+Run the script from the working directory (/local/):
   ```
-  
+  [centos@ip-172-31-41-148 /local]$ nohup ./SetupInstance.sh &
+  ```
 The subsections below explain each step of the set_instance.sh BASH scripts workflow in full-detail. This will allow users to customize the script, adapt it or create new scripts according to their needs. 
 
-### 1. Install awscli
-It is assumed that the user may have data posted in the aws s3 buckets. To access them, awscli needs to be installed. 
+### 1. Populate /local/ref/ folder with input files from bucket s3://fcs-genome-pub/ref/ in aws s3 repository. 
+To perform alignment and variant calling, some files need to be available in the /local/ref/ folder:
   ```
-  sudo yum -y install -y python-pip; sudo pip install awscli
+  aws s3 cp s3://fcs-genome-pub/ref/ /local/ref/ --exclude  "*"  --include  "human_g1k_v37.*" --no-sign-request --recursive
+  aws s3 cp s3://fcs-genome-pub/ref/ /local/ref/ --exclude  "*"  --include  "dbsnp_138.b37*" --no-sign-request --recursive
   ```
-### 2. Check existence of executables: fcs-genome, bwa, samtools and picard.
-The instance has the executables installed in /usr/local/falcon/. To verify quickly these executables:
-```
-    FALCON_DIR=/usr/local/falcon/
-    array=(
-        "${FALCON_DIR}/bin/fcs-genome"
-        "${FALCON_DIR}/tools/package/picard.jar"
-        "${FALCON_DIR}/tools/bin/bwa-org"
-        "${FALCON_DIR}/tools/bin/samtools"
-    )
-    for EXEC in ${array[@]};
-        do
-          if [ ! -f "${EXEC}" ];then
-             echo -e "${EXEC} does not exist.\n"
-             exit 1
-          else
-             echo -e "${EXEC} OK\n"
-          fi
-       done
-```
-The user can verify other executables by adding them in the array
 
-### 3. Setup temp folder and license.
-Setup the license location:
-   ```
-   source /usr/loca/falcon/setup.sh
-   ```
-As mentioned above, working directory is /local/. It is convenient to set the temp/ folder in /local/. 
-   ```
-   sudo echo "temp_dir=/local/temp" >> /usr/local/falcon/fcs-genome.conf
-   ```
+### 2. Copy example-wgs-germline.sh from /usr/local/falcon/ to /local/.
 
-### 4. Create fastq and ref folders in working directory (/local/).
-This steps defines the location where reference files and FASTQ files will be posted.
-   ```
-   sudo chmod ag+wr /local/
-   mkdir /loca/fastq/ /local/ref/
-   ```
-### 5. Populate /local/ref/ folder with input files from bucket s3://fcs-genome-pub/ref/ in aws s3 repository. 
-BWA requires a reference file to perform alignment. This can be obtained in the aws s3 public repository:
-```
-aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/ /local/ref/  --recursive  --exclude "*" --include "human_g1k_v37*"
-```
-In this instance, all the files associated to the reference (9 in total for human_g1k_v37.fasta) are posted in the aws s3 repository. 
-
-For HaplotypeCaller (htc), the VCF file dbsnp_138.b37.vcf is obtained also from the aws s3 repository:
-```
-aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/ /local/ref/  --recursive  --exclude "*" --include "dbsnp_138.b37*"
-```
-For mutect2, the COSMIC VCF is used:
-```
-aws s3 --no-sign-request cp s3://fcs-genome-pub/ref/ /local/ref/  --recursive  --exclude "*" --include "b37_cosmic_v54_120711.vcf*"
-```
-
-Here, the user can use other reference fasta file to perform alignment, and use other or include additional VCF files for htc. To generate the files associated to the reference fasta file, the BASH script below helps to achieve the task:
-   ```
-   FALCON_DIR=/usr/local/falcon
-   SAMTOOLS=${FALCON_DIR}/tools/bin/samtools 
-   PICARD=${FALCON_DIR}/tools/package/picard.jar
-   BWA_ORG=${FALCON_DIR}/tools/bin/bwa-org
-
-   REF=/local/ref/MyReference.fasta
-
-   ${SAMTOOLS} faidx $REF
-   java -jar ${PICARD} CreateSequenceDictionary R=${REF} O=${REF%.fasta}.dict
-   ${BWA_ORG} index ${REF}
-   ```
-This takes some time.
-
-### 6. Copy example-wgs-germline.sh from /usr/local/falcon/ to /local/. Set /local/ref /local/fastq folders in example-wgs-germline.sh.
-
-   ```
-   cp /usr/local/falcon/example-wgs-germline.sh /local/example-wgs-germline.sh
-   sed -i 's/local_dir=/local_dir=\/local/g' example-wgs-germline.sh
-   sed -i 's/ref_dir=/ref_dir=\/ref/g' example-wgs-germline.sh
-   sed -i 's/fastq_dir=/fastq_dir=\/fastq/g' example-wgs-germline.sh
-   ```
-local_dir, ref_dir and fastq_dir are not defined in the original script:
-   ```
-   local_dir=
-   fastq_dir=
-   ref_dir=
-   ```
-Using sed, the user set the variables in the script as follows:
-   ```
-   local_dir=/local
-   fastq_dir=${local_dir}/fastq
-   ref_dir=${local_dir}/ref
-   ```
-
-### 7. Populate /local/fastq/ folder with WES samples from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository. 
-A paired-end of FASTQ files are posted in /local/fastq/: NA12878-Rep01_S1_L001_R1_001.fastq.gz and NA12878-Rep01_S1_L001_R2_001.fastq.gz. This set of FASTQ files comes from the Public Data repository in [Illumina BaseSpace](https://basespace.illumina.com) (account required). Please refer to the README file posted in the bucket s3://fcs-genome-pub/samples/WES/ for additional details. 
-   ```
-   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ /local/fastq/  --recursive  --exclude "*" --include "NA*gz"
-   ```
-Here, the user can use any set of FASTQ files to perform the test if it chooses to do so.
-
-### 8. Extract few reads for testing purposes and save the outputs as NA12878_1.fastq and NA12878_2.fastq.
-Since the purpose is to test the image, a small sampling of the FASTQ files is good enough to start. 
-```
-zcat /local/fastq/NA12878-Rep01_S1_L001_R1_001.fastq.gz | head -n 40000 > /local/fastq/NA12878_1.fastq; gzip /local/fastq/NA12878_1.fastq
-zcat /local/fastq/NA12878-Rep01_S1_L001_R2_001.fastq.gz | head -n 40000 > /local/fastq/NA12878_2.fastq; gzip /local/fastq/NA12878_2.fastq 
-```
-The user can skip this part and go the full test. In this case, it needs to make sure the input FASTQ files has the format ${SAMPLE}_1.fastq.gz and ${SAMPLE}_2.fastq.gz
-
-### 9. Submit test :  ./example-wgs-germline.sh  NA12878 
 If all the steps above are successfully completed, all the input files and executables are in place. 
 The BASH script example-wgs-germline.sh will perform three methods of fcs-genome: align, bqsr and htc:
 ```
@@ -260,34 +127,94 @@ end_ts=$(date +%s)
 echo "Pipeline finishes in $((end_ts - start_ts)) seconds"
 
 ```
-### 10. Populate /local/fastq/ folder with Pair Samples (Normal and Tumor) from bucket s3://fcs-genome-pub/samples/mutect2/pair/ in aws s3 repository.
+
+### 3. Populate /local/fastq/ folder with WES samples (NA12878) from bucket s3://fcs-genome-pub/samples/WES/ in aws s3 repository.
+A paired-end of FASTQ files are posted in /local/fastq/: NA12878-Rep01_S1_L001_R1_001.fastq.gz and NA12878-Rep01_S1_L001_R2_001.fastq.gz. This set of FASTQ files comes from the Public Data repository in [Illumina BaseSpace](https://basespace.illumina.com) (account required). Please refer to the README file posted in the bucket s3://fcs-genome-pub/samples/WES/ for additional details. 
+   ```
+   aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/ /local/fastq/  --recursive  --exclude "*" --include "NA*gz"
+   ```
+Here, the user can use any set of FASTQ files to perform the test if it chooses to do so.
+
+### 4. Extract few reads for testing purposes and save the outputs as NA12878_1.fastq and NA12878_2.fastq.
+Since the purpose is to test the image, a small sampling of the FASTQ files is good enough to start. 
 ```
-aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/mutect2/pair/ /local/fastq/  --recursive  --exclude "*" --include "MP*gz"
+zcat /local/fastq/NA12878-Rep01_S1_L001_R1_001.fastq.gz | head -n 40000 > /local/fastq/NA12878_1.fastq; gzip /local/fastq/NA12878_1.fastq
+zcat /local/fastq/NA12878-Rep01_S1_L001_R2_001.fastq.gz | head -n 40000 > /local/fastq/NA12878_2.fastq; gzip /local/fastq/NA12878_2.fastq 
 ```
-### 11. Extract few reads for testing purposes and save the outputs as normal_1.fastq, normal_2.fastq, tumor_1.fastq, and tumor_2.fastq.
+The user can skip this part and go the full test. In this case, it needs to make sure the input FASTQ files has the format ${SAMPLE}_1.fastq.gz and ${SAMPLE}_2.fastq.gz
+
+### 5. Submit test :  ./example-wgs-germline.sh  NA12878 (Testing align, bqsr and htc).
+This scripts processes a pair of FASTQ files and perform three features of fcs-genome : alignmnet, base quality recalibration and haplotype calling:
 ```
-NORMAL_R1=MPHG004_S3_L003_R1_001.fastq.gz
-NORMAL_R2=MPHG004_S3_L003_R2_001.fastq.gz
-TUMOR_R1=MPHG005_S4_L004_R1_001.fastq.gz
-TUMOR_R2=MPHG005_S4_L004_R2_001.fastq.gz
-zcat /local/fastq/${NORMAL_R1} | head -n 400000 > /local/fastq/normal_1.fastq; gzip /local/fastq/normal_1.fastq
-zcat /local/fastq/${NORMAL_R2} | head -n 400000 > /local/fastq/normal_2.fastq; gzip /local/fastq/normal_2.fastq
-zcat /local/fastq/${TUMOR_R1} | head -n 400000 > /local/fastq/tumor_1.fastq; gzip /local/fastq/tumor_1.fastq
-zcat /local/fastq/${TUMOR_R2} | head -n 400000 > /local/fastq/tumor_2.fastq; gzip /local/fastq/tumor_2.fastq
+nohup ./example-wgs-germline.sh  NA12878  &
 ```
-### 12. Submit jobs: 
+
+### 6. Download trio BAM files (NA12878, NA12891 and NA12892) from aws s3 public repository and test fcs-genome ug. 
+fcs-genome has the UnifiedGenotyper (ug) feature available in this release. To test it, there is a trio set available from the aws s3 public repository:
 ```
-./example-wgs-germline.sh  normal 
-./example-wgs-germline.sh  tumor
+mkdir /local/ug/
+aws s3 --no-sign-request cp s3://fcs-genome-pub/samples/WES/Trio/bam/ /local/ug/ --recursive --exclude "*" --include "*bam*"
+fcs-genome ug --ref /local/ref/human_g1k_v37.fasta -i /local/ug/NA12878_merged_recal.bam  --extra-options "-I /local/ug/NA12891_merged_recal.bam -I /local/ug/NA12892_merged_recal.bam" -o /local/ug/NA12878_ug.vcf
 ```
-### 13. Once normal and tumor have their BAM files recalibrated, run fcs-genome mutect2:
+
+### 7. Download gvcf files from aws s3 public repository (NA12878, NA12891 and NA12892) and test fcs-genome joint. 
+Create folders called /local/joint (for the original gvcf) and /local/joint_test/ (for sampling) and populate /local/joint:
 ```
-REF=ref/human_g1k_v37.fasta
-NORMAL_BAM=/local/normal.recal.bam
-TUMOR_BAM=/local/tumor.recal.bam
-VCF=/local/somatic_calls.vcf
+mkdir /local/joint  /local/joint_test
+aws s3  cp s3://fcs-genome-pub/samples/WES/Trio/vcf/  joint/  --recursive --exclude "*" --include "*gvcf*"
+```
+
+Using a BASH script, extract some variants and populate /local/joint_test/ to test the joint feature:
+
+```
+BGZIP="/usr/local/falcon/tools/bin/bgzip"
+TABIX="/usr/local/falcon/tools/bin/tabix"
+array=(NA12878 NA12891 NA12892)
+for acc in ${array[@]}
+   do 
+     zcat joint/${acc}.gvcf.gz | head -n 100000 | ${BGZIP} -c > joint_test/${acc}_small.gvcf.gz; ${TABIX} -p vcf joint_test/${acc}_small.gvcf.gz
+   done
+```
+Submit job:
+
+```
+fcs-genome joint -r $ref_genome  -i /local/joint_test/  -o /local/joint_test/trio.gvcf
+```
+
+### 8. Download normal/tumor pair from aws s3 public repository, and extract some reads for sampling. Test fcs-genome mutect2. 
+The dataset can be obtained in the GATK tutorial for mutect2.
+```
+aws s3  cp s3://fcs-genome-pub/samples/mutect2/Broad/ /local/fastq/  --recursive  --exclude "*" --include "*fastq*gz"
+```
+For mutect2, the cosmic VCF file is used:
+```
+aws s3  cp s3://fcs-genome-pub/ref/  /local/ref/ --recursive  --exclude "*" --include "b37_cosmic_v54_120711*"
+```
+Using a BASH script, extract some reads from normal/tumor FASTQ files for sampling:
+```
+NORMAL_R1=normal_1.fastq.gz
+NORMAL_R2=normal_2.fastq.gz
+TUMOR_R1=tumor_1.fastq.gz
+TUMOR_R2=tumor_2.fastq.gz
+zcat /local/fastq/${NORMAL_R1} | head -n 400000 > /local/fastq/normal_small_1.fastq; gzip /local/fastq/normal_small_1.fastq
+zcat /local/fastq/${NORMAL_R2} | head -n 400000 > /local/fastq/normal_small_2.fastq; gzip /local/fastq/normal_small_2.fastq
+zcat /local/fastq/${TUMOR_R1} | head -n 400000 > /local/fastq/tumor_small_1.fastq; gzip /local/fastq/tumor_small_1.fastq
+zcat /local/fastq/${TUMOR_R2} | head -n 400000 > /local/fastq/tumor_small_2.fastq; gzip /local/fastq/tumor_small_2.fastq
+```
+Submit jobs:
+```
+nohup ./example-wgs-germline.sh  normal_small
+nohup ./example-wgs-germline.sh  tumor_small
+```
+Perform mutect2:
+```
+REF=/local/ref/human_g1k_v37.fasta
+NORMAL_BAM=/local/normal_small.recal.bam
+TUMOR_BAM=/local/tumor_small.recal.bam
+VCF=/local/somatic_calls.g.vcf
 SNP=/local/ref/dbsnp_138.b37.vcf
-COSMIC=/local/ref/dbsnp_138.b37.vcf
+COSMIC=/local/ref/b37_cosmic_v54_120711.vcf
 fcs-genome mutect2 -r ${REF} -n ${NORMAL_BAM} -t ${TUMOR_BAM} -o ${VCF} --dbsnp ${SNP} --cosmic ${COSMIC}
 ```
+
 For more details about other features available in fcs-genome, please refers to the full User Guide
