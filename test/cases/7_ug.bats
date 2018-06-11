@@ -12,29 +12,47 @@ OUTPUT_VCF=${OUTPUT_DIR}/small_final.vcf
 @test "UG without input arg" {
    run ${FCSBIN} ug
    [ "$status" -eq 1 ]
-   [[ "${output}" == *"ERROR: Missing argument '--ref'"* ]]
+   [[ "${output}" == *"the option '--input' is required but missing"* ]]
    [[ "${output}" == *"fcs-genome ug"* ]]
 }
 
 @test "UG without Reference" {
    run ${FCSBIN} ug -i ${INPUT_RECALBAMDIR} -o ${OUTPUT_VCF}  
    [ "$status" -eq 1 ]
-   [[ "${output}" == *"ERROR: Missing argument '--ref'"* ]]
+   [[ "${output}" == *"the option '--ref' is required but missing"* ]]
    [[ "${output}" == *"fcs-genome ug"* ]]
 }
 
 @test "UG without -i specified" {
    run ${FCSBIN} ug -r ${ref_genome} -o ${OUTPUT_VCF}
    [ "$status" -eq 1 ]
-   [[ "${output}" == *"ERROR: Missing argument '--input'"* ]]
+   [[ "${output}" == *"the option '--input' is required but missing"* ]]
    [[ "${output}" == *"fcs-genome ug"* ]]
 }
 
 @test "UG without -o specified" {
-   run ${FCSBIN} ug -r ${ref_genome}  -i ${INPUT_RECALBAMDIR}  
+   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_RECALBAMDIR}  
    [ "$status" -eq 1 ]
-   [[ "${output}" == *"ERROR: Missing argument '--output'"* ]]
+   [[ "${output}" == *"the option '--output' is required but missing"* ]]
    [[ "${output}" == *"fcs-genome ug"* ]]
+}
+
+@test "UG: Check for empty argument error: ref" {
+  run ${FCSBIN} ug -r "" -i ${INPUT_RECALBAMDIR} -o ${OUTPUT_VCF}
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--ref'|'-r' cannot be empty"* ]]
+}
+
+@test "UG: Check for empty argument error: input" {
+  run ${FCSBIN} ug -r ${ref_genome} -i "" -o ${OUTPUT_VCF}
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--input'|'-i' cannot be empty"* ]]
+}
+
+@test "UG: Check for empty argument error: output" {
+  run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_RECALBAMDIR} -o ""
+  [ "$status" != "0" ]
+  [[ "$output" == *"option '--output'|'-o' cannot be empty"* ]]
 }
 
 @test "UG output directory does not exist" {
