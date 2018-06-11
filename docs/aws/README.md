@@ -30,7 +30,7 @@ Access to the instances can be done with SSH with a private key. The key needs t
 The fcs-genome executables should be located at /usr/local/falcon/. The version can be checked as follows:
    ```
    [centos@ip-172-31-41-148~]$ /usr/local/falcon/bin/fcs-genome
-   Falcon Genome Analysis Toolkit v1.1.3
+   Falcon Genome Analysis Toolkit v1.1.2-13
    Usage: fcs-genome [command] <options>
 
    Commands:
@@ -46,18 +46,6 @@ The fcs-genome executables should be located at /usr/local/falcon/. The version 
      joint           joint variant calling with GATK GenotypeGVCFs         
      ug              variant calling with GATK UnifiedGenotyper            
      gatk            call GATK routines                                    
-   ```
-In the created instance, a storage device is assigned to /local.
-```
-   [centos@ip-172-31-41-148 ~]$ df -h
-   Filesystem      Size  Used Avail Use% Mounted on
-   /dev/xvda1      8.0G  2.0G  6.1G  25% /
-   devtmpfs         60G     0   60G   0% /dev
-   tmpfs            60G     0   60G   0% /dev/shm
-   tmpfs            60G   17M   60G   1% /run
-   tmpfs            60G     0   60G   0% /sys/fs/cgroup
-   /dev/nvme0n1    431G   73M  409G  22% /local
-   tmpfs            12G     0   12G   0% /run/user/1000
    ```
 
 ## Do It Yourself : All-In-One Single BASH Script
