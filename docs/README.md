@@ -219,7 +219,7 @@ Equivalent to GATK's Mutect2, this tool calls somatic variants- both somatic sin
 | -s | --skip-concat | | produce a set of VCF files instead of one |
 
 ### fcs-genome ug
-This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as an input and generates a VCF file.  It accepts options from GATK through `--extra-option`
+This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as an input and generates a VCF file.  It accepts options from GATK through `--extra-option`. With --extra-options, multiple BAM files can be taken as follows: –extra-options “-I bam1.bam -I bam2.bam…”
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
@@ -229,7 +229,7 @@ This method is the equivalent of UnifiedGenotype in GATK. It takes a BAM file as
 | -s | --skip-concat | String(\*) | produce a set of vcf files instead of one |
 
 ### fcs-genome joint
-This method performs a joint variant calling from a set of compressed gVCF files located at the folder defined in --input-dir.
+This method performs a joint variant calling from a set of compressed gVCF files located at the folder defined in --input-dir. Note: Each gVCF files must have its own index posted in the input folder.
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
