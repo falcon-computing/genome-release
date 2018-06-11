@@ -88,7 +88,7 @@ fi
 tar pzcfh falcon-genome-${release_version}.tgz falcon/
 
 # export to s3
-aws s3 cp falcon-genome-${release_version}.tgz s3://fcs-genome-pub/release/ --acl public-read 1>/dev/null
+aws s3 cp falcon-genome-${release_version}.tgz s3://fcs-genome-build/release/ 1>/dev/null
 
 echo "Release package falcon-genome-${release_version}.tgz created successful"
 rm -rf falcon

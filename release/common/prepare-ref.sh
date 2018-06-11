@@ -14,6 +14,7 @@ fi
 FALCON_DIR=/usr/local/falcon
 PICARD=$FALCON_DIR/tools/package/picard.jar
 BWA=$FALCON_DIR/tools/bin/bwa-org
+SAMTOOLS=$FALCON_DIR/tools/bin/samtools
 ref_dict=${ref_genome%%.fasta}.dict
 ref_idx=${ref_genome}.fai
 ref_sa=${ref_genome}.sa
