@@ -6,20 +6,22 @@ if [[ $# -lt 1 ]]; then
     clear
     echo -e "USAGE: $0 <analysis> ... \n"
     echo "Description:"
-    echo "<analysis>   : one_sample,  genealogic or mutect2"
+    echo "<analysis>   : one_sample, one_sample_multiple_fastq, genealogic or mutect2"
     echo -e "\n"
     exit 1;
 fi
 
 analysis=$1
 if [ "${analysis}" != "one_sample" ];then
-   if [ "${analysis}" != "genealogic" ];then
-       if [ "${analysis}" != "mutect2" ];then
-	   clear
-	   echo -e "USAGE: $0 <analysis> ... \n"
-           echo "Options Available: one_sample,  genelogic or mutect2"
-	   echo -e "\n"
-	   exit 1;
+   if [ "${analysis}" != "one_sample_multiple_fastq" ];then
+      if [ "${analysis}" != "genealogic" ];then
+          if [ "${analysis}" != "mutect2" ];then
+	     clear
+	     echo -e "USAGE: $0 <analysis> ... \n"
+             echo "Options Available: one_sample,  genelogic or mutect2"
+	     echo -e "\n"
+	     exit 1;
+          fi
        fi
    fi    
 fi
@@ -39,6 +41,16 @@ if [[ "${analysis}" == "one_sample" ]] && [[ $# -lt 6 ]];then
     echo "               3 : Alignment, BQSR and HTC"
     echo -e "\n"
     exit 1;    
+fi
+
+if [[ "${analysis}" == "one_sample_multiple_fastq" ]] && [[ $# -lt 3 ]];then
+    clear
+    echo -e "USAGE: $0 one_sample_multiple_fastq  <sample id>  <runFolder> \n"
+    echo "Description:"
+    echo "<sample_id>  : Sample Name"
+    echo "<runFolder>  : Folder where all the FASTQ files are located "
+    echo -e "\n"
+    exit 1;
 fi
 
 if [[ "${analysis}" == "genealogic" ]] && [[ $# -lt 5 ]];then
@@ -99,7 +111,6 @@ if [ -z ${fastq_dir+x} ]; then
 fi
 
 platform="Illumina"
-
 
 function mergeBAM() { 
     work_dir=$1
@@ -164,12 +175,18 @@ function analyze_sample() {
      	     outputBAM=$sample_dir/${sample_id}_marked.bam
      	     echo "fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM}  -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f 2>${sample_dir}/${sample_id}_bwa.log"
      	     fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f  2>${sample_dir}/${sample_id}_bwa.log
-         else
+         fi
+         if [ "${align_only}" == "1" ];then
+             outputBAM=$sample_dir/${sample_id}
+     	     echo "fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align-only 2>${sample_dir}/${sample_id}_bwa.log"
+     	     fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align-only 2>${sample_dir}/${sample_id}_bwa.log
+         fi
+	 if [ "${align_only}" == "2" ];then
              outputBAM=$sample_dir/${sample_id}.bam
-     	     echo "fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align_only 2>${sample_dir}/${sample_id}_bwa.log"
-     	     fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align_only 2>${sample_dir}/${sample_id}_bwa.log
-     	     echo "fcs-genome markdup -i ${outputBAM} -o ${outputBAM%.bam}_marked.bam 2>>${sample_dir}/${sample_id}_bwa.log"
-     	     fcs-genome markdup -i ${outputBAM} -o ${outputBAM%.bam}_marked.bam 2>>${sample_dir}/${sample_id}_bwa.log
+             echo "fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align-only 2>${sample_dir}/${sample_id}_bwa.log"
+             fcs-genome align -r $ref_genome -1 $fastq1 -2 $fastq2 -o ${outputBAM} -R ${RG_ID} -S ${sample_id} -L ${library} -P ${platform} -f --align-only 2>${sample_dir}/${sample_id}_bwa.log
+             echo "fcs-genome markdup -i ${outputBAM} -o ${outputBAM%.bam}_marked.bam 2>>${sample_dir}/${sample_id}_bwa.log"
+             fcs-genome markdup -i ${outputBAM} -o ${outputBAM%.bam}_marked.bam 2>>${sample_dir}/${sample_id}_bwa.log
          fi
              
          if [ $? -ne 0 ]; then
@@ -201,6 +218,9 @@ function analyze_sample() {
             echo "BQSR + PrintReads Failed for ${sample_id}"
             exit 1
          fi
+         echo "rm -rf ${sample_dir}/${sample_id}.bam*  ${sample_dir}/${sample_id}_marked.bam*"
+         rm -rf ${sample_dir}/${sample_id}.bam* ${sample_dir}/${sample_id}_marked.bam*
+ 
          end_ts=$(date +%s)
          BQSR_TIME=`grep -e "Base Recalibration finishes" ${sample_dir}/${sample_id}_bqsr.log | awk '{print $(NF-1)}'`
          echo "BQSR + PrintReads for ${sample_id} completed in $((end_ts - start_ts))s"
@@ -218,16 +238,16 @@ function analyze_sample() {
      	     echo "BAM file ${sample_dir}/${sample_id}.recal.bam does not exist"
      	     exit 0;
          fi
-         echo "fcs-genome htc -r $ref_genome -i ${sample_dir}/${sample_id}.recal.bam  -o ${sample_dir}/${sample_id}.gvcf -f 2>${sample_dir}/${sample_id}_htc.log"
-         fcs-genome htc -r $ref_genome -i ${sample_dir}/${sample_id}.recal.bam  -o ${sample_dir}/${sample_id}.gvcf -f 2>${sample_dir}/${sample_id}_htc.log
+         echo "fcs-genome htc -r $ref_genome -i ${sample_dir}/${sample_id}.recal.bam  -o ${sample_dir}/${sample_id}.vcf -v -f 2>${sample_dir}/${sample_id}_htc.log"
+         fcs-genome htc -r $ref_genome -i ${sample_dir}/${sample_id}.recal.bam  -o ${sample_dir}/${sample_id}.vcf -v -f 2>${sample_dir}/${sample_id}_htc.log
          
          if [ $? -ne 0 ]; then
-            echo "BQSR + PrintReads Failed for ${sample_id}"
+            echo "HTC Failed for ${sample_id}"
             exit 1
          fi
          end_ts=$(date +%s)
          HTC_TIME=`grep -e "Haplotype Caller finishes" ${sample_dir}/${sample_id}_htc.log | awk '{print $(NF-1)}'`
-         echo "BQSR + PrintReads for ${sample_id} completed in $((end_ts - start_ts))s"
+         echo "HTC for ${sample_id} completed in $((end_ts - start_ts))s"
      fi
 
      echo -e "${sample_id}\t${BWA_TIME}\t${MARKDUPS_TIME}\t${BQSR_TIME}\t${HTC_TIME}" >> ${sample_dir}/${sample_id}_time.log
@@ -253,6 +273,85 @@ fi
 
 
 # ============================================================================================
+
+# ========================ONE SAMPLE MULTIPLE FASTQ ==========================================                                                                               
+
+if [ "${analysis}" == "one_sample_multiple_fastq" ];then
+   master_sample_id=$2
+   runFolder=$3
+   align_only=1
+   if [ -z ${master_sample_id+x} ]; then echo "one_sample_multiple_fastq : sample_id variable is unset"; exit 1; fi
+   if [ -z ${runFolder+x} ]; then echo "one_sample_multiple_fastq : runFolder variable is unset"; exit 1; fi
+   if [ -z ${align_only+x} ]; then echo "one_sample_multiple_fastq : align_only variable is unset"; exit 1; fi
+
+   master_sample_dir=/local/${master_sample_id}
+   echo "mkdir -p ${master_sample_dir}/${master_sample_id}"   
+   mkdir -p ${master_sample_dir}/${master_sample_id}
+   master_bwa_time=0;
+
+   array=(`ls -1 ${runFolder}/*1.fastq.gz`)
+   for r1 in ${array[@]};
+     do
+       r2=`echo $r1 | sed 's/_1/_2/g'`
+       RG_ID=`basename $r1 | sed 's/_/ /g' | awk '{print $1}'`
+       library=$RG_ID
+       temp_log=${master_sample_dir}/${RG_ID}_bwa.log
+
+       FASTQ="-1 fastq/${RG_ID}_1.fastq.gz  -2 fastq/${RG_ID}_2.fastq.gz"
+       TAGS="-S ${master_sample_id} -R ${RG_ID} -L ${RG_ID} -P Illumina -f"
+       echo "fcs-genome align ${FASTQ} -o ${master_sample_dir}/${master_sample_id} -r ${ref_genome} --align-only $TAGS 2>>${temp_log}"
+       fcs-genome align ${FASTQ} -o ${master_sample_dir}/${master_sample_id} -r ${ref_genome} --align-only $TAGS 2>>${temp_log}
+       gettime=`grep -e "bwa mem finishes" ${temp_log} | awk '{print $(NF-1)}'`
+       master_bwa_time=$((${master_bwa_time} + ${gettime}))
+     done
+
+   echo "bwa mem finishes in ${master_bwa_time} seconds" >> ${master_sample_dir}/${master_sample_id}_bwa.log
+   BWA_TIME=`grep -e "bwa mem finishes" ${master_sample_dir}/${master_sample_id}_bwa.log | awk '{print $(NF-1)}'`
+
+   echo "fcs-genome markdup -i ${master_sample_dir}/  -o ${master_sample_dir}/${master_sample_id}_marked.bam 2>>${master_sample_dir}/${master_sample_id}_markdups.log"
+   fcs-genome markdup -i ${master_sample_dir}/  -o ${master_sample_dir}/${master_sample_id}_marked.bam 2>>${master_sample_dir}/${master_sample_id}_markdups.log 
+   if [ $? -ne 0 ]; then
+      echo "Mark Duplicates FAILED for ${master_sample_id} in multiple FASTQ options"
+      exit 1
+   fi
+   MARKDUPS_TIME=`grep -e "Mark Duplicates finishes" ${master_sample_dir}/${master_sample_id}_markdups.log | awk '{print $(NF-1)}'`
+
+   echo "rm -rf ${master_sample_dir}/${master_sample_id}/"
+   rm -rf ${master_sample_dir}/${master_sample_id}/
+
+   start_ts=$(date +%s)
+   echo "fcs-genome bqsr -r $ref_genome -i ${master_sample_dir}/${master_sample_id}_marked.bam -o ${master_sample_dir}/${master_sample_id}.recal.bam  -K $db138_SNPs -f 2>${master_sample_dir}/${master_sample_id}_bqsr.log"
+   fcs-genome bqsr -r $ref_genome -i ${master_sample_dir}/${master_sample_id}_marked.bam -o ${master_sample_dir}/${master_sample_id}.recal.bam  -K $db138_SNPs -f 2>${master_sample_dir}/${master_sample_id}_bqsr.log
+
+   if [ $? -ne 0 ]; then
+      echo "BQSR + PrintReads Failed for ${master_sample_id}"
+      exit 1
+   fi
+   end_ts=$(date +%s)
+   BQSR_TIME=`grep -e "Base Recalibration finishes" ${master_sample_dir}/${master_sample_id}_bqsr.log | awk '{print $(NF-1)}'`
+   echo "BQSR + PrintReads for ${master_sample_id} completed in $((end_ts - start_ts))s"
+
+   echo "rm -rf ${master_sample_dir}/${master_sample_id}_marked.bam*"
+   rm -rf ${master_sample_dir}/${master_sample_id}_marked.bam*
+
+   start_ts=$(date +%s)
+   echo "fcs-genome htc -r $ref_genome -i ${master_sample_dir}/${master_sample_id}.recal.bam  -o ${master_sample_dir}/${master_sample_id}.vcf -v -f 2>${master_sample_dir}/${master_sample_id}_htc.log"
+   fcs-genome htc -r $ref_genome -i ${master_sample_dir}/${master_sample_id}.recal.bam -o ${master_sample_dir}/${master_sample_id}.vcf -v -f 2>${master_sample_dir}/${master_sample_id}_htc.log
+
+   if [ $? -ne 0 ]; then
+      echo "HTC Failed for ${master_sample_id}"
+      exit 1
+   fi
+   end_ts=$(date +%s)
+   HTC_TIME=`grep -e "Haplotype Caller finishes" ${master_sample_dir}/${master_sample_id}_htc.log | awk '{print $(NF-1)}'`
+   echo "HTC for ${master_sample_id} completed in $((end_ts - start_ts))s"
+
+   echo -e "#SAMPLE\tBWA\tMARKDUPS\tBQSR\tHTC" > ${master_sample_dir}/${master_sample_id}_time.log
+   echo -e "${master_sample_id}\t${BWA_TIME}\t${MARKDUPS_TIME}\t${BQSR_TIME}\t${HTC_TIME}" >> ${master_sample_dir}/${master_sample_id}_time.log
+
+fi
+
+# ============================================================================================                
 
 # ========================GENEALOGICAL SAMPLES (Trio) ========================================
 
