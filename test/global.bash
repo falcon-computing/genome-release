@@ -22,6 +22,7 @@ cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
 VCFDIFF=${DIR}/vcfdiff/vcfdiff
 
 data_list=data.list
+mutect2_list=mutect2.list
 
 function check_dev_version {
   local bin=$1;
