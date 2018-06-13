@@ -55,7 +55,10 @@ while read id; do
 done <$data_list
 
 #Run mutect2 test
-$CURR_DIR/../bats/bats results_test/7_mutect.bats
+while read id; do
+  export id=$id
+  $CURR_DIR/../bats/bats mutect2_test/ >> test.log
+done <$mutect2_list
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> test.log
