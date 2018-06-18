@@ -108,6 +108,10 @@ fi
 # Execute fcs_analysis.sh :                                                                                                                                                                                                                     
 echo "./fcs_analysis.sh one_sample_multiple_fastq NA12878-Intel /local/fastq/"
 ./fcs_analysis.sh one_sample_multiple_fastq NA12878-Intel /local/fastq/
+if [ $? -ne 0 ]; then
+   echo "NA12878-Intel Failed"
+   exit 1
+fi
 
 TOTAL_TIME=`tail -n1 /local/NA12878-Intel/NA12878-Intel_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
 echo "${TOTAL_TIME}" >> ${output_log}
@@ -154,6 +158,10 @@ fi
 # Execute fcs_analysis.sh :                                                                                                                                                                                                                     
 echo "./fcs_analysis.sh one_sample NA12878 RG001 LIB001 0 3"
 ./fcs_analysis.sh one_sample NA12878 RG001 LIB001 0 3
+if [ $? -ne 0 ]; then
+   echo "NA12878 Failed"
+   exit 1
+fi
 #tail -n1 /local/NA12878/NA12878_time.log >> ${output_log}                                                                                                                                                                                      
 TOTAL_TIME=`tail -n1 /local/NA12878/NA12878_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
 echo "${TOTAL_TIME}" >>${output_log}
@@ -161,6 +169,10 @@ rm -rf NA12878
 
 echo "./fcs_analysis.sh one_sample NA12891 RG001 LIB001 0 3"
 ./fcs_analysis.sh one_sample NA12891 RG002 LIB001 0 3
+if [ $? -ne 0 ]; then
+   echo "NA12891 Failed"
+   exit 1
+fi
 #tail -n1 /local/NA12891/NA12891_time.log >> ${output_log}                                                                                                                                                                                      
 TOTAL_TIME=`tail -n1 /local/NA12891/NA12891_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
 echo "${TOTAL_TIME}" >>${output_log}
@@ -168,6 +180,10 @@ rm -rf NA12891
 
 echo "./fcs_analysis.sh one_sample NA12892 RG003 LIB001 0 3"
 ./fcs_analysis.sh one_sample NA12892 RG001 LIB001 0 3
+if [ $? -ne 0 ]; then
+   echo "NA12892 Failed"
+   exit 1
+fi
 #tail -n1 /local/NA12892/NA12892_time.log >> ${output_log}                                                                                                                                                                                      
 TOTAL_TIME=`tail -n1 /local/NA12892/NA12892_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
 echo "${TOTAL_TIME}" >>${output_log}
@@ -202,6 +218,10 @@ for acc in ${inputArray[@]}
 
                echo "./fcs_analysis.sh one_sample ${sample_id} RG001 LIB001 0 3"
                ./fcs_analysis.sh one_sample ${sample_id} RG001 LIB001 0 3
+	       if [ $? -ne 0 ]; then
+                   echo "${sample_id} Failed"
+                   exit 1
+               fi
                TOTAL_TIME=`tail -n1 /local/${sample_id}/${sample_id}_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
                echo "${TOTAL_TIME}" >>${output_log}
                #echo "tail -n1 /local/${sample_id}/${sample_id}_time.log >> ${output_log}"                                                                                                                                                      
@@ -223,6 +243,10 @@ for acc in ${inputArray[@]}
 
                echo "./fcs_analysis.sh one_sample ${sample_id} RG001 LIB001 0 3"
                ./fcs_analysis.sh one_sample ${sample_id} RG001 LIB001 0 3
+	       if [ $? -ne 0 ]; then
+                   echo "${sample_id} Failed"
+                   exit 1
+               fi
                TOTAL_TIME=`tail -n1 /local/${sample_id}/${sample_id}_time.log | awk '{total=($2+$3+4+$5)/(3600)}END{printf "%s\t%2.2f",$0,total}'`
                echo "${TOTAL_TIME}" >>${output_log}
                #echo "tail -n1 /local/${sample_id}/${sample_id}_time.log >> ${output_log}"                                                                                                                                                      
@@ -274,7 +298,10 @@ for acc in ${inputArray[@]}
 
                echo "./fcs_analysis.sh mutect2 ${acc}-Normal ${acc}-Tumor 2"
                      ./fcs_analysis.sh mutect2 ${acc}-Normal ${acc}-Tumor 2
-
+               if [ $? -ne 0 ]; then
+                   echo "${acc} Failed"
+                   exit 1
+               fi
                bwa_normal=`grep -e "bwa mem finishes" /local/${acc}-Normal/${acc}-Normal_bwa.log | awk '{print $(NF-1)}'`
                bwa_tumor=`grep -e "bwa mem finishes" /local/${acc}-Tumor/${acc}-Tumor_bwa.log | awk '{print $(NF-1)}'`
                markdup_normal=`grep -e "Mark Duplicates finishes" ${acc}-Normal/${acc}-Normal_bwa.log | awk '{print $(NF-1)}'`
@@ -319,7 +346,10 @@ for acc in ${inputArray[@]}
 
                echo "./fcs_analysis.sh mutect2 ${acc}-Normal ${acc}-Tumor 2"
                      ./fcs_analysis.sh mutect2 ${acc}-Normal ${acc}-Tumor 2
-
+               if [ $? -ne 0 ]; then
+                   echo "${acc} Failed"
+                   exit 1
+               fi
                bwa_normal=`grep -e "bwa mem finishes" /local/${acc}-Normal/${acc}-Normal_bwa.log | awk '{print $(NF-1)}'`
                bwa_tumor=`grep -e "bwa mem finishes" /local/${acc}-Tumor/${acc}-Tumor_bwa.log | awk '{print $(NF-1)}'`
                markdup_normal=`grep -e "Mark Duplicates finishes" ${acc}-Normal/${acc}-Normal_bwa.log | awk '{print $(NF-1)}'`
