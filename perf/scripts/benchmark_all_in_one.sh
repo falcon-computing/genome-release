@@ -282,9 +282,12 @@ for acc in ${inputArray[@]}
                BWA_TIME="("${bwa_normal}","${bwa_tumor}")"
                MARKDUP_TIME="("${markdup_normal}","${markdup_tumor}")"
                BQSR_TIME="("${bqsr_normal}","${bqsr_tumor}")"
-               let TOTAL_TIME=${bwa_normal}+${bwa_tumor}+${markdup_normal}+${markdup_tumor}+${bqsr_normal}+${bqsr_tumor}
+	       
+	       MUTECT2_TIME=`grep -e "Mutect2 finishes" /local/mutect2-${acc}/mutect2_${acc}.log | awk '{print $(NF-1)}'`
+	       
+               let TOTAL_TIME=${bwa_normal}+${bwa_tumor}+${markdup_normal}+${markdup_tumor}+${bqsr_normal}+${bqsr_tumor}+${MUTECT2_TIME}
                TOTAL_TIME=`awk -v factor=${TOTAL_TIME} 'BEGIN{printf "%2.2f", factor/3600}'`
-               echo -e "${acc}\t${BWA_TIME}\t${MARKDUP_TIME}\t${BQSR_TIME}\t${TOTAL_TIME}" >> ${output_log}
+               echo -e "${acc}\t${BWA_TIME}\t${MARKDUP_TIME}\t${BQSR_TIME}\t${MUTECT2_TIME}\t${TOTAL_TIME}" >> ${output_log}
                echo "rm -rf /local/*${acc}*"
                rm -rf /local/*${acc}*
 
