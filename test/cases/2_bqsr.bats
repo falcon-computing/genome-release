@@ -2,7 +2,7 @@
 
 load ../global
 
-DIR=/genome/example/small
+DIR=$WORKDIR/small
 
 INPUT_BAMDIR=$DIR/indel_realign
 INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam

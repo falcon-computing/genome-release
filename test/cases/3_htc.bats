@@ -2,7 +2,7 @@
 
 load ../global
 
-DIR=/genome/example/small
+DIR=$WORKDIR/small
 INPUT_RECALBAMDIR=$DIR/bqsr
 INPUT_RECALBAM=${INPUT_RECALBAMDIR}/small_recalibrated
 OUTPUT_DIR=$DIR/htc
