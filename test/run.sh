@@ -4,7 +4,7 @@ source $CURR_DIR/aws-helper.sh
 source $CURR_DIR/global.bash
 
 #Mount local
-mount_local;
+# mount_local;
 mkdir -p /local/temp/
 
 #Copy references to /local
