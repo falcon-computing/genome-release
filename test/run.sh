@@ -9,7 +9,7 @@ mkdir -p /local/temp/
 
 #Copy references to /local
 mkdir -p /local/ref/
-aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ > /dev/null
+aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38" --exclude "org-sa" > /dev/null
 
 #Print versions
 echo -e "\n"  >> test.log

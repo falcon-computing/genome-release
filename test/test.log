@@ -1738,3 +1738,187 @@ not ok 1 Normal run for alignment: son-23110107_sample
 # /usr/local/falcon//bin/fcs-genome align -r /local/ref//human_g1k_v37.fasta -1 /local/work_dir//fastq/son-23110107_sample_1.fastq.gz -2 /local/work_dir//fastq/son-23110107_sample_2.fastq.gz -o /local/work_dir//son-23110107_sample.bam --extra-options -inorder_output --rg son-23110107_sample --sp son-23110107_sample --pl Illumina --lb son-23110107_sample -f
 # [2018-06-26 22:09:22.491 fcs-genome] ERROR: Cannot authorize software usage: -5
 # [2018-06-26 22:09:22.491 fcs-genome] ERROR: Please contact support@falcon-computing.com for details.
+not ok 2 Compare BAM file against baseline: son-23110107_sample
+# (from function `helper_bamCompare' in file results_test/1_align.bats, line 36,
+#  in test file results_test/1_align.bats, line 60)
+#   `helper_bamCompare "$id"' failed
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample.bam" for reading: No such file or directory
+# Failed BAM compare for son-23110107_sample
+not ok 3 Compare flagstat against baseline: son-23110107_sample
+# (from function `helper_flagstatCompare' in file results_test/1_align.bats, line 49,
+#  in test file results_test/1_align.bats, line 64)
+#   `helper_flagstatCompare "$id"' failed
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample.bam": No such file or directory
+# /home/centos/genome-release/test/results_test/../global.bash: line 75: 21734171 -  : syntax error: operand expected (error token is "-  ")
+not ok 4 Normal run for BQSR: son-23110107_sample
+# (from function `helper_normalRun' in file results_test/2_bqsr.bats, line 17,
+#  in test file results_test/2_bqsr.bats, line 32)
+#   `helper_normalRun "$id"' failed
+# /usr/local/falcon//bin/fcs-genome baserecal -r /local/ref//human_g1k_v37.fasta -i /local/work_dir//baseline//son-23110107_sample/son-23110107_sample_marked.bam -o /local/work_dir//son-23110107_sample_BQSR.table --knownSites /local/ref//dbsnp_138.b37.vcf --knownSites /local/ref//1000G_phase1.indels.b37.vcf --knownSites /local/ref//Mills_and_1000G_gold_standard.indels.b37.vcf -f
+ok 5 Compare BQSR table against baseline: son-23110107_sample
+not ok 6 Normal run for HTC: son-23110107_sample
+# (from function `helper_normalRun' in file results_test/3_htc.bats, line 14,
+#  in test file results_test/3_htc.bats, line 44)
+#   `helper_normalRun "$id"' failed
+# /usr/local/falcon//bin/fcs-genome htc -r /local/ref//human_g1k_v37.fasta -i /local/work_dir//baseline//son-23110107_sample/son-23110107_sample_final_BAM.bam -o /local/work_dir//son-23110107_sample.vcf --produce-vcf -f
+not ok 7 Compare VCF file against baseline: son-23110107_sample
+# (from function `helper_compareVCF' in file results_test/3_htc.bats, line 25,
+#  in test file results_test/3_htc.bats, line 48)
+#   `helper_compareVCF "$id"' failed
+# gzip: /local/work_dir//son-23110107_sample.vcf.gz: No such file or directory
+# Failed VCF compare for son-23110107_sample
+ok 8 Compare using vcfdiff: son-23110107_sample
+not ok 9 Normal run for print reads: son-23110107_sample
+# (from function `helper_normalRun' in file results_test/6_pr.bats, line 15,
+#  in test file results_test/6_pr.bats, line 46)
+#   `helper_normalRun "$id"' failed
+# [2018-06-26 22:21:07.448 fcs-genome] ERROR: Cannot authorize software usage: -5
+# [2018-06-26 22:21:07.449 fcs-genome] ERROR: Please contact support@falcon-computing.com for details.
+not ok 10 Compare BAM file against baseline: son-23110107_sample
+# (from function `helper_compareBAM' in file results_test/6_pr.bats, line 26,
+#  in test file results_test/6_pr.bats, line 50)
+#   `helper_compareBAM "$id"' failed
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-00.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-00.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-01.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-01.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-02.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-02.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-03.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-03.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-04.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-04.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-05.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-05.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-06.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-06.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-07.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-07.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-08.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-08.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-09.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-09.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-10.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-10.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-11.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-11.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-12.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-12.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-13.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-13.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-14.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-14.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-15.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-15.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-16.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-16.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-17.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-17.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-18.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-18.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-19.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-19.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-20.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-20.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-21.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-21.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-22.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-22.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-23.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-23.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-24.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-24.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-25.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-25.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-26.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-26.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-27.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-27.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-28.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-28.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-29.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-29.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-30.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-30.bam" for reading: No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-31.bam'
+# samtools view: failed to open "/local/work_dir//son-23110107_sample_final_BAM.bam/part-31.bam" for reading: No such file or directory
+# Failed BAM compare for son-23110107_sample
+not ok 11 Compare flagstat against baseline: son-23110107_sample
+# (from function `helper_compareFlagstat' in file results_test/6_pr.bats, line 39,
+#  in test file results_test/6_pr.bats, line 54)
+#   `helper_compareFlagstat "$id"' failed
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-00.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-00.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-01.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-01.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-02.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-02.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-03.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-03.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-04.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-04.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-05.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-05.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-06.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-06.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-07.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-07.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-08.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-08.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-09.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-09.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-10.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-10.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-11.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-11.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-12.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-12.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-13.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-13.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-14.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-14.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-15.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-15.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-16.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-16.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-17.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-17.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-18.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-18.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-19.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-19.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-20.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-20.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-21.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-21.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-22.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-22.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-23.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-23.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-24.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-24.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-25.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-25.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-26.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-26.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-27.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-27.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-28.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-28.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-29.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-29.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-30.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-30.bam": No such file or directory
+# [E::hts_open_format] fail to open file '/local/work_dir//son-23110107_sample_final_BAM.bam/part-31.bam'
+# samtools flagstat: Cannot open input file "/local/work_dir//son-23110107_sample_final_BAM.bam/part-31.bam": No such file or directory
+# Failed flagstat compare for son-23110107_sample
+1..11
+not ok 1 Normal run for alignment: NA12878_sample
+# (from function `helper_normalRun' in file results_test/1_align.bats, line 25,
+#  in test file results_test/1_align.bats, line 56)
+#   `helper_normalRun "$id"' failed
+# /usr/local/falcon//bin/fcs-genome align -r /local/ref//human_g1k_v37.fasta -1 /local/work_dir//fastq/NA12878_sample_1.fastq.gz -2 /local/work_dir//fastq/NA12878_sample_2.fastq.gz -o /local/work_dir//NA12878_sample.bam --extra-options -inorder_output --rg NA12878_sample --sp NA12878_sample --pl Illumina --lb NA12878_sample -f
+# [2018-06-26 22:23:23.131 fcs-genome] ERROR: Cannot authorize software usage: -5
+# [2018-06-26 22:23:23.131 fcs-genome] ERROR: Please contact support@falcon-computing.com for details.
