@@ -1,3 +1,5 @@
 # exclude vcfdiff
-test/vcfdiff/*
+
+test/vcfdiff/
+
 test/test.log

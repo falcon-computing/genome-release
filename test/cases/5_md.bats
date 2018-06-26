@@ -2,7 +2,7 @@
 
 load ../global
 
-BAMDIR=$WORKDIR/SMALL/align_only
+BAMDIR=/local/work_dir/small/align_only
 BAM=$BAMDIR/small_align_only_sorted.bam
 
 # mark duplicate

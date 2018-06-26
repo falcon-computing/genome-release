@@ -2,7 +2,7 @@
 
 load ../global
 
-DIR=$WORKDIR/small
+DIR=/local/work_dir/small
 
 INPUT_BAMDIR=$DIR/indel_realign
 INPUT_BAM=${INPUT_BAMDIR}/small_indel_realigned.bam
