@@ -46,11 +46,11 @@ mkdir -p $WORKDIR/baseline
 aws s3 sync s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/ > /dev/null
 
 # Download 'small' set for environment test
-mkdir -p $WORKDIR/small
-aws s3 sync s3://fcs-genome-data/data-suite/small/ $WORKDIR/small/ > /dev/null
+# mkdir -p $WORKDIR/small
+# aws s3 sync s3://fcs-genome-data/data-suite/small/ $WORKDIR/small/ > /dev/null
 
 #Run environment tests
-$CURR_DIR/../bats/bats cases/ >> test.log
+# $CURR_DIR/../bats/bats cases/ >> test.log
 
 #Run results validation tests
 while read id; do 
