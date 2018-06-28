@@ -56,9 +56,9 @@ helper_flagstatCompare() {
   helper_normalRun "$id" 
 }
 
-@test "Compare BAM file against baseline: $id" {
-  helper_bamCompare "$id"
-}
+# @test "Compare BAM file against baseline: $id" {
+#   helper_bamCompare "$id"
+# }
 
 @test "Compare flagstat against baseline: $id" {
   helper_flagstatCompare "$id"
