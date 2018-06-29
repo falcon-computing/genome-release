@@ -13,7 +13,7 @@ helper_normalRun() {
     --tumor $baseline/$id/${tumor}_BAM.bam \
     --dbsnp $db138_SNPs \
     --cosmic $cosmic \
-    -o $WORKDIR/mutect2.vcf -f
+    -o $WORKDIR/${id}.vcf -f
 
   echo "${FCSBIN} mutect2 -r ${ref_genome} --normal $baseline/$id/${normal}_BAM.bam --tumor $baseline/$id/${tumor}_BAM.bam --dbsnp $db138_SNPs --cosmic $cosmic -o $WORKDIR/${id}.vcf -f"
 
