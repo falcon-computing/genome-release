@@ -44,9 +44,9 @@ helper_vcfdiff() {
   helper_normalRun "$id"
 }
   
-@test "Compare VCF file against baseline: $id" {
-  helper_compareVCF "$id"
-}
+# @test "Compare VCF file against baseline: $id" {
+#   helper_compareVCF "$id"
+# }
 
 @test "Compare using vcfdiff: $id" {
   helper_vcfdiff "$id"
