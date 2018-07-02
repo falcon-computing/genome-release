@@ -3,6 +3,7 @@
 load ../global
 
 DIR=/local/work_dir/small
+
 INPUT_RECALBAMDIR=$DIR/bqsr
 INPUT_RECALBAM=${INPUT_RECALBAMDIR}/small_recalibrated
 OUTPUT_DIR=$DIR/htc

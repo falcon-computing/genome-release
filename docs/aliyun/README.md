@@ -1,16 +1,14 @@
-# Quickstart on Falcon Genome Image on Huawei Cloud
+# Quickstart on Falcon Genome Image 
 
 The Falcon Genome image includes the following:
 - Software distributions for Falcon Genomics Solutions, installed at
 `FALCON_DIR=/usr/local/falcon`
-- Automated setup scripts for the Huawei cloud image, installed at
-`/root/setup-scripts`
+- Automated setup scripts, installed at `/root/setup-scripts`
 - Dependent libraries and relevant environment setup at `/etc/profile.d`
 
-There are three simple steps for using the Falcon Genome image on Huawei Cloud
-1. Request a 32-core ECS instance and an FP1 instance, both using the Falcon
-image, and both should be in the same VPC subnet;
-2. Login to the ECS instance and run the automated setup scripts following the
+There are three simple steps for using the Falcon Genome image on AWS
+1. Request an EC2 instance with sufficient EBS volume;
+2. Login to the EC2 instance and run the automated setup scripts following the
 prompts;
 3. Run the accelerated genomics data processing software using the `fcs-genome`
 command from the ECS instance.
@@ -18,25 +16,15 @@ command from the ECS instance.
 # System Setup
 
 To use the automated setup script, you need to obtain the following information:
-- private IP address for the FP1 instance
 - path to the storage (can be either a storage device or network location)
 - (optional) path to the reference genome
 
-The automated system setup scripts will setup the following system
-configurations
-1. SSH between the ECS and FP1 instances without password
-2. Shared working folder between the ECS and FP1 instances through NFS. If
-there is a shared storage existing in the system, this step can be skipped.
-3. Store system information into `/usr/local/falcon/fcs-genome.conf`, which will
+The automated system setup scripts will setup local EBS storage, and 
+store system information into `/usr/local/falcon/fcs-genome.conf`, which will
 be used by the `fcs-genome` software.
 
 # Preparation
 
-1. Working folder: in the two-node solution, both the reference genomes and
-input data
-need to be readable for both nodes in the pair. Therefore, a shared working
-folder need to be setup before starting the pipeline. The working folder can
-be configured using the setup scripts provided with this image
 1. Temporary folder: some steps in `fcs-genome`, including `align`,
 will write large files to a temporary folder. Please ensure there is enough
 space inside the temporary folder. The recommended free space is 3~5x the

@@ -72,23 +72,18 @@ cp common/* falcon/
 aws s3 sync $s3_bucket/tools/ $repo_dir/tools/
 cp -r $repo_dir/tools falcon/tools
 
-copy_file "fcs-genome/fcs-genome-${fcs_genome_version}" falcon/bin/fcs-genome
-copy_file "bwa/bwa-${bwa_version}" falcon/tools/bin/bwa-bin
-copy_file "gatk/GATK-${gatk_version}.jar" falcon/tools/package/GenomeAnalysisTK.jar
+copy_file "fcs-genome/${fcs_genome_version}/fcs-genome" falcon/bin/fcs-genome
+copy_file "bwa/${bwa_version}/bwa" falcon/tools/bin/bwa-bin
 
-# run test
-echo "Start running package tests"
-../test/run.sh
-
-if [ $? -ne 0 ]; then
-  echo "Test failed, skipped packaging"
-  exit 1
-fi
+# copy all gatk versions
+for major_version in 3.6 3.7 3.8; do
+copy_file "gatk/${major_version}-falcon-${gatk_version}/GenomeAnalysisTK.jar" "falcon/tools/package/GATK-${major_version}-falcon.jar"
+done
 
 tar pzcfh falcon-genome-${release_version}.tgz falcon/
 
 # export to s3
-aws s3 cp falcon-genome-${release_version}.tgz s3://fcs-genome-pub/release/ --acl public-read 1>/dev/null
+aws s3 cp falcon-genome-${release_version}.tgz s3://fcs-genome-build/release/ 1>/dev/null
 
 echo "Release package falcon-genome-${release_version}.tgz created successful"
 rm -rf falcon

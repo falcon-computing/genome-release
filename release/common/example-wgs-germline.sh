@@ -2,9 +2,9 @@
 sample_id=$1
 
 # need to setup these variables before start
-local_dir=
-fastq_dir=
-ref_dir=
+local_dir=/local
+fastq_dir=/local/fastq
+ref_dir=/local/ref
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 
