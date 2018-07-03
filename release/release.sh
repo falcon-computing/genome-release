@@ -5,9 +5,10 @@ repo_dir="$HOME/.falcon-genome"
 
 input_json=$1
 if [ \( -z "$input_json" \) -o \( ! -f "$input_json" \) ]; then
-  echo "USAGE: $0 input.json"
+  echo "USAGE: $0 input.json [platform]"
   exit 0
 fi
+platform=$2
 
 if [ -z "$(which jq 2>/dev/null)" ]; then
   echo "This script requires the package 'jq', please install using 'yum install jq'"
@@ -23,7 +24,7 @@ locate_file() {
   local file=$1;
   local dir=$repo_dir;
   local loc=$dir/$file;
-  if [ -f "$loc" ]; then
+  if [ -f "$loc" ] || [ -d "$loc" ]; then
     echo "$loc";
     return 0;
   fi;
@@ -35,7 +36,9 @@ locate_file() {
     echo "";
     return 1;
   fi;
-  chmod +x "$loc";
+  if [ -f "$loc" ]; then
+    chmod +x "$loc";
+  fi;
   echo "$loc";
 }
 
@@ -46,43 +49,81 @@ copy_file() {
     echo "copy fails";
     exit 1
   fi;
-  cp $src $dst;
+  cp -r $src $dst;
+  if [ $? -ne 0 ]; then
+    echo " cp -r $src $dst fails";
+    exit 2;
+  fi;
+  echo "copying $src";
 }
 
 mkdir -p $repo_dir
 
 # check versions
-release_version=$(get_version "release")
-fcs_genome_version=$(get_version "fcs_genome")
-bwa_version=$(get_version "bwa")
-gatk_version=$(get_version "gatk")
+if [ -z "$platform" ]; then
+  release_version=$(get_version "release")
+  fcs_genome_version=$(get_version "fcs_genome")
+  bwa_version=$(get_version "bwa")
+  gatk_version=$(get_version "gatk")
+  blaze_version=$(get_version "blaze")
+  blaze_conf_version=$(get_version "blaze_conf")
+  sw_bit_version=$(get_version "sw_bit")
+  pmm_bit_version=$(get_version "pmm_bit")
+else
+  release_version=$(get_version "release")-$platform
+  fcs_genome_version=$(get_version "fcs_genome")-$platform
+  bwa_version=$(get_version "bwa")-$platform
+  gatk_version=$(get_version "gatk")-$platform
+  blaze_version=$(get_version "blaze")
+  blaze_conf_version=$(get_version "blaze_conf")-$platform
+  sw_bit_version=$(get_version "sw_bit")-$platform
+  pmm_bit_version=$(get_version "pmm_bit")-$platform
+fi
 
 echo "Creating release package version $release_version with: "
 echo "  - fcs-genome version: $fcs_genome_version"
 echo "  - bwa        version: $bwa_version"
 echo "  - gatk       version: $gatk_version"
+echo "  - blaze      version: $blaze_version"
+echo "  - fpga bit"
+echo "    - sw       version: $sw_bit_version"
+echo "    - pmm      version: $pmm_bit_version"
 
 # build folder
 mkdir -p falcon/bin
+# for bitstreams
+mkdir -p falcon/tools/bitstreams
 
 # copy common files
 cp common/* falcon/
 
 # copy all 3rd party tools
 aws s3 sync $s3_bucket/tools/ $repo_dir/tools/
-cp -r $repo_dir/tools falcon/tools
+cp -r $repo_dir/tools/* falcon/tools/
 
 copy_file "fcs-genome/${fcs_genome_version}/fcs-genome" falcon/bin/fcs-genome
 copy_file "bwa/${bwa_version}/bwa" falcon/tools/bin/bwa-bin
+copy_file "blaze/${blaze_version}" falcon/tools/blaze
+copy_file "blaze-conf/${blaze_conf_version}/conf" falcon/tools/blaze/
 
 # copy all gatk versions
 for major_version in 3.6 3.7 3.8; do
-copy_file "gatk/${major_version}-falcon-${gatk_version}/GenomeAnalysisTK.jar" "falcon/tools/package/GATK-${major_version}-falcon.jar"
+  if [ -z "$(locate_file "gatk/${major_version}-falcon-${gatk_version}/GenomeAnalysisTK.jar")" ]; then
+    echo "skipping gatk-${major_version}-falcon-${gatk_version}"
+  else
+    copy_file "gatk/${major_version}-falcon-${gatk_version}/GenomeAnalysisTK.jar" "falcon/tools/package/GATK-${major_version}-falcon.jar"
+  fi
 done
 
+# copy sw bitstream
+copy_file "sw-bitstream/${sw_bit_version}/bitstream.xclbin" falcon/tools/bitstreams/
+copy_file "pmm-bitstream/${pmm_bit_version}/pmm.xclbin" falcon/tools/bitstreams/
+
+echo "Creating the tarball..."
 tar pzcfh falcon-genome-${release_version}.tgz falcon/
 
 # export to s3
+echo "Uploading to s3..."
 aws s3 cp falcon-genome-${release_version}.tgz s3://fcs-genome-build/release/ 1>/dev/null
 
 echo "Release package falcon-genome-${release_version}.tgz created successful"
