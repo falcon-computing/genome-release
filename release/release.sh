@@ -95,7 +95,9 @@ mkdir -p falcon/bin
 mkdir -p falcon/tools/bitstreams
 
 # copy common files
-cp common/* falcon/
+cp common/prepare-ref.sh falcon/
+cp common/example-wgs-germline.sh falcon/
+cp common/fcs-genome.conf falcon/
 
 # copy all 3rd party tools
 aws s3 sync $s3_bucket/tools/ $repo_dir/tools/
