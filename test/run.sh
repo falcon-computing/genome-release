@@ -1,6 +1,6 @@
 #!/bin/bash
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source $CURR_DIR/aws-helper.sh
+source $CURR_DIR/cloud-helper.sh
 source $CURR_DIR/global.bash
 
 #Mount local
