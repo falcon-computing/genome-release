@@ -9,9 +9,9 @@ FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
-WORKDIR=/local/work_dir/
+WORKDIR=/local/work_dir
 fastq_dir=$WORKDIR/fastq
-baseline=$WORKDIR/baseline/
+baseline=$WORKDIR/baseline
 
 ref_dir=/local/ref/
 ref_genome=$ref_dir/human_g1k_v37.fasta
@@ -42,7 +42,7 @@ function compare_BAM {
   #convert BAM to SAM
   export TMPDIR=/local/temp/
   samtools view "$BAM" | sort > $WORKDIR/subject_bwa.sam;
-  samtools view "$baseline/${id}/${id}_marked.bam" | sort > $WORKDIR/baseline_bwa.sam; 
+  samtools view "$baseline/bwa/${id}_marked.bam" | sort > $WORKDIR/baseline_bwa.sam; 
   
   md5sum1=$(md5sum $WORKDIR/subject_bwa.sam | awk '{print $1}');
   md5sum2=$(md5sum $WORKDIR/baseline_bwa.sam | awk '{print $1}');
@@ -63,7 +63,7 @@ function compare_flagstat {
   threshold=0.05;
   equal=0.00;
   samtools flagstat $BAM > $WORKDIR/subject_flagstat;
-  samtools flagstat $baseline/${id}/${id}_marked.bam > $WORKDIR/baseline_flagstat;
+  samtools flagstat $baseline/bwa/${id}_marked.bam > $WORKDIR/baseline_flagstat;
   
   b_array=( $(cat $WORKDIR/baseline_flagstat | awk '{print $1}') );
   s_array=( $(cat $WORKDIR/subject_flagstat | awk '{print $1}') );
@@ -92,7 +92,7 @@ function compare_bqsr {
 
   local BQSR=$1;
   local id=$2;
-  DIFF=$(diff $BQSR $baseline/${id}/${id}_BQSR.table);
+  DIFF=$(diff $BQSR $baseline/$/${id}_BQSR.table);
   
   if [ "$DIFF" == "" ]; then
     return 0
@@ -107,7 +107,7 @@ function compare_vcf {
 
   local VCF=$1;
   local id=$2;
-  gunzip -c "$baseline/${id}/${id}.vcf.gz" > $WORKDIR/base.vcf;
+  gunzip -c "$baseline/htc/${id}.vcf.gz" > $WORKDIR/base.vcf;
   grep "^[^#]" $WORKDIR/base.vcf > $WORKDIR/base_grep.vcf;
 
   if [[ $VCF == *.vcf.gz ]];then
@@ -130,7 +130,7 @@ function compare_vcfdiff {
   local VCF=$1;
   local id=$2;
 
-  $VCFDIFF $baseline/$id/${id}.vcf.gz $VCF > $WORKDIR/vcfdiff.txt;
+  $VCFDIFF $baseline/htc/${id}.vcf.gz $VCF > $WORKDIR/vcfdiff.txt;
 
   recall=$(tail -n 1 $WORKDIR/vcfdiff.txt | awk '{print $5}');
   echo $recall;
