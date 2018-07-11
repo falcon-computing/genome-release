@@ -3,13 +3,17 @@ CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $CURR_DIR/cloud-helper.sh
 source $CURR_DIR/global.bash
 
+if [ $helper_env_set = 0 ]; then 
+    echo "environment not set" >> test.log
+fi;
+
 #Mount local
 # mount_local;
 mkdir -p /local/temp/
-
-#Copy references to /local
 mkdir -p /local/ref/
-aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38" --exclude "org-sa" > /dev/null
+mkdir -p vcfdiff
+mkdir -p $WORKDIR/fastq
+mkdir -p $WORKDIR/baseline
 
 #Print versions
 echo -e "\n"  >> test.log
@@ -23,7 +27,7 @@ source $FALCON_DIR/setup.sh
 echo "$($FCSBIN | head -n1)" >> test.log
 echo "$($BWABIN --version)"  >> test.log
 echo "$($FCSBIN gatk --version | tail -n1)" >> test.log
-echo "$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | grep "instanceType" | awk 'BEGIN {FS=":"} {print $2}')" >> test.log
+echo "$(curl -s $(echo ${helper_cloud}_metadata_url) | grep "instanceType" | awk 'BEGIN {FS=":"} {print $2}')" >> test.log
 
 echo -e "Begin Test\n" >> test.log
 #for bat in $(ls $DIR/cases/*.bats); do
@@ -33,17 +37,25 @@ echo -e "Begin Test\n" >> test.log
 #  fi
 #done
 
-#Install vcfdiff
-mkdir -p vcfdiff
-aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ vcfdiff > /dev/null
+if [ $helper_cloud = "aws" ]; then
+# copy reference
+   aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38/*" --exclude "org-sa/*" > /dev/null
+# install vcfdiff
+   aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ vcfdiff > /dev/null
+# Download FASTQ and Baseline
+   aws s3 sync s3://fcs-genome-data/fastq/sampled/ $WORKDIR/fastq/ > /dev/null
+   aws s3 sync s3://fcs-genome-data/baselines/sampled/ $WORKDIR/baseline/ > /dev/null
+else
+# copy reference
+   cp -r /genome/ref /local/ref
+# copy vcfdiff
+   
+# copy fastq and baseline
+   cp -r /genome/fastq/sampled $WORKDIR/fastq
+   cp -r /genome/baselines/sampled/ $WORKDIR/baseline/
+fi;
 
 start_ts=$(date +%s)
-
-# Download FASTQ and Baseline
-mkdir -p $WORKDIR/fastq/
-aws s3 sync s3://fcs-genome-data/data-suite/Performance-testing/daily/ $WORKDIR/fastq/ > /dev/null
-mkdir -p $WORKDIR/baseline
-aws s3 sync s3://fcs-genome-data/Validation-baseline/GATK-3.8/ $WORKDIR/baseline/ > /dev/null
 
 # Download 'small' set for environment test
 # mkdir -p $WORKDIR/small
@@ -67,6 +79,6 @@ done <$mutect2_list
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> test.log
 
-aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
+# aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject "Results Validation: FROM ${HOSTNAME}" --message file://test.log
 
 
