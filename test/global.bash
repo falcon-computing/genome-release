@@ -19,7 +19,7 @@ db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
-VCFDIFF=${DIR}/vcfdiff/vcfdiff
+VCFDIFF=local/vcfdiff/vcfdiff
 
 data_list=data.list
 mutect2_list=mutect2.list

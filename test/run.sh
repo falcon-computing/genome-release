@@ -9,9 +9,9 @@ fi;
 
 #Mount local
 # mount_local;
-mkdir -p /local/temp/
-mkdir -p /local/ref/
-mkdir -p vcfdiff
+mkdir -p /local/temp
+mkdir -p /local/ref
+mkdir -p /local/vcfdiff
 mkdir -p $WORKDIR/fastq
 mkdir -p $WORKDIR/baseline
 
@@ -41,7 +41,7 @@ if [ $helper_cloud = "aws" ]; then
 # copy reference
    aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38/*" --exclude "org-sa/*" > /dev/null
 # install vcfdiff
-   aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ vcfdiff > /dev/null
+   aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ /local/vcfdiff/ > /dev/null
 # Download FASTQ and Baseline
    aws s3 sync s3://fcs-genome-data/fastq/sampled/ $WORKDIR/fastq/ > /dev/null
    aws s3 sync s3://fcs-genome-data/baselines/sampled/ $WORKDIR/baseline/ > /dev/null
@@ -49,7 +49,7 @@ else
 # copy reference
    cp -r /genome/ref /local/ref
 # copy vcfdiff
-   
+   cp /genome/tools/vcfdiff /local/vcfdiff/
 # copy fastq and baseline
    cp -r /genome/fastq/sampled $WORKDIR/fastq
    cp -r /genome/baselines/sampled/ $WORKDIR/baseline/
