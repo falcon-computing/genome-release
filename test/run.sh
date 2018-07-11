@@ -43,8 +43,10 @@ if [ $helper_cloud = "aws" ]; then
 # install vcfdiff
    aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ /local/vcfdiff/ > /dev/null
 # Download FASTQ and Baseline
-   aws s3 sync s3://fcs-genome-data/fastq/sampled/ $WORKDIR/fastq/ > /dev/null
-   aws s3 sync s3://fcs-genome-data/baselines/sampled/ $WORKDIR/baseline/ > /dev/null
+   mkdir -p /local/fastq
+   mkdir -p /local/baselines
+   aws s3 sync s3://fcs-genome-data/fastq/sampled/* $WORKDIR/fastq/* > /dev/null
+   aws s3 sync s3://fcs-genome-data/baselines/sampled/* $WORKDIR/baselines/* > /dev/null
 else
 # copy reference
    if [ ! -d "/local/ref" ]; then

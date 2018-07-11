@@ -11,9 +11,9 @@ GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
 WORKDIR=/local/work_dir
 fastq_dir=$WORKDIR/fastq
-baseline=$WORKDIR/baseline
+baseline=$WORKDIR/baselines
 
-ref_dir=/local/ref/
+ref_dir=/local/ref
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
