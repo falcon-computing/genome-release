@@ -9,13 +9,19 @@ helper_normalRun() {
   local -r tumor=tumor_sample
   run ${FCSBIN} mutect2 \
     -r ${ref_genome} \
-    --normal $baseline/$id/${normal}_BAM.bam \
-    --tumor $baseline/$id/${tumor}_BAM.bam \
+    --normal $baseline/mutect2/3.8/$id/${normal}_BAM.bam \
+    --tumor $baseline/mutect2/3.8/$id/${tumor}_BAM.bam \
     --dbsnp $db138_SNPs \
     --cosmic $cosmic \
     -o $WORKDIR/${id}.vcf -f
 
-  echo "${FCSBIN} mutect2 -r ${ref_genome} --normal $baseline/$id/${normal}_BAM.bam --tumor $baseline/$id/${tumor}_BAM.bam --dbsnp $db138_SNPs --cosmic $cosmic -o $WORKDIR/${id}.vcf -f"
+  echo "${FCSBIN} mutect2 \
+-r ${ref_genome} \
+--normal $baseline/mutect2/3.8/$id/${normal}_BAM.bam \
+--tumor $baseline/mutect2/3.8/$id/${tumor}_BAM.bam \
+--dbsnp $db138_SNPs \
+--cosmic $cosmic \
+-o $WORKDIR/${id}.vcf -f"
 
   [ "$status" -eq 0 ]
   [ -f $WORKDIR/${id}.vcf.gz ]

@@ -7,8 +7,8 @@ helper_normalRun() {
   local -r id="$1"
   run ${FCSBIN} printreads \
     -r $ref_genome \
-    -b $baseline/${id}/${id}_BQSR.table \
-    -i $baseline/${id}/${id}_marked.bam \
+    -b $baseline/baserecal/3.8/${id}_BQSR.table \
+    -i $baseline/bwa/${id}_marked.bam \
     -o $WORKDIR/${id}_final_BAM.bam -f 
   
   echo "${output}"

@@ -7,13 +7,13 @@ helper_normalRun() {
   local -r id="$1"
   run ${FCSBIN} baserecal \
     -r ${ref_genome} \
-    -i $baseline/${id}/${id}_marked.bam \
+    -i $baseline/bwa/${id}_marked.bam \
     -o $WORKDIR/${id}_BQSR.table \
     --knownSites $db138_SNPs \
     --knownSites $g1000_indels \
     --knownSites $g1000_gold_standard_indels -f 
 
-  echo "${FCSBIN} baserecal -r ${ref_genome} -i $baseline/${id}/${id}_marked.bam -o $WORKDIR/${id}_BQSR.table --knownSites $db138_SNPs --knownSites $g1000_indels --knownSites $g1000_gold_standard_indels -f"
+  echo "${FCSBIN} baserecal -r ${ref_genome} -i $baseline/bwa/${id}_marked.bam -o $WORKDIR/${id}_BQSR.table --knownSites $db138_SNPs --knownSites $g1000_indels --knownSites $g1000_gold_standard_indels -f"
   [ "$status" -eq 0 ]
   [ -f $WORKDIR/${id}_BQSR.table ]
 }

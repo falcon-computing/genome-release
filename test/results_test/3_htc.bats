@@ -7,10 +7,10 @@ helper_normalRun() {
   local -r id="$1"
   run ${FCSBIN} htc \
     -r ${ref_genome} \
-    -i $baseline/${id}/${id}_final_BAM.bam \
+    -i $baseline/printreads/3.8/${id}_final_BAM.bam \
     -o $WORKDIR/${id}.vcf --produce-vcf -f
   
-  echo "${FCSBIN} htc -r ${ref_genome} -i $baseline/${id}/${id}_final_BAM.bam -o $WORKDIR/${id}.vcf --produce-vcf -f"
+  echo "${FCSBIN} htc -r ${ref_genome} -i $baseline/printreads/3.8/${id}_final_BAM.bam -o $WORKDIR/${id}.vcf --produce-vcf -f"
   [ "$status" -eq 0 ]
   [ -f $WORKDIR/${id}.vcf.gz ]
 }
