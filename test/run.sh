@@ -12,8 +12,6 @@ fi;
 mkdir -p /local/temp
 mkdir -p /local/ref
 mkdir -p /local/vcfdiff
-mkdir -p $WORKDIR/fastq
-mkdir -p $WORKDIR/baseline
 
 #Print versions
 echo -e "\n"  >> test.log
@@ -39,7 +37,9 @@ echo -e "Begin Test\n" >> test.log
 
 if [ $helper_cloud = "aws" ]; then
 # copy reference
-   aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38/*" --exclude "org-sa/*" > /dev/null
+   if [ ! -d "/local/ref" ]; then
+     aws s3 sync s3://fcs-genome-data/ref/ /local/ref/ --exclude "v38/*" --exclude "org-sa/*" > /dev/null
+   fi;
 # install vcfdiff
    aws s3 sync s3://fcs-genome-data/tools/vcfdiff/ /local/vcfdiff/ > /dev/null
 # Download FASTQ and Baseline
@@ -47,12 +47,20 @@ if [ $helper_cloud = "aws" ]; then
    aws s3 sync s3://fcs-genome-data/baselines/sampled/ $WORKDIR/baseline/ > /dev/null
 else
 # copy reference
-   cp -r /genome/ref /local/ref
+   if [ ! -d "/local/ref" ]; then
+     cp -r /genome/ref /local/
+   fi;
 # copy vcfdiff
    cp /genome/tools/vcfdiff /local/vcfdiff/
 # copy fastq and baseline
-   cp -r /genome/fastq/sampled $WORKDIR/fastq
-   cp -r /genome/baselines/sampled/ $WORKDIR/baseline/
+   if [ ! -d "/local/work_dir/fastq" ]; then
+   cp -r /genome/fastq/sampled $WORKDIR
+   mv $WORKDIR/sampled $WORKDIR/fastq
+   fi;
+   if [ ! -d "/local/work_dir/baselines" ]; then
+   cp -r /genome/baselines/sampled $WORKDIR
+   mv $WORKDIR/sampled $WORKDIR/baselines
+   fi;
 fi;
 
 start_ts=$(date +%s)
