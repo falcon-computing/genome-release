@@ -13,6 +13,7 @@
 	- [Common Options Among Methods](#common-options-among-methods)
 	- [fcs-genome align](#fcs-genome-align)
 	- [fcs-genome markdup](#fcs-genome-markdup)
+	- [fcs-genome depth](#fcs-genome-depth)
 	- [fcs-genome indel](#fcs-genome-indel)
 	- [fcs-genome bqsr](#fcs-genome-bqsr)
 	- [fcs-genome baserecal](#fcs-genome-baserecal)
@@ -182,6 +183,17 @@ Take a BAM file and perform Base Quality Score Recalibration. It can be performe
 | -i | --input | String(\*) | input BAM file |
 | -o | --output | String(\*) | output BAM file |
 | -K | --knownSites | String(\*) | known indels for realignment (VCF format). If more VCF are considered, add -K for each file |
+
+### fcs-genome depth
+Take a BAM file and perform Depth of Coverage.
+
+| Option | Alternative | Argument | Description |
+| --- | --- | --- | --- |
+| -r | --ref | String(\*) | reference genome path |
+| -i | --input | String(\*) | input BAM file |
+| -o | --output | String(\*) | output string filename |
+| -L | --intervalList |  | interval List of regions in the genome where the coverage will be computed (BED Format) |
+| -g | --genesList |  | genes List of regions in the genome where the coverage will be computed |
 
 ### fcs-genome baserecal
 Take a BAM file and generate a Base Quality Score Recalibration.  
