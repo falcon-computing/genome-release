@@ -160,7 +160,7 @@ function compare_pr_BAM {
   proc_id2=0;
   proc_id3=0;
 
-  for file in $(ls $baseline/${id}/${id}_final_BAM.bam/*.bam)
+  for file in $(ls $baseline/printreads/3.8/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
     samtools view $file > $WORKDIR/${part}_base_bwa.sam &
@@ -239,7 +239,7 @@ function compare_pr_flagstat {
   proc_id2=0;
   proc_id3=0;
 
-  for file in $(ls $baseline/${id}/${id}_final_BAM.bam/*.bam)
+  for file in $(ls $baseline/printreads/3.8/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
     samtools flagstat $file > $WORKDIR/${part}_base_flagstat &
