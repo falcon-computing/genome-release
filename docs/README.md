@@ -144,9 +144,21 @@ Perform alignment using the Burrows-Wheeler Algorithm. It is the equivalent of b
 | -S | --sp | String(\*) | sample ID ('SM' in BAM header) |
 | -P | --pl | String(\*) | platform ID ('PL' in BAM header) |
 | -L | --lb | String(\*) | library ID ('LB' in BAM header) |
+| -F | --samplelist | String(\*) | Sample Sheet in CSV format or Folder Path where all FASTQ files are located.
 | -l | --align-only | | skip mark duplicates |
 
-Note: Currently, -O [ --extra-options] supports only fcs-genome align options. The extra options available are:
+Sample Sheet format should look like as follows:
+```
+#sample_id,fastq1,fastq2,rg,platform_id,library_id
+sampleA,/genome/disk1/benchmarking/worker_test/fastq/sampleA_L001_1.fastq.gz,/genome/disk1/benchmarking/worker_test/fastq/sampleA_L001_2.fastq.gz,RGA1,Illumina,LIB-A
+sampleA,/genome/disk1/benchmarking/worker_test/fastq/sampleA_L002_1.fastq.gz,/genome/disk1/benchmarking/worker_test/fastq/sampleA_L002_2.fastq.gz,RGA2,Illumina,LIB-A
+sampleB,/genome/disk1/benchmarking/worker_test/fastq/sampleB_1.fastq.gz,/genome/disk1/benchmarking/worker_test/fastq/sampleB_2.fastq.gz,RGB,Illumina,LIB-B
+sampleC,/genome/disk1/benchmarking/worker_test/fastq/sampleC_1.fastq.gz,/genome/disk1/benchmarking/worker_test/fastq/sampleC_2.fastq.gz,RGC,Illumina,LIB-C
+sampleD,/genome/disk1/benchmarking/worker_test/fastq/sampleD_1.fastq.gz,/genome/disk1/benchmarking/worker_test/fastq/sampleD_2.fastq.gz,RGD,Illumina,LIB-D
+```
+It should contain a header with the fields: sample_id,fastq1,fastq2,rg,platform_id,and library_id. FASTQ filenames should contain the full path as shown above.
+
+Currently, -O [ --extra-options] supports only fcs-genome align options. The extra options available are:
 
 | Option | Argument | Description |
  --- | --- | --- |
@@ -154,6 +166,7 @@ Note: Currently, -O [ --extra-options] supports only fcs-genome align options. T
 | -R | String | like in -R arg in original BWA (default: "")|
 | -filter | Int32 | Filtering out records with INT bit seton the FLAG field, similar to the -F argument in samtools (default: 0)|
 | -t | int32 | like in -t arg in original BWA, total number of parallel threads (default: 32) |
+
 
 ### fcs-genome markdup
 Takes a BAM file and mark duplicates the reads.
