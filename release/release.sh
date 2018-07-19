@@ -105,8 +105,13 @@ cp -r $repo_dir/tools/* falcon/tools/
 
 copy_file "fcs-genome/${fcs_genome_version}/fcs-genome" falcon/bin/fcs-genome
 copy_file "bwa/${bwa_version}/bwa" falcon/tools/bin/bwa-bin
-copy_file "blaze/${blaze_version}" falcon/tools/blaze
-copy_file "blaze-conf/${blaze_conf_version}/conf" falcon/tools/blaze/
+
+if [ $blaze_version = "null" ] || [ $blaze_conf_version = "null" ]; then
+  echo "skip blaze in package"
+else
+  copy_file "blaze/${blaze_version}" falcon/tools/blaze
+  copy_file "blaze-conf/${blaze_conf_version}/conf" falcon/tools/blaze/
+fi
 
 # copy all gatk versions
 for major_version in 3.6 3.7 3.8; do
@@ -118,8 +123,16 @@ for major_version in 3.6 3.7 3.8; do
 done
 
 # copy sw bitstream
-copy_file "sw-bitstream/${sw_bit_version}/bitstream.xclbin" falcon/tools/bitstreams/
-copy_file "pmm-bitstream/${pmm_bit_version}/pmm.xclbin" falcon/tools/bitstreams/
+if [ $sw_bit_version = "null" ]; then
+  echo "skip sw.xclbin"
+else
+  copy_file "sw-bitstream/${sw_bit_version}/bitstream.xclbin" falcon/tools/bitstreams/
+fi
+if [ $pmm_bit_version = "null" ]; then
+  echo "skip pmm.xclbin"
+else
+  copy_file "pmm-bitstream/${pmm_bit_version}/pmm.xclbin" falcon/tools/bitstreams/
+fi
 
 echo "Creating the tarball..."
 tar pzcfh falcon-genome-${release_version}.tgz falcon/
