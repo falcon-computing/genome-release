@@ -2,7 +2,7 @@
 
 load ../global
 
-DIR=/genome/example/small
+DIR=/local/work_dir/small
 
 INPUT_MDBAMDIR=$DIR/markdups
 INPUT_MDBAM=${INPUT_MDBAMDIR}/small_marked_sorted.bam

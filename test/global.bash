@@ -1,31 +1,28 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-<<com
-if [ -z "$FALCON_DIR" ]; then
-  FALCON_DIR=$DIR/../release/falcon
-fi
 
-FALCON_DIR=$DIR/../release/falcon
-com
-FALCON_DIR=/curr/niveda/falcon-genome/
+if [ -z "$FALCON_DIR" ]; then
+  FALCON_DIR=/usr/local/falcon/
+fi
 
 FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-bin
 GATK=$FALCON_DIR/tools/package/GenomeAnalysisTK.jar
 
-WORKDIR=$DIR/temp
+WORKDIR=/local/work_dir
+fastq_dir=$WORKDIR/fastq
+baseline=$WORKDIR/baselines
 
-ref_dir=/pool/local/ref/
+ref_dir=/local/ref
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
+cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
+VCFDIFF=local/vcfdiff/vcfdiff
 
-baseline=$WORKDIR/A15_sample_baseline
-BAM_baseline=$baseline/A15_sample_marked.bam
-BQSR_baseline=$baseline/A15_sample_BQSR.table
-VCF_baseline=$baseline/A15_sample.vcf.gz
-PR_baseline=$baseline/A15_sample_final_BAM.bam 
+data_list=data.list
+mutect2_list=mutect2.list
 
 function check_dev_version {
   local bin=$1;
@@ -33,99 +30,140 @@ function check_dev_version {
   if [ "${version: -4}" == "-dev" ]; then
     return 0
   else
+    echo "Incorrect dev version"
     return 1
   fi;
 }
 
 function compare_BAM {
+
   local BAM=$1;
+  local id=$2;
   #convert BAM to SAM
-  samtools view -h "$BAM" | sort > $WORKDIR/subject_bwa.sam
-  samtools view -h "$BAM_baseline" | sort > $WORKDIR/baseline_bwa.sam 
+  export TMPDIR=/local/temp/
+  samtools view "$BAM" | sort > $WORKDIR/subject_bwa.sam;
+  samtools view "$baseline/bwa/${id}_marked.bam" | sort > $WORKDIR/baseline_bwa.sam; 
   
-  DIFF=$(diff $WORKDIR/subject_bwa.sam $WORKDIR/baseline_bwa.sam)
-  if [ "DIFF" == "" ]; then
-    result_bam=0
+  md5sum1=$(md5sum $WORKDIR/subject_bwa.sam | awk '{print $1}');
+  md5sum2=$(md5sum $WORKDIR/baseline_bwa.sam | awk '{print $1}');
+ 
+  if [ "$md5sum1" == "$md5sum2" ]; then
+    return 0
   else
-    result_bam=1
-  fi
+    echo "Failed BAM compare for $id"
+    return 1
+  fi;
+
 }
 
 function compare_flagstat {
-  local BAM=$1;
-  samtools flagstat $BAM > $WORKDIR/subject_flagstat
-  samtools flagstat $BAM_baseline > $WORKDIR/baseline_flagstat
-  
-  DIFF=$(diff $WORKDIR/subject_flagstat $WORKDIR/baseline_flagstat)
-  if [ "$DIFF" == "" ]; then
-    result_flagstat=0
-  else
-    result_flagstat=1
-  fi
-}
 
-function compare_idxstats {
   local BAM=$1;
-  samtools idxstats $BAM > $WORKDIR/subject_idxstats
-  samtools idxstats $BAM_baseline > $WORKDIR/baseline_idxstats
+  local id=$2;
+  threshold=0.05;
+  equal=0.00;
+  samtools flagstat $BAM > $WORKDIR/subject_flagstat;
+  samtools flagstat $baseline/bwa/${id}_marked.bam > $WORKDIR/baseline_flagstat;
   
-  DIFF=$(diff $WORKDIR/subject_idxstats $WORKDIR/baseline_idxstats)
-  if [ "$DIFF" == "" ]; then
-    result_idxstats=0
-  else
-    result_idxstats=1
-  fi
+  b_array=( $(cat $WORKDIR/baseline_flagstat | awk '{print $1}') );
+  s_array=( $(cat $WORKDIR/subject_flagstat | awk '{print $1}') );
+  
+  #IFS=$'\n' echo ${b_array[*]};
+  #echo "subject";
+  #IFS=$'\n' echo ${s_array[*]};
+  for idx in ${!b_array[*]}; do
+    DIFF=$(( ${b_array[$idx]} - ${s_array[$idx]} ))
+    
+    if [ $DIFF -ne 0 ]; then
+      #return 0
+    #else
+       #equal= $((echo "scale=6; sqrt(($DIFF / ${b_array[$idx]})^2)" | bc))
+      equal=$(awk -v dividend="$DIFF" -v divisor="${b_array[$idx]}" 'BEGIN {printf "%.6f",sqrt((dividend/divisor)^2); exit(0)}')
+      if (( $(echo "$equal $threshold" | awk '{print ($1 >= $2)}') )); then
+        echo "Failed flagstat compare for $id"
+        return 1
+      fi
+    fi
+  done;
+  return 0;
 }
 
 function compare_bqsr {
+
   local BQSR=$1;
-  DIFF=$(diff $BQSR $BQSR_baseline)
+  local id=$2;
+  DIFF=$(diff $BQSR $baseline/$/${id}_BQSR.table);
   
   if [ "$DIFF" == "" ]; then
-    result_bqsr=0
+    return 0
   else
-    result_bqsr=1
-  fi
+    echo "Failed BQSR compare for $id"
+    return 1
+  fi;
+
 }
 
 function compare_vcf {
+
   local VCF=$1;
-  if [[ $VCF_baseline == *.vcf.gz ]]; then
-    gunzip -c $VCF_baseline > $WORKDIR/base.vcf
-  fi
-  grep "^[^#]" $WORKDIR/base.vcf > $WORKDIR/base_grep.vcf
+  local id=$2;
+  gunzip -c "$baseline/htc/${id}.vcf.gz" > $WORKDIR/base.vcf;
+  grep "^[^#]" $WORKDIR/base.vcf > $WORKDIR/base_grep.vcf;
 
   if [[ $VCF == *.vcf.gz ]];then
     gunzip -c $VCF > $WORKDIR/mod.vcf
-  fi
-  grep "^[^#]" $WORKDIR/mod.vcf > $WORKDIR/mod_grep.vcf 
+  fi;
+  grep "^[^#]" $WORKDIR/mod.vcf > $WORKDIR/mod_grep.vcf;
 
-  DIFF=$(diff $WORKDIR/base_grep.vcf $WORKDIR/mod_grep.vcf)
+  DIFF=$(diff $WORKDIR/base_grep.vcf $WORKDIR/mod_grep.vcf);
   if [ "$DIFF" == "" ]; then
-    result_vcf=0
+    return 0
   else
-    result_vcf=1
-  fi
+    echo "Failed VCF compare for $id"
+    return 1
+  fi;
+
+}
+
+function compare_vcfdiff {
+
+  local VCF=$1;
+  local id=$2;
+
+  $VCFDIFF $baseline/htc/${id}.vcf.gz $VCF > $WORKDIR/vcfdiff.txt;
+
+  recall=$(tail -n 1 $WORKDIR/vcfdiff.txt | awk '{print $5}');
+  echo $recall;
+  min=0.99;
+  #if (( $(echo "$recall >= $min" | bc -l) )) ; then
+  if (( $(echo "$recall $min" | awk '{print ($1 >= $2)}') ));then
+    return 0
+  else
+    echo "Failed vcfdiff compare for $id"
+    return 1
+  fi;
+
 }
 
 function compare_pr_BAM {
+
   local BAM=$1;
-
+  local id=$2;
   #Declare array 
-  declare -A pid_table1
-  declare -A pid_table2
-  declare -A pid_table3
+  declare -A pid_table1;
+  declare -A pid_table2;
+  declare -A pid_table3;
 
-  num_proc=16
+  num_proc=16;
 
-  proc_id1=0
-  proc_id2=0
-  proc_id3=0
+  proc_id1=0;
+  proc_id2=0;
+  proc_id3=0;
 
-  for file in $(ls $PR_baseline/*.bam)
+  for file in $(ls $baseline/printreads/3.8/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
-    samtools view -h $file | sort > $WORKDIR/${part}_base_bwa.sam &
+    samtools view $file > $WORKDIR/${part}_base_bwa.sam &
 
     pid_table1["$proc_id1"]=$!
     proc_id1=$(($proc_id1 + 1))
@@ -135,9 +173,9 @@ function compare_pr_BAM {
         wait "${pid_table1["$i"]}"
       done
       proc_id1=0
-    fi
+    fi;
 
-    samtools view -h $BAM/$part > $WORKDIR/${part}_mod_bwa.sam &
+    samtools view $BAM/$part > $WORKDIR/${part}_mod_bwa.sam &
     pid_table2["$proc_id2"]=$!
     proc_id2=$(($proc_id2 + 1))
     if [ $proc_id2 -eq $num_proc ];then
@@ -147,57 +185,61 @@ function compare_pr_BAM {
       done
       proc_id2=0
     fi
-  done
+  done;
 
   for i in $(seq 0 $(($proc_id1 - 1))); do
     wait "${pid_table1["$i"]}"
-  done
+  done;
   for i in $(seq 0 $(($proc_id2 - 1))); do
     wait "${pid_table2["$i"]}"
-  done
-
+  done;
+  md5sum1="";
+  md5sum2="";
   for file in $(ls $WORKDIR/*_base_bwa.sam)
   do
     part=`echo $(basename $file) | sed 's/_base_bwa.sam//'`
-    DIFF+=$(diff $WORKDIR/${part}_base_bwa.sam $WORKDIR/${part}_mod_bwa.sam &)
-
-    pid_table3["$proc_id3"]=$!
-    proc_id3=$(($proc_id3 + 1))
-    if [ $proc_id3 -eq $num_proc ];then
+    md5sum1+=$(md5sum $WORKDIR/${part}_base_bwa.sam | awk '{print $1}' )
+    md5sum2+=$(md5sum $WORKDIR/${part}_mod_bwa.sam | awk '{print $1}' )
+    
+    #pid_table3["$proc_id3"]=$!
+    #proc_id3=$(($proc_id3 + 1))
+    #if [ $proc_id3 -eq $num_proc ];then
     #Wait for current tasks
-      for i in $(seq 0 $(($proc_id3 - 1)));do
-        wait "${pid_table3["$i"]}"
-      done
-      proc_id3=0
-    fi
- done
- for i in $(seq 0 $(($proc_id3 - 1))); do
-   wait "${pid_table3["$i"]}"
- done
+    #  for i in $(seq 0 $(($proc_id3 - 1)));do
+    #    wait "${pid_table3["$i"]}"
+    #  done
+    #  proc_id3=0
+    #fi
+ done;
+ #for i in $(seq 0 $(($proc_id3 - 1))); do
+ #  wait "${pid_table3["$i"]}"
+ #done;
 
- if [ "$DIFF" == "" ]; then
-   results_pr_BAMs=0
+ if [ "$md5sum1" == "$md5sum2" ]; then
+   return 0
  else
-   results_pr_BAM=1
- fi
+   echo "Failed BAM compare for $id"
+   return 1
+ fi;
 
 }
 
 function compare_pr_flagstat {
+
   local BAM=$1;
-  
+  local id=$2;
   #Declare array 
-  declare -A pid_table1
-  declare -A pid_table2
-  declare -A pid_table3
+  declare -A pid_table1;
+  declare -A pid_table2;
+  declare -A pid_table3;
 
-  num_proc=16
+  num_proc=16;
 
-  proc_id1=0
-  proc_id2=0
-  proc_id3=0
+  proc_id1=0;
+  proc_id2=0;
+  proc_id3=0;
 
-  for file in $(ls $PR_baseline/*.bam)
+  for file in $(ls $baseline/printreads/3.8/${id}_final_BAM.bam/*.bam)
   do
     part=`echo $(basename $file)`
     samtools flagstat $file > $WORKDIR/${part}_base_flagstat &
@@ -210,7 +252,7 @@ function compare_pr_flagstat {
         wait "${pid_table1["$i"]}"
       done
       proc_id1=0
-    fi 
+    fi
     
     samtools flagstat $BAM/$part > $WORKDIR/${part}_mod_flagstat &
     pid_table2["$proc_id2"]=$!
@@ -222,14 +264,14 @@ function compare_pr_flagstat {
       done
       proc_id2=0
     fi
-  done
+  done;
 
   for i in $(seq 0 $(($proc_id1 - 1))); do
     wait "${pid_table1["$i"]}"
-  done
+  done;
   for i in $(seq 0 $(($proc_id2 - 1))); do
     wait "${pid_table2["$i"]}"
-  done
+  done;
 
   for file in $(ls $WORKDIR/*_base_flagstat)
   do
@@ -245,91 +287,16 @@ function compare_pr_flagstat {
       done
       proc_id3=0
     fi
- done
+ done;
  for i in $(seq 0 $(($proc_id3 - 1))); do
    wait "${pid_table3["$i"]}"
- done
+ done;
   
  if [ "$DIFF" == "" ]; then
-   results_pr_flagstats=0
+   return 0
  else
-   results_pr_flagstats=1
- fi
-
-}
-
-
-function compare_pr_idxstat {
-  local BAM=$1;
-
-  #Declare array 
-  declare -A pid_table1
-  declare -A pid_table2
-  declare -A pid_table3
-
-  num_proc=16
-
-  proc_id1=0
-  proc_id2=0
-  proc_id3=0
-
-  for file in $(ls $PR_baseline/*.bam)
-  do
-    part=`echo $(basename $file)`
-    samtools idxstats $file > $WORKDIR/${part}_base_idxstats &
-
-    pid_table1["$proc_id1"]=$!
-    proc_id1=$(($proc_id1 + 1))
-    if [ $proc_id1 -eq $num_proc ];then
-    #Wait for current tasks
-      for i in $(seq 0 $(($proc_id1 - 1)));do
-        wait "${pid_table1["$i"]}"
-      done
-      proc_id1=0
-    fi
-
-    samtools idxstats $BAM/$part > $WORKDIR/${part}_mod_idxstats &
-    pid_table2["$proc_id2"]=$!
-    proc_id2=$(($proc_id2 + 1))
-    if [ $proc_id2 -eq $num_proc ];then
-    #Wait for current tasks
-      for i in $(seq 0 $(($proc_id2 - 1)));do
-        wait "${pid_table2["$i"]}"
-      done
-      proc_id2=0
-    fi
-  done
-
-  for i in $(seq 0 $(($proc_id1 - 1))); do
-    wait "${pid_table1["$i"]}"
-  done
-  for i in $(seq 0 $(($proc_id2 - 1))); do
-    wait "${pid_table2["$i"]}"
-  done
-
-  for file in $(ls $WORKDIR/*_base_idxstats)
-  do
-    part=`echo $(basename $file) | sed 's/_base_idxstats//'`
-    DIFF+=$(diff $WORKDIR/${part}_base_idxstats $WORKDIR/${part}_mod_idxstats &)
-
-    pid_table3["$proc_id3"]=$!
-    proc_id3=$(($proc_id3 + 1))
-    if [ $proc_id3 -eq $num_proc ];then
-    #Wait for current tasks
-      for i in $(seq 0 $(($proc_id3 - 1)));do
-        wait "${pid_table3["$i"]}"
-      done
-      proc_id3=0
-    fi
- done
- for i in $(seq 0 $(($proc_id3 - 1))); do
-   wait "${pid_table3["$i"]}"
- done
-
- if [ "$DIFF" == "" ]; then
-   results_pr_idxstats=0
- else
-   results_pr_idxstats=1
- fi
+   echo "Failed flagstat compare for $id"
+   return 1
+ fi;
 
 }
