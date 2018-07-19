@@ -13,6 +13,7 @@
 	- [Common Options Among Methods](#common-options-among-methods)
 	- [fcs-genome align](#fcs-genome-align)
 	- [fcs-genome markdup](#fcs-genome-markdup)
+	- [fcs-genome depth](#fcs-genome-depth)
 	- [fcs-genome indel](#fcs-genome-indel)
 	- [fcs-genome bqsr](#fcs-genome-bqsr)
 	- [fcs-genome baserecal](#fcs-genome-baserecal)
@@ -184,6 +185,22 @@ Take a BAM file and perform Base Quality Score Recalibration. It can be performe
 | -o | --output | String(\*) | output BAM file |
 | -K | --knownSites | String(\*) | known indels for realignment (VCF format). If more VCF are considered, add -K for each file |
 
+### fcs-genome depth
+Take a BAM file and perform Depth of Coverage.
+
+| Option | Alternative | Argument | Description |
+| --- | --------------- | --- | --- |
+| -r | --ref | String(\*) | reference genome path |
+| -i | --input | String(\*) | input BAM file or folder containing Parts BAM files |
+| -o | --output | String(\*) | output string filename |
+| -L | --intervalList | String | interval List of regions in the genome where the coverage will be computed (BED Format) |
+| -g | --genesList | String | genes list of regions in the genome where the coverage will be computed |
+| -b | --omitBaseOutput |  | omit output coverage depth at each base | 
+| -v | --omitIntervalst |  | omit output coverage per-interval statistics | 
+| -s | --omitSampleSummary |  | omit output summary files for each sample | 
+
+NOTE: Please see Quick Start for examples of how to use this feature properly. 
+
 ### fcs-genome baserecal
 Take a BAM file and generate a Base Quality Score Recalibration.  
 
@@ -339,6 +356,57 @@ fcs-genome baserecal \
   -K $ThousandGen -K $Mills -K $SNP"
 ```
 The command also works with a single BAM file.
+
+### Computing Depth of Coverage in a BAM File:
+fcs-genome depth performs depth of coverage in a BAM file. It reports a set of outputs where coverage is displayed at different fashion. Several modes can be used according to the user's need. The basic mode is coverage over the reference:
+```
+REF="/local/ref/human_g1k_v37.fasta
+SAMPLE_ID="NA12878"
+BAM_INPUT=${SAMPLE_ID}_recal.bam
+OUTPUT=${SAMPLE_ID}_
+
+fcs-genome depth -r $REF -i ${BAM_INPUT} -o ${OUTPUT} 
+
+```
+In this mode, coverage will be computed using all the regions defined in the reference.  It is recommended to set the
+-b option to omit the output of coverage in each base which is a large file if Whole Genome is defined.  It also helps to
+speed up the computation.  Another mode is to compute coverage from a target file that contains genes names and their coordinates:
+```
+REF="/local/ref/human_g1k_v37.fasta
+SAMPLE_ID="NA12878"
+BAM_INPUT=${SAMPLE_ID}_recal.bam
+OUTPUT=${SAMPLE_ID}_
+
+fcs-genome depth -r $REF -i ${BAM_INPUT} -o ${OUTPUT}  -L MyGenesList.bed  -g MyGenesList.list
+
+```
+MyGenesList.bed is a BED file, three tab-delimited columns: chromosome, start, end, and sorted by chromosome and 
+position. MyGenesList.list contains multiple tab-delimited columns with information related to genes and their exons
+locations. The format follows the output generated in UCSC genome browser. For full details about the format and columns descriptions of the genes list, go to https://software.broadinstitute.org/gatk/documentation/article.php?id=40. 
+
+MyGenesList.bed and MyGenesList.list must be syncronized. Example:
+
+MyGenesList.bed:
+```
+1	11868	12227
+1	11873	12227
+1	12612	12721
+.
+.
+.
+```
+MyGenesList.list:
+```
+1	NR_148357	1	+	11868	12227	11868	12227	1	11868	12227	0	LOC102725121(chr1:11868-12227):NR_148357.1;	unk	unk	-1
+2	NR_046018	1	+	11873	12227	11873	12227	1	11873	12227	0	DDX11L1(chr1:11873-12227):NR_046018.1;	unk	unk	-1
+3	NR_148357	1	+	12612	12721	12612	12721	1	12612	12721	0	LOC102725121(chr1:12612-12721):NR_148357.2;	unk	unk	-1
+.
+.
+.
+```
+The BED file is sorted by chromosome and position. The columns in each line correspond to columns 3, 5 and 6, respectively from list file, which is also sorted as in the BED file. Each line has the gene name in column 13. The coverage outputs will display the coverage for each gene described in the line.
+
+If genes list is provided only, the coverage over the reference will be computed. If BED file is provided only, the coverage over the regions defined in the BED file will be reported. 
 
 ### Generating Genomic VCF (gVCF) file from a BAM file with Haplotype Caller
 fcs-genome htc performs germline variant calling using the input BAM file with default output format as gVCF. if --produce-vcf is set, a VCF file is produced.
