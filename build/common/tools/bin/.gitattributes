@@ -1,0 +1,8 @@
+bamUtil filter=lfs diff=lfs merge=lfs -text
+bcftools filter=lfs diff=lfs merge=lfs -text
+bgzip filter=lfs diff=lfs merge=lfs -text
+samtools filter=lfs diff=lfs merge=lfs -text
+tabix filter=lfs diff=lfs merge=lfs -text
+bwa-org filter=lfs diff=lfs merge=lfs -text
+sambamba filter=lfs diff=lfs merge=lfs -text
+vcf2tiledb filter=lfs diff=lfs merge=lfs -text
