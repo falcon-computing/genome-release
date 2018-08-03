@@ -4,6 +4,7 @@
 build_dir=/pool/local/diwu/build
 dst_dir=./falcon
 pwd_dir=$(pwd)
+script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # github locations
 fcs_genome_git=git@github.com:falcon-computing/falcon-genome.git
@@ -24,6 +25,8 @@ print_help() {
   echo "           local dir for the build, default is $build_dir";
   echo "   -u|--upload: ";
   echo "           whether to upload to s3 bucket, default false";
+  echo "   --no-fpga: ";
+  echo "           disable FPGA in the build, default false";
   echo "";
   echo "";
 }
@@ -38,6 +41,9 @@ while [[ $# -gt 0 ]]; do
   -d|--build-dir)
     build_dir="$2"
     shift
+    ;;
+  --no-fpga)
+    no_fpga=1
     ;;
   -u|--upload)
     upload=1
@@ -56,10 +62,18 @@ while [[ $# -gt 0 ]]; do
   shift # past argument or value
 done
 
+version=$(git describe --tags)
+
+log=build-${version}
+if [ ! -z "$platform" ]; then
+  log=${log}"-"${platform}
+fi
+log=${log}.log
+
 function check_run {
   local cmd="$@";
   >&2 echo "$cmd";
-  $cmd >> $pwd_dir/build.log 2>&1;
+  $cmd >> $pwd_dir/$log 2>&1;
   if [ "$?" -ne 0 ]; then
     echo "failed to execute: $cmd";
     exit 1
@@ -114,11 +128,25 @@ if [ -d $build_dir ]; then
 fi
 check_run mkdir -p $build_dir
 
+check_run rm -rf $dst_dir/
+
 # create destination dir ./falcon
 if [ -z "$platform" ]; then # regular
-  check_run rsync -av --exclude=".*" ./local $dst_dir
+  check_run rsync -av --exclude=".*" $script_dir/local/ $dst_dir/
 else
-  check_run rsync -av --exclude=".*" ./$platform $dst_dir
+  check_run rsync -av --exclude=".*" $script_dir/$platform/ $dst_dir/
+fi
+
+# copy common files to dest dir
+check_run rsync -av --exclude=".*" $script_dir/common/ $dst_dir/
+
+# load sdx
+if [ -z "$no_fpga" ]; then
+  source /curr/software/util/modules-tcl/init/bash
+  module load sdx/17.4
+else
+  # do not load fpga framework
+  echo "verbose: 0" > $dst_dir/blaze/conf
 fi
 
 # build projects
@@ -128,9 +156,8 @@ cmake_build $blaze_git $dst_dir/blaze
 gatk3_build $gatk3_git $dst_dir/tools/package/GATK3.jar
 
 # create tarball
-tarball=falcon-genome-release
-if [ -z "$platform" ]; then
+tarball=falcon-genome-${version}
+if [ ! -z "$platform" ]; then
   tarball=${tarball}-$platform
 fi
 check_run tar zcf ${tarball}.tgz falcon/
-
