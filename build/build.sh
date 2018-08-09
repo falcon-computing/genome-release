@@ -157,6 +157,9 @@ gatk3_build $gatk3_git $dst_dir/tools/package/GATK3.jar
 
 # create tarball
 tarball=falcon-genome-${version}
+if [ ! -z "$no_fpga" ]; then
+  tarball=${tarball}-sw
+fi
 if [ ! -z "$platform" ]; then
   tarball=${tarball}-$platform
 fi
