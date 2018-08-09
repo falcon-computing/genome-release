@@ -69,6 +69,7 @@ if [ -z "$platform" ]; then
   blaze_conf_version=$(get_version "blaze_conf")
   sw_bit_version=$(get_version "sw_bit")
   pmm_bit_version=$(get_version "pmm_bit")
+  conf_version=$(get_version "conf")
 else
   release_version=$(get_version "release")-$platform
   fcs_genome_version=$(get_version "fcs_genome")-$platform
@@ -78,10 +79,12 @@ else
   blaze_conf_version=$(get_version "blaze_conf")-$platform
   sw_bit_version=$(get_version "sw_bit")-$platform
   pmm_bit_version=$(get_version "pmm_bit")-$platform
+  conf_version=$(get_version "conf")-$platform
 fi
 
 echo "Creating release package version $release_version with: "
 echo "  - fcs-genome version: $fcs_genome_version"
+echo "  - conf       version: $conf_version"
 echo "  - bwa        version: $bwa_version"
 echo "  - gatk       version: $gatk_version"
 echo "  - blaze      version: $blaze_version"
@@ -97,7 +100,8 @@ mkdir -p falcon/tools/bitstreams
 # copy common files
 cp common/prepare-ref.sh falcon/
 cp common/example-wgs-germline.sh falcon/
-cp common/fcs-genome.conf falcon/
+#cp common/fcs-genome.conf falcon/
+copy_file "conf/$conf_version/fcs-genome.conf" falcon/fcs-genome.conf
 
 # copy all 3rd party tools
 aws s3 sync $s3_bucket/tools/ $repo_dir/tools/
