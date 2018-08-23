@@ -64,6 +64,8 @@ done
 
 version=$(git describe --tags)
 
+start_ts=$(date +%s)
+
 log=build-${version}
 if [ ! -z "$platform" ]; then
   log=${log}"-"${platform}
@@ -84,6 +86,7 @@ function git_clone {
   local loc=$1;
   local dir=$(basename $loc);
   dir=${dir%%.*};
+  export GIT_LFS_SKIP_SMUDGE=1;
   check_run git clone -b release --single-branch $loc;
   echo $dir;
 }
@@ -100,13 +103,13 @@ function cmake_build {
   check_run cd $dir/release;
   check_run cmake -DCMAKE_BUILD_TYPE=Release -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
   check_run make -j 8;
-  #check_run make test; # don't do unit test for now
+  check_run make test;
   check_run make install; # will copy to correct place
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;
 }
 
-function gatk3_build {
+function gatk_build {
   local git=$1;
   local dst=$(readlink -f $2); # making sure it's an absolute path
 
@@ -117,7 +120,7 @@ function gatk3_build {
 
   check_run cd $dir;
   check_run ./build.sh $platform;
-  check_run cp ./target/GenomeAnalysisTK.jar $dst;
+  check_run cp ./export/*.jar $dst;
 
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;
@@ -149,11 +152,15 @@ else
   echo "verbose: 0" > $dst_dir/blaze/conf
 fi
 
+# enable gcc-6
+#source scl_source enable devtoolset-4
+
 # build projects
 cmake_build $fcs_genome_git $dst_dir/bin
 cmake_build $bwa_git $dst_dir/tools/bin
 cmake_build $blaze_git $dst_dir/blaze
-gatk3_build $gatk3_git $dst_dir/tools/package/GATK3.jar
+gatk_build $gatk3_git $dst_dir/tools/package/GATK3.jar
+gatk_build $gatk4_git $dst_dir/tools/package/GATK4.jar
 
 # create tarball
 tarball=falcon-genome-${version}
@@ -164,3 +171,6 @@ if [ ! -z "$platform" ]; then
   tarball=${tarball}-$platform
 fi
 check_run tar zcf ${tarball}.tgz falcon/
+
+end_ts=$(date +%s)
+echo "Build finishes in $((end_ts - start_ts)) seconds"
