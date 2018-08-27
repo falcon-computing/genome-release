@@ -103,7 +103,7 @@ function cmake_build {
   check_run cd $dir/release;
   check_run cmake -DCMAKE_BUILD_TYPE=Release -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
   check_run make -j 8;
-  check_run make test;
+  #check_run make test;
   check_run make install; # will copy to correct place
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;
@@ -161,6 +161,9 @@ cmake_build $bwa_git $dst_dir/tools/bin
 cmake_build $blaze_git $dst_dir/blaze
 gatk_build $gatk3_git $dst_dir/tools/package/GATK3.jar
 gatk_build $gatk4_git $dst_dir/tools/package/GATK4.jar
+
+# fix sdaccel profile issue
+check_run cp $script_dir/common/tools/bin/sdaccel.ini $dst_dir/blaze/bin
 
 # create tarball
 tarball=falcon-genome-${version}
