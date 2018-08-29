@@ -1,0 +1,17 @@
+
+This package should contain the following folders:
+
+bats
+cloud-helper.sh
+features_test
+genome
+global.bash
+mutect2_test2
+regression.sh
+regression_test
+run.sh
+tb
+
+To execute, 
+
+nohup ./regression.sh

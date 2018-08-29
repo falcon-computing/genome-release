@@ -1,0 +1,104 @@
+SDAccel Profile Summary
+Generated on: 2018-08-14 14:19:20
+Msec since Epoch: 1534281560914
+Profiled application: pmm_tb
+Target platform: Xilinx
+Tool version: 2017.4
+Target devices: xilinx_vcu1525_dynamic_5_0-0
+Flow mode: System Run
+
+OpenCL API Calls
+API Name,Number Of Calls,Total Time (ms),Minimum Time (ms),Average Time (ms),Maximum Time (ms),
+clWaitForEvents,858,5675.1,0.157846,6.61434,282.97,
+clCreateProgramWithBinary,1,144.304,144.304,144.304,144.304,
+clCreateBuffer,572,24.0061,0.011315,0.0419686,1.92824,
+clSetKernelArg,1144,14.9741,0.000494,0.0130893,0.185405,
+clEnqueueTask,286,8.98091,0.020117,0.0314018,0.133708,
+clEnqueueMigrateMemObjects,572,7.04657,0.005687,0.0123192,0.117138,
+clReleaseEvent,858,1.71044,0.000325,0.00199352,0.015773,
+clGetEventProfilingInfo,572,1.65732,0.000821,0.00289741,0.0189,
+clReleaseMemObject,572,0.502913,0.000324,0.000879219,0.015572,
+clCreateKernel,1,0.022564,0.022564,0.022564,0.022564,
+clCreateContext,1,0.017356,0.017356,0.017356,0.017356,
+clCreateCommandQueue,1,0.01261,0.01261,0.01261,0.01261,
+clGetPlatformIDs,1,0.01243,0.01243,0.01243,0.01243,
+clGetDeviceIDs,1,0.009216,0.009216,0.009216,0.009216,
+clBuildProgram,1,0.008914,0.008914,0.008914,0.008914,
+clGetPlatformInfo,1,0.004598,0.004598,0.004598,0.004598,
+
+
+Kernel Execution
+Kernel,Number Of Enqueues,Total Time (ms),Minimum Time (ms),Average Time (ms),Maximum Time (ms),
+pmm_core_top0,286,5477.23,1.05772,19.1512,282.937,
+
+
+Compute Unit Utilization
+Device,Compute Unit,Kernel,Global Work Size,Local Work Size,Number Of Calls,Total Time (ms),Minimum Time (ms),Average Time (ms),Maximum Time (ms),Clock Frequency (MHz),
+xilinx_vcu1525_dynamic_5_0-0,pmm_core_top0_1,pmm_core_top0,1:1:1,1:1:1,286,5456.87,1.01147,19.08,282.861,194,
+
+
+Data Transfer: Host and Global Memory
+Context:Number of Devices,Transfer Type,Number Of Transfers,Transfer Rate (MB/s),Average Bandwidth Utilization (%),Average Size (KB),Total Time (ms),Average Time (ms),
+context0:1,READ,286,6287.308838,65.492800,1048.58,47.698108,0.166777,
+context0:1,WRITE,286,7261.324056,75.638792,3221.12,126.869468,0.443600,
+
+
+Data Transfer: Kernels and Global Memory
+Device,Compute Unit/Port Name,Kernel Arguments,DDR Bank,Transfer Type,Number Of Transfers,Transfer Rate (MB/s),Average Bandwidth Utilization (%),Average Size (KB),Average Latency (ns),
+
+
+Top Data Transfer: Kernels and Global Memory
+Device,Compute Unit,Number of Transfers,Average Bytes per Transfer,Transfer Efficiency (%),Total Data Transfer (MB),Total Write (MB),Total Read (MB),Transfer Rate (MB/s),Average Bandwidth Utilization (%),
+
+
+Top Kernel Execution
+Kernel Instance Address,Kernel,Context ID,Command Queue ID,Device,Start Time (ms),Duration (ms),Global Work Size,Local Work Size,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,7057.89,282.937,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,18085.3,275.712,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,19812.3,235.223,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,23575.6,229.948,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,7891.32,206.225,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,23058.8,192.04,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,14572.5,163.301,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,6304.03,132.907,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,3510.46,128.086,1:1:1,1:1:1,
+40932784,pmm_core_top0,0,0,xilinx_vcu1525_dynamic_5_0-0,19171.1,119.627,1:1:1,1:1:1,
+
+
+Top Buffer Writes
+Buffer Address,Context ID,Command Queue ID,Start Time (ms),Duration (ms),Buffer Size (KB),Writing Rate(MB/s),
+4272128,0,0,6120.76,0.499956,3221.12,6442.806967,
+0,0,0,23976.8,0.499035,3221.12,6454.697566,
+0,0,0,19404.1,0.498369,3221.12,6463.323361,
+4272128,0,0,21714.3,0.488265,3221.12,6597.073311,
+0,0,0,5991.56,0.488188,3221.12,6598.113841,
+4272128,0,0,14862.1,0.486562,3221.12,6620.163515,
+0,0,0,6303.36,0.486528,3221.12,6620.626151,
+4272128,0,0,20194.4,0.486395,3221.12,6622.436497,
+0,0,0,8267.03,0.485895,3221.12,6629.251176,
+0,0,0,3275.56,0.485863,3221.12,6629.687793,
+
+
+Top Buffer Reads
+Buffer Address,Context ID,Command Queue ID,Start Time (ms),Duration (ms),Buffer Size (KB),Reading Rate(MB/s),
+7495680,0,0,8097.68,0.265859,1048.58,3944.105710,
+7495680,0,0,19562.9,0.250466,1048.58,4186.500363,
+7495680,0,0,5921.84,0.249363,1048.58,4205.018387,
+7495680,0,0,6711.76,0.243682,1048.58,4303.050697,
+7495680,0,0,22277.2,0.242336,1048.58,4326.951010,
+7495680,0,0,5232.2,0.239479,1048.58,4378.571816,
+7495680,0,0,20235.1,0.238425,1048.58,4397.928070,
+7495680,0,0,14870.5,0.235966,1048.58,4443.758847,
+7495680,0,0,17655.4,0.234233,1048.58,4476.636512,
+7495680,0,0,7512,0.230149,1048.58,4556.074543,
+
+
+PRC Parameters
+Parameter,Element,Value,
+DEVICE_EXEC_TIME,xilinx_vcu1525_dynamic_5_0-0,30801.644348,
+CU_CALLS,xilinx_vcu1525_dynamic_5_0-0|pmm_core_top0_1,286,
+CU_CALLS,xilinx_vcu1525_dynamic_5_0-0|pmm_core_top1_1,0,
+CU_CALLS,xilinx_vcu1525_dynamic_5_0-0|pmm_core_top2_1,0,
+MEMORY_BIT_WIDTH,xilinx_vcu1525_dynamic_5_0-0,512,
+
+
