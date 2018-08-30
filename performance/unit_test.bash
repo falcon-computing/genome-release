@@ -109,7 +109,7 @@ if [ ! -d /local/TCRBOA1-N ];then
 fi 
 
 if [ ! -d /local/TCRBOA1-T ];then
-    echo"mkdir -p /local/TCRBOA1-T/gatk3"  >> ${run_file}
+    echo "mkdir -p /local/TCRBOA1-T/gatk3"  >> ${run_file}
     echo "mkdir -p /local/TCRBOA1-T/gatk4" >> ${run_file}
 fi
 
