@@ -265,7 +265,7 @@ In GATK 4.x, two more options (`--normal_name` and `--tumor_name`) are required 
 
 Additional documentations for GATK 4.x usage can be found in this [link](https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php).
 
-Panels of Normals (PON) is a VCF file generated from a collection of VCF files of normal samples. By definition, Normal samples are obtained from healthy tissues and their DNA are assumed not to have any somatic variants. Using a PON VCF file in the analysis helps to capture artifacts that appear recurrently in the sequencer and threfore improve variant calling analysis.  A common population variant resource containing allele-specific frequencies is also used in variant filtering. Mutect2 uses the PON to filter sites and the germline resource and matched normal to filter alleles.
+Panels of Normals (PON) is a VCF file generated from a collection of VCF files of normal samples. By definition, Normal samples are obtained from healthy tissues and their DNA are assumed not to have any somatic variants. Using a PON VCF file in the analysis helps to capture artifacts that appear recurrently in the sequencer and threfore improve variant calling analysis.  Another VCF file set by `--germline` that contains a common population variants with allele-specific frequencies is also used in variant filtering. Mutect2 uses these two VCF files to filter sites and the germline resource and matched normal to filter alleles.
 
 ### `fcs-genome depth` Options
 The `depth` command calculates the depth of coverage for a given BAM input files. It is equivalent to GATK 3.x *DepthOfCoverage* command. The output will be a set of reports depending on the options selected.
