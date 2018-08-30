@@ -16,7 +16,7 @@ source fcs_methods.bash
 function check_process(){
    REGION_STRING="--region "${REGION}
    TOPIC="--topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results"
-   SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running in "${CLOUD}" --message \"file://error.log\""
+   SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running in "${CLOUD}"\" --message \"file://error.log\""
    echo "if [ \$? -ne 0 ]; then"
    echo "   ERROR_MESSAGE=\"$1 Failed for $2\""
    echo "   echo \$ERROR_MESSAGE"
