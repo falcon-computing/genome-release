@@ -3,7 +3,7 @@
 if [[ $# -lt 4 ]]; then
   clear
   echo -e "\n"
-  echo -e "USAGE: $0 <test> <include: intel wes wgs baylor mutect2 all>  <capture: 0 (no capture) and 1 (capture)> <keepBAM>\n"
+  echo -e "USAGE: $0 <test> <include: intel wes wgs baylor mutect2 all>  <capture: 0 (no capture) and 1 (capture)> <keepBAM: 0 (Do not Keep) or 1 (Keep) >\n"
   echo -e "Options:\n"
   echo -e "<test> : 0 (Full Test) or 1 (Sampling to test the script)\n"
   echo -e "<include> : \n"
@@ -73,6 +73,13 @@ if [ ! -d "${WORK_DIR}/capture/" ];then
    echo "cloud-helper.sh script is missing"
    echo "aws s3 cp s3://fcs-genome-data/capture/ ${WORK_DIR}/capture/ --recursive "
          aws s3 cp s3://fcs-genome-data/capture/ ${WORK_DIR}/capture/ --recursive
+fi
+
+if [ ! -d "${WORK_DIR}/vcf_baselines/" ];then
+   echo "mkdir -p ${WORK_DIR}/vcf_baselines/"
+   echo "${WORK_DIR}/vcf_baselines/ folder is missing"
+   echo "aws s3 cp s3://fcs-genome-data/vcf_baselines/ ${WORK_DIR}/vcf_baselines/ --recursive "
+         aws s3 cp s3://fcs-genome-data/vcf_baselines/ ${WORK_DIR}/vcf_baselines/ --recursive
 fi
 
 echo "source ${WORK_DIR}/cloud-helper.sh"
@@ -272,11 +279,15 @@ if [[ "$CLOUD" == "merlin3" ]]; then
    PMM_XCLBIN=${FALCON_DIR}/fpga/pmm.xclbin
    PMM_TEST=/genome/data-suite/pmm/test1-wes/
    
-   ${WORK_DIR}/tb/sw_tb ${FALCON_DIR}/fpga/sw.xclbin ${REF} /genome/data-suite/sw/input/ /genome/data-suite/sw/golden_out/ >> fpga.info
+   ${WORK_DIR}/tb/sw_tb ${SW_XCLBIN} ${REF} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info
    if [ $? -ne 0 ]; then
        ERROR_MESSAGE="${WORK_DIR}/tb/sw_tb Failed for ${CLOUD} : Check fpga.info"
        echo $ERROR_MESSAGE
        echo $ERROR_MESSAGE >> error.log
+       cat fpga.info >> error.log
+       SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
+       echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > ${WORK_DIR}/sender.sh
+       source ${WORK_DIR}/sender.sh
        exit 1
    fi
 
@@ -285,6 +296,10 @@ if [[ "$CLOUD" == "merlin3" ]]; then
        ERROR_MESSAGE="${WORK_DIR}/tb/pmm_tb Failed for ${CLOUD} : Check fpga.info"
        echo $ERROR_MESSAGE
        echo $ERROR_MESSAGE >> error.log
+       cat fpga.info >> error.log
+       SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
+       echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > ${WORK_DIR}/sender.sh
+       source ${WORK_DIR}/sender.sh
        exit 1
    fi
 fi
@@ -724,17 +739,15 @@ for acc in ${array[@]}
                     source sender.sh 
                     exit 1
                fi
+              
+               TEST_VCF=${WORK_DIR}/vcf_baselines/${acc}/${GATK_VERSION}/${acc}_htc_${GATK_VERSION}.vcf
+               if [[ -f "${HTC_VCF}" ]]  && [[ -f ${TEST_VCF} ]] ;then 
+                   echo "vcfdiff/vcfdiff ${HTC_VCF} ${TEST_VCF} > ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat"
+                         vcfdiff/vcfdiff ${HTC_VCF} ${TEST_VCF} > ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat
+                   if [ -f ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat ];then
+                         RECALL=`grep -A1 -e recall ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat | tail -n1 | awk '{print $(NF-1)}'`
+                   fi                      
 
-               if [ "${CLOUD}" = "merlin3" ];then
-                  TEST_VCF=${WORK_DIR}/vcf_sets/merlin3/${acc}/${GATK_VERSION}/${acc}_htc.vcf
-                  if [[ -f "${HTC_VCF}" ]]  && [[ -f ${TEST_VCF} ]] ;then 
-                      echo "vcfdiff/vcfdiff ${HTC_VCF} ${TEST_VCF} > ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat"
-                            vcfdiff/vcfdiff ${HTC_VCF} ${TEST_VCF} > ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat
-                      if [ -f ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat ];then
-                            RECALL=`grep -A1 -e recall ${WORK_DIR}/${acc}/${GATK_VERSION}/vcfdiff_${acc}.dat | tail -n1 | awk '{print $(NF-1)}'`
-                      fi                      
-
-                  fi
                fi
 
                if [ ${GATK_VERSION} == "gatk3" ]; then
