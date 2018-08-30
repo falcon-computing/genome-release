@@ -1,0 +1,4 @@
+./sw_tb /usr/local/falcon-180810/fpga/sw.xclbin /local/ref/human_g1k_v37.fasta /genome/data-suite/sw/input/ /genome/data-suite/sw/golden_out/
+echo $?
+./pmm_tb /usr/local/falcon-180810/fpga/pmm.xclbin /genome/data-suite/pmm/test1-wes/
+echo $?
