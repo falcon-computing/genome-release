@@ -126,7 +126,7 @@ echo -e "=======================================================================
 echo -e "============================================================================" >> regression.log
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
-$CURR_DIR/bats/bats features_test/ >> regression.log
+$BATS features_test/ >> regression.log
 rm -rf `pwd`/output.bam
 
 echo -e "============================================================================" >> regression.log
@@ -151,7 +151,7 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $CURR_DIR/bats/bats regression_test/  >> regression.log
+    $BATS regression_test/  >> regression.log
   done
 
 echo -e "============================================================================" >> regression.log
@@ -162,7 +162,7 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $CURR_DIR/bats/bats mutect2_test2/ >> regression.log
+    $BATS mutect2_test2/ >> regression.log
   done
  
 end_ts=$(date +%s)

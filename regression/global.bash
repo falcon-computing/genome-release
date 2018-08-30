@@ -3,6 +3,8 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 CLOUD=`hostname`
 
+BATS=$DIR/../common/bats/bats
+
 if [[ -z "$FALCON_HOME" ]]; then 
    if  [ "${CLOUD}" == "merlin3" ]; then
        clear

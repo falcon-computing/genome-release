@@ -1,7 +1,5 @@
 #!/bin/bash
 
-ts=$1
-
 function get_time {
   local sample=$1;
   local step=$2;
@@ -12,10 +10,10 @@ function get_time {
   fi;
   
   if [ "$step" = "align" ]; then
-    local log_fname=${sample}_${step}_${ts}.log;
+    local log_fname=${sample}_${step}_*.log;
     local extra="$3";
   else
-    local log_fname=${sample}_${step}_${gatk}_${ts}.log;
+    local log_fname=${sample}_${step}_${gatk}_*.log;
   fi;
 
   if [ ! -f $log_fname ]; then
