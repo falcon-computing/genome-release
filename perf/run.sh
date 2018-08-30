@@ -81,7 +81,6 @@ function run_mutect2 {
     $extra \
     -o /local/$sample/${sample}.vcf \
     -f $gatk4 2> $log_fname;
-
   # TODO: compare vcf results
 }
 
@@ -93,14 +92,15 @@ for sample in NA12878 NA12891 NA12892 NA12878-Garvan-Vial1; do
   run_htc   $sample gatk4
 done
 
-run_align TCRBOA1-N
-run_align TCRBOA1-T
-run_bqsr  TCRBOA1-N
-run_bqsr  TCRBOA1-T
-run_bqsr  TCRBOA1-N gatk4
-run_bqsr  TCRBOA1-T gatk4
-run_mutect2 TCRBOA1
-run_mutect2 TCRBOA1 gatk4
+for pair in TCRBOA1; do
+  for sample in ${pair}-N ${pair}-T; do
+    run_align $sample 
+    run_bqsr  $sample 
+    run_bqsr  $sample gatk4
+  done
+  run_mutect2 $pair 
+  run_mutect2 $pair gatk4
+done
 
 # format the table
 ./parse.sh $ts > performance-${ts}.csv
