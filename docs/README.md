@@ -143,8 +143,7 @@ For GATK commands (e.g. `bqsr`, `htc`, `mutect2`), the following options are ava
 | -L | --intervalList | String | a interval file (e.g. BED) that specifies targeted region of interest for the analysis |
 | -g | --gatk4 | | use GATK 4, if unset, GATK 3.8 will be used by default. |
 
-- The option `--intervalList | -L` is used to specify targeted analysis region. For example, according to the GATK Best Practices, a capture BED file is required to improve accuracy in WES analysis. For WGS analysis, the capture is not needed. In addition, using a interval list will speedup the analysis significantly.
-**NOTE**: Only a single interval list is supported. If the user needs multiple interval lists, the lists need to be merged manually.
+- The option `--intervalList | -L` is used to specify targeted regions which analysis such as coverage and variant calling will be performed. This option should be used if sample was sequenced using a capture set since it optimizes computer resources and improves accuracy. For WGS samples, the interval list can be set to focus on a region of interest defined by the user. **NOTE**: Only a single interval list is supported. If the user needs multiple interval lists, the lists need to be merged manually.
 - The option `--gatk4 | -g` is used to select between GATK 4 and GATK 3.8 to run a command. The corresponding `fcs-genome` command remains the same. For example, `fcs-genome printreads` calls GATK **PrintReads** by default. But with `--gatk4` flag, it calls GATK **ApplyBQSR** which is the new command in 4.0.
     Alternatively, a configuration `use_gatk4 = true` can be set in the *fcs-genome.conf* configuration file to enable GATK 4 for all commands, regardless of the option `--gatk4` being set or not. For more information, please refer to the section [Configurations](#configurations).
 
@@ -262,9 +261,11 @@ Additional documentations for GATK 3.x usage can be found in this [link](https:/
 | -a | --normal_name | String | Sample name for Normal Input BAM. Must match the SM tag in the BAM header |
 | -b | --tumor_name | String | Sample name for Tumor Input BAM. Must match the SM tag in the BAM header |
 
-In GATK 4.x, two more options (`--normal_name` and `--tumor_name`) are required in addition to the filenames of the normal and tumor BAM file(s). These two options are used to specify the sample names for the normal and tumor samples, which in essense is the `SM` filed in the BAM header.
+In GATK 4.x, two more options (`--normal_name` and `--tumor_name`) are required in addition to the filenames of the normal and tumor BAM file(s). These two options are used to specify the sample names for the normal and tumor samples, which in essense is the `SM` filed in the BAM header. 
 
-Additional documentations for GATK 4.x usage can be found in this [link](https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php)
+Additional documentations for GATK 4.x usage can be found in this [link](https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php).
+
+Panels of Normals (PON) is a VCF file generated from a collection of VCF files of normal samples. By definition, Normal samples are obtained from healthy tissues and their DNA are assumed not to have any somatic variants. Using a PON VCF file in the analysis helps to capture artifacts that appear recurrently in the sequencer and threfore improve variant calling analysis.  A common population variant resource containing allele-specific frequencies is also used in variant filtering. Mutect2 uses the PON to filter sites and the germline resource and matched normal to filter alleles.
 
 ### `fcs-genome depth` Options
 The `depth` command calculates the depth of coverage for a given BAM input files. It is equivalent to GATK 3.x *DepthOfCoverage* command. The output will be a set of reports depending on the options selected.
@@ -278,6 +279,8 @@ The `depth` command calculates the depth of coverage for a given BAM input files
 | -b | --omitBaseOutput |    | omit output coverage depth at each base (default: false) |
 | -v | --omitIntervals |     | omit output coverage per-interval statistics (default false) |
 | -s | --omitSampleSummary | | omit output summary files for each sample (default false |
+
+**NOTE**: DepthOfCoverage is not available in GATK4. 
 
 ### `fcs-genome gatk` Options
 The `gatk` emulates the original GATK 3.x commands and as such, there is no Falcon provided acceleration. Please refer to the [GATK documentation](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/) for additional details.
