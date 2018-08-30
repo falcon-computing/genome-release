@@ -113,6 +113,11 @@ if [ ! -d /local/TCRBOA1-T ];then
     echo "mkdir -p /local/TCRBOA1-T/gatk4" >> ${run_file}
 fi
 
+if [ ! -d /local/mutect2_TCRBOA1 ];then
+    echo"mkdir -p /local/TCRBOA1/gatk3"  >> ${run_file}
+    echo "mkdir -p /local/TCRBOA1/gatk4" >> ${run_file}
+fi
+
 echo "# =============================================="  >> ${run_file}
 echo "# Processing TCRBOA1 for Mutect2                "  >> ${run_file}
 echo "# =============================================="  >> ${run_file}
@@ -127,10 +132,10 @@ for acc in ${array[@]}
       echo "# =============================================="  >> ${run_file}
       run_bqsr ${acc} baylor all_gatk ${display} ${CaptureRoche}     >> ${run_file}
       check_process BQSR ${acc} >> ${run_file}
-      run_mutect2  ${acc} baylor all_gatk ${display} ${CaptureRoche} >> ${run_file} 
-      check_process Mutect2 ${acc} >> ${run_file}
    done
 
+run_mutect2 TCRBOA1  baylor all_gatk ${display} ${CaptureRoche} >> ${run_file}
+check_process Mutect2 ${acc} >> ${run_file}
 
 # rm -rf ${WORK_DIR}/SampleSheetIntel.csv
 # echo "#sample_id,fastq1,fastq2,rg,platform_id,library_id" >> ${WORK_DIR}/SampleSheetIntel.csv

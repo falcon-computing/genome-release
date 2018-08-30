@@ -55,8 +55,8 @@ fi
 # Check if Huawei, AWS or Merlin3 is used:
 # ==============================================================================================================
 
-echo "source ${WORK_DIR}/cloud-helper.sh"
-      source ${WORK_DIR}/cloud-helper.sh
+echo "source `pwd`/cloud-helper.sh"
+      source `pwd`/cloud-helper.sh
 
 if [[ `get_cloud` == "aws" ]] ;then
    AMI=`get_image_id`

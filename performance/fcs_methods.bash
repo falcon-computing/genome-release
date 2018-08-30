@@ -151,10 +151,7 @@ function run_mutect2(){
          if [ ${args} == "--display-only" ];then
            display=${args}
          fi
-         if [ ${args} == "Nextera" ];then
-           intvList=" -L ${NexteraCapture}"
-         fi
-           if [ ${args} == "Roche" ];then
+         if [ ${args} == "Roche" ];then
            intvList=" -L ${RocheCapture}"
          fi
       done
@@ -181,8 +178,8 @@ function run_mutect2(){
    fi
 
    if [[ ${gatk_version} == "gatk4" ]] || [[ ${gatk_version} == "all_gatk" ]]  ;then
-      MUTECT2_LOG=${WORK_DIR}/mutect2_${sample_id}/gatk4/${sample_id}_htc_${stamp}.log
-      vcf_output=${WORK_DIR}/mutect2_${sample_id}/gatk4/${sample_id}_htc.vcf
+      MUTECT2_LOG=${WORK_DIR}/mutect2_${sample_id}/gatk4/${sample_id}_mutect2_${stamp}.log
+      vcf_output=${WORK_DIR}/mutect2_${sample_id}/gatk4/${sample_id}_mutect2.vcf
 
       normal_recal_bam=${WORK_DIR}/${sample_id}/gatk4/${sample_id}-N.recal.bam
       tumor_recal_bam=${WORK_DIR}/${sample_id}/gatk4/${sample_id}-T.recal.bam
@@ -193,7 +190,7 @@ function run_mutect2(){
       GERMLINE="-m ${GermLineVCF}"
 
       if [ "$display" == "--display-only" ] ;then
-         echo "Run: ${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output} -f ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
+         echo "${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output} -f ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
       else
          if [[ ! -d ${normal_recal_bam} ]] || [[ ! -d ${tumor_recal_bam} ]];then
             echo "${normal_recal_bam} and ${tumor_recal_bam} have problems"
