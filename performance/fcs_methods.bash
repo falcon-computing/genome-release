@@ -24,11 +24,15 @@ function run_alignment(){
    sample_bam=${WORK_DIR}/${sample_id}/${sample_id}_marked.bam
    sample_log=${WORK_DIR}/${sample_id}/${sample_id}_bwa_${stamp}.log
 
+   if [ "$tag" == "baylor" ]; then 
+      tag=mutect2/baylor
+   fi
+
    if [ "$display" == "--display-only" ] ;then
-      echo "${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/$r1 -2 ${fastq_dir}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}"
+      echo "${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/${tag}/$r1 -2 ${fastq_dir}/${tag}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}"
    else
-      echo "Run: ${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/$r1 -2 ${fastq_dir}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}"
-                #${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/$r1 -2 ${fastq_dir}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}
+      echo "Run: ${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/${tag}/$r1 -2 ${fastq_dir}/${tag}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}"
+                #${FCS_BIN} align -r ${ref_genome} -1 ${fastq_dir}/${tag}/$r1 -2 ${fastq_dir}/${tag}/$r2 -o ${sample_bam} --rg ${RG} --pl ${PLATFORM} --lb ${LIB} -f 2>${sample_log}
    fi
 
 }

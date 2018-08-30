@@ -114,7 +114,7 @@ if [ ! -d /local/TCRBOA1-T ];then
 fi
 
 if [ ! -d /local/mutect2_TCRBOA1 ];then
-    echo"mkdir -p /local/TCRBOA1/gatk3"  >> ${run_file}
+    echo "mkdir -p /local/TCRBOA1/gatk3"  >> ${run_file}
     echo "mkdir -p /local/TCRBOA1/gatk4" >> ${run_file}
 fi
 
