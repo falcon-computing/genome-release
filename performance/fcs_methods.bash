@@ -119,14 +119,14 @@ function run_htc(){
       vcf_output=${WORK_DIR}/${sample_id}/gatk3/${sample_id}_htc.vcf
       recal_bam=${WORK_DIR}/${sample_id}/gatk3/${sample_id}.recal.bam
       if [ "$display" == "--display-only" ] ;then
-         echo "${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -f ${intvList}  2>${HTC_LOG}"
+         echo "${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -v -f ${intvList}  2>${HTC_LOG}"
       else
          if [ ! -d ${recal_bam} ];then
             echo "${recal_bam} does not exist"
             return 1;
          fi
-         echo "Run: ${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -f ${intvList}  2>${HTC_LOG}"
-              #${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -f ${intvList}  2>${HTC_LOG}
+         echo "Run: ${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -v -f ${intvList}  2>${HTC_LOG}"
+              #${FCS_BIN} htc -r ${ref_genome} -i ${recal_bam} -o ${vcf_output} -v -f ${intvList}  2>${HTC_LOG}
       fi
    fi
 
@@ -165,8 +165,8 @@ function run_mutect2(){
       done
 
    if [[ ${gatk_version} == "gatk3" ]] || [[ ${gatk_version} == "all_gatk" ]]  ;then
-      MUTECT2_LOG=${WORK_DIR}/mutect2-${sample_id}/gatk3/${sample_id}_mutect2_${stamp}.log
-      vcf_output=${WORK_DIR}/mutect2-${sample_id}/gatk3/${sample_id}_mutect2.vcf
+      MUTECT2_LOG=${WORK_DIR}/mutect2_${sample_id}/gatk3/${sample_id}_mutect2_${stamp}.log
+      vcf_output=${WORK_DIR}/mutect2_${sample_id}/gatk3/${sample_id}_mutect2.vcf
       normal_recal_bam=${WORK_DIR}/${sample_id}-N/gatk3/${sample_id}-N.recal.bam
       tumor_recal_bam=${WORK_DIR}/${sample_id}-T/gatk3/${sample_id}-T.recal.bam
 
@@ -208,8 +208,8 @@ function run_mutect2(){
          TUMOR="-t ${tumor_recal_bam} --tumor_name  ${sample_id}-Tumor"
          PON="-p ${PanelsOfNormals}"
          GERMLINE="-m ${GermLineVCF}"
-         echo "Run: ${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output} -f ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
-                   #${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output} -f ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
+         echo "Run: ${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output}  ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
+                   #${FCS_BIN} mutect2 -r ${ref_genome} ${NORMAL}  ${TUMOR} -o ${vcf_output}  ${intvList}  ${PON}  ${GERMLINE} --gatk4 -f 2>${MUTECT2_LOG}"
       fi
 
    fi
