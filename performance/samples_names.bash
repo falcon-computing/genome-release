@@ -11,14 +11,14 @@ function get_fastq_files(){
       export r2=${NA12878_r2}
    fi
 
-   if [[ "${sample_id}" == "NA12878" ]] && [[ "${tag}" == "WES" ]];then
+   if [[ "${sample_id}" == "NA12891" ]] && [[ "${tag}" == "WES" ]];then
       export NA12891_r1=NA12891-Rep01_S5_L001_R1_001.fastq.gz
       export NA12891_r2=NA12891-Rep01_S5_L001_R2_001.fastq.gz
       export r1=${NA12891_r1}
       export r2=${NA12891_r2}
    fi
 
-   if [[ "${sample_id}" == "NA12878" ]] && [[ "${tag}" == "WES" ]];then
+   if [[ "${sample_id}" == "NA12892" ]] && [[ "${tag}" == "WES" ]];then
       export NA12892_r1=NA12892-Rep01_S9_L001_R1_001.fastq.gz
       export NA12892_r2=NA12892-Rep01_S9_L001_R2_001.fastq.gz
       export r1=${NA12892_r1}

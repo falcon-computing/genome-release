@@ -57,6 +57,10 @@ function run_bqsr(){
 
        done
 
+   if [[ "${tag}" == "baylor" ]];then
+      marked_bam=${WORK_DIR}/${sample_id}/${sample_id}.bam
+   fi 
+
    if [[ ${gatk_version} == "gatk3" ]] || [[ ${gatk_version} == "all_gatk" ]]  ;then 
       BQSR_REPORT=${WORK_DIR}/${sample_id}/gatk3/${sample_id}_bqsr.report
       BQSR_LOG=${WORK_DIR}/${sample_id}/gatk3/${sample_id}_bqsr_${stamp}.log
