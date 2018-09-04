@@ -1,5 +1,14 @@
 #!/bin/bash
 
+log_dir=$(pwd)
+if [ $# -gt 0 ]; then
+  log_dir="$1"
+fi
+if [ ! -d "$log_dir" ]; then
+  echo "USAGE: $0 [log_dir]"
+  exit 1
+fi
+
 function get_time {
   local sample=$1;
   local step=$2;
@@ -10,10 +19,10 @@ function get_time {
   fi;
   
   if [ "$step" = "align" ]; then
-    local log_fname=${sample}_${step}_*.log;
+    local log_fname=$log_dir/${sample}_${step}*.log;
     local extra="$3";
   else
-    local log_fname=${sample}_${step}_${gatk}_*.log;
+    local log_fname=$log_dir/${sample}_${step}_${gatk}*.log;
   fi;
 
   if ! ls $log_fname &> /dev/null; then

@@ -175,5 +175,16 @@ if [ ! -z "$platform" ]; then
 fi
 check_run tar zcf ${tarball}.tgz falcon/
 
+# upload to aws s3
+if [ ! -z "$platform" ]; then
+link=s3://fcs-genome-build/release/$platform/${tarball}.tgz
+else
+link=s3://fcs-genome-build/release/${tarball}.tgz
+fi
+echo $link > latest
+check_run aws s3 cp ${tarball}.tgz $link
+check_run aws s3 cp latest $(dirname $link)/latest
+check_run rm -f latest
+
 end_ts=$(date +%s)
 echo "Build finishes in $((end_ts - start_ts)) seconds"

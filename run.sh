@@ -1,15 +1,15 @@
 #!/bin/bash
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-CURR_DIR=$(pwd)
 
-buld_dir=/curr/diwu/prog/genome-release/build
-regr_dir=/local/diwu/regression; 
+ts=$(date +%Y%m%d-%H%M)
+buld_dir=$DIR/build
+regr_dir=/local/diwu/regression
 perf_dir=/local/diwu/performance
 
 mkdir -p $regr_dir 
 mkdir -p $perf_dir
 
-message=$CURR_DIR/message.txt
+message=/tmp/message-${USER}-${ts}.txt
 
 # do a build first
 cd $buld_dir
@@ -53,11 +53,8 @@ fi
 cd $perf_dir
 rm -rf $regr_dir
 
-
-$DIR/performance/run.sh
-
 echo "Performance Results" >> $message
-$DIR/performance/parse.sh >> $message
+$DIR/performance/run.sh >> $message
 
 aws sns publish \
       --region "us-east-1" \
@@ -66,5 +63,3 @@ aws sns publish \
       --message file://$message
 
 rm -f $message;
-
-cd $CURR_DIR
