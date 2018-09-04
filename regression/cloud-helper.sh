@@ -23,7 +23,7 @@ function set_env {
     echo "running on Huawei";
     helper_cloud=hwc;
   else
-    echo "ERROR: not running on any cloud";
+    echo "not running on any cloud";
     return 1;
   fi;
 

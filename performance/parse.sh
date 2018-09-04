@@ -16,7 +16,7 @@ function get_time {
     local log_fname=${sample}_${step}_${gatk}_*.log;
   fi;
 
-  if [ ! -f $log_fname ]; then
+  if ! ls $log_fname &> /dev/null; then
     echo "0"
   else
     grep "$extra finishes" $log_fname | awk '{printf $(NF-1)}';
@@ -51,7 +51,7 @@ for gatk in 3 4; do
         printf "\n"
       fi
     done
-    mutect_t=$(get_time $sample mutect2 $gatk)
+    mutect_t=$(get_time $pair mutect2 $gatk)
     printf "%d\n" $mutect_t
   done
 

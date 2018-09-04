@@ -1,8 +1,6 @@
 #!/bin/bash
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-echo "$CURR_DIR/cloud-helper.sh"
 source $CURR_DIR/cloud-helper.sh
-echo "$CURR_DIR/global.bash"
 source $CURR_DIR/global.bash
 if [ $? -ne 0 ]; then
    echo "Please check"
@@ -42,43 +40,39 @@ if [ "${CLOUD}" = "" ] ; then
    INSTANCE_TYPE="CPU"
 fi
 
-export CLOUD
-
-WORKDIR=`pwd`
-
 start_ts=$(date +%s)
 
 SW_XCLBIN=${FALCON_HOME}/fpga/sw.xclbin
-SW_INPUT=${WORKDIR}/genome/data-suite/sw/input/
-GOLDEN_OUT=${WORKDIR}/genome/data-suite/sw/golden_out/
+SW_INPUT=${TB_DATA_DIR}/sw/input/
+GOLDEN_OUT=${TB_DATA_DIR}/sw/golden_out/
 
 PMM_XCLBIN=${FALCON_HOME}/fpga/pmm.xclbin
-PMM_TEST=${WORKDIR}/genome/data-suite/pmm/test1-wes/
+PMM_TEST=${TB_DATA_DIR}/pmm/test1-wes/
 
-echo "${WORKDIR}/tb/sw_tb ${SW_XCLBIN} ${REF} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info"
-${WORKDIR}/tb/sw_tb ${SW_XCLBIN} ${ref_genome} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info
+echo "${CURR_DIR}/tb/sw_tb ${SW_XCLBIN} ${REF} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info"
+${CURR_DIR}/tb/sw_tb ${SW_XCLBIN} ${ref_genome} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info
 if [ $? -ne 0 ]; then
-    ERROR_MESSAGE="${WORK_DIR}/tb/sw_tb Failed for ${CLOUD} : Check fpga.info"
+    ERROR_MESSAGE="${CURR_DIR}/tb/sw_tb Failed for ${CLOUD} : Check fpga.info"
     echo $ERROR_MESSAGE
     echo $ERROR_MESSAGE >> error.log
     cat fpga.info >> error.log
     SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
-    echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > ${WORKDIR}/sender.sh
-    source ${WORKDIR}/sender.sh
+    echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > sender.sh
+    source sender.sh
     exit 1
 fi
 
 if [[ ${CLOUD} == "merlin3" ]]; then
-   echo "${WORKDIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info"
-   ${WORKDIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info
+   echo "${CURR_DIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info"
+   ${CURR_DIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info
    if [ $? -ne 0 ]; then
-       ERROR_MESSAGE="${WORK_DIR}/tb/pmm_tb Failed for ${CLOUD} : Check fpga.info"
+       ERROR_MESSAGE="${CURR_DIR}/tb/pmm_tb Failed for ${CLOUD} : Check fpga.info"
        echo $ERROR_MESSAGE
        echo $ERROR_MESSAGE >> error.log
        cat fpga.info >> error.log
        SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
-       echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > ${WORKDIR}/sender.sh
-       source ${WORKDIR}/sender.sh
+       echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > sender.sh
+       source sender.sh
        exit 1
    fi
 fi
@@ -126,22 +120,12 @@ echo -e "=======================================================================
 echo -e "============================================================================" >> regression.log
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
-$BATS features_test/ >> regression.log
+$BATS $CURR_DIR/features_test/ >> regression.log
 rm -rf `pwd`/output.bam
 
 echo -e "============================================================================" >> regression.log
 echo -e "Regression Test In Progress"                                                  >> regression.log
 echo -e "============================================================================\n" >> regression.log
-
-touch nohup.out
-if [ ! -f `pwd`/regression.log ]; then
-   chmod ag+wr regression.log
-fi
-
-if [ ! -d `pwd`/log ];then
-   mkdir `pwd`/log
-   chmod ag+wr -R `pwd`/log/
-fi
 
 echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
@@ -151,7 +135,7 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $BATS regression_test/  >> regression.log
+    $BATS $CURR_DIR/regression_test/  >> regression.log
   done
 
 echo -e "============================================================================" >> regression.log
@@ -162,17 +146,18 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $BATS mutect2_test2/ >> regression.log
+    $BATS $CURR_DIR/mutect2_test2/ >> regression.log
   done
  
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
 
-echo "rm -rf /local/work_dir/temp/*  log/"
-      rm -rf /local/work_dir/temp/*  log/
+#echo "rm -rf /local/work_dir/temp/*  log/"
+#      rm -rf /local/work_dir/temp/*  log/
 
 DATE=`date +"%Y-%m-%d"`
 echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
+#source sender.sh
 
 
 

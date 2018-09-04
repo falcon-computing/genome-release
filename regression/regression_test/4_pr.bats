@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load global
+load ../global
 
 helper_normalRun() {
   #"normal run of printReads"
@@ -16,18 +16,18 @@ helper_normalRun() {
     -r $ref_genome \
     -b ${BQSR_TABLE} \
     -i $WORKDIR/baselines/bwa/${id}_marked.bam \
-    -o $WORKDIR/temp/${id}_final_BAM.bam -f  -L ${WORKDIR}/capture/IlluminaNexteraCapture.bed  --merge-bam  ${tag}
+    -o ${id}_final_BAM.bam -f  -L ${WORKDIR}/capture/IlluminaNexteraCapture.bed  --merge-bam  ${tag}
   
   echo "${output}"
   [ "$status" -eq 0 ]
-  [ -f $WORKDIR/temp/${id}_final_BAM_merged.bam ]
+  [ -f ${id}_final_BAM_merged.bam ]
 }
 
 helper_bamCompare() {
   #"Compare BAM file against baseline"
   local -r id="$1"
   local -r tag="$2"
-  subjectBAM="$WORKDIR/temp/${id}_final_BAM_merged.bam"
+  subjectBAM="${id}_final_BAM_merged.bam"
   baselineBAM="$WORKDIR/baselines/printreads/3.8/${id}_final_BAM.bam"
   if [[ "${tag}" == "--gatk4" ]];then
      baselineBAM="$WORKDIR/baselines/printreads/4.0/${id}_final_BAM.bam"
@@ -42,7 +42,7 @@ helper_bamCompare() {
 helper_flagstatCompare() {
   #"Compare flagstat against baseline"
   local -r id="$1"
-  subjectBAM="$WORKDIR/temp/${id}_final_BAM_merged.bam"
+  subjectBAM="${id}_final_BAM_merged.bam"
   baselineBAM="$WORKDIR/baselines/printreads/3.8/${id}_final_BAM.bam"
   if [[ "${tag}" == "--gatk4" ]];then
      baselineBAM="$WORKDIR/baselines/printreads/4.0/${id}_final_BAM.bam"

@@ -32,11 +32,6 @@ load ../global
 }
 
 @test "printReads output file directory not writeable" {
-   if [ `hostname` == "merlin3" ];then 
-      run ${FCSBIN} printreads -r ${ref_genome} -i ${INPUT_BAM} -o fake/ -b ${REPORT}
-      [ "$status" -ne 0 ]
-      [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
-   else
-      skip
-   fi
+  # TODO: not sure how to test
+  skip
 }

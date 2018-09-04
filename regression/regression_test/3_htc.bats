@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load global
+load ../global
 
 helper_normalRun() {
   #"normal run for htc"
@@ -14,10 +14,10 @@ helper_normalRun() {
   run ${FCSBIN} htc \
     -r ${ref_genome} \
     -i ${BAM} \
-    -o $WORKDIR/temp/${id}.vcf --produce-vcf -f -L  ${WORKDIR}/capture/IlluminaNexteraCapture.bed ${tag}
+    -o ${id}.vcf --produce-vcf -f -L  ${WORKDIR}/capture/IlluminaNexteraCapture.bed ${tag}
   
   [ "$status" -eq 0 ]
-  [ -f $WORKDIR/temp/${id}.vcf.gz ]
+  [ -f ${id}.vcf.gz ]
 }
 
 helper_compareVCF() {
@@ -25,7 +25,7 @@ helper_compareVCF() {
   local -r id="$1"
   local -r tag="$2"
 
-  subjectVCF="$WORKDIR/temp/${id}.vcf.gz"
+  subjectVCF="${id}.vcf.gz"
   if [[ "$tag" == "gatk4" ]];then 
      baselineVCF="${WORKDIR}/baselines/htc/4.0/${id}.vcf"
   else
@@ -42,7 +42,7 @@ helper_vcfdiff() {
   #Compare using vcfdiff
   local -r id="$1"
   local -r tag="$2"
-  subjectVCF="$WORKDIR/temp/${id}.vcf.gz"
+  subjectVCF="${id}.vcf.gz"
   if [ "$tag" == "gatk4" ];then
      baselineVCF="${WORKDIR}/baselines/htc/4.0/${id}.vcf"
   else

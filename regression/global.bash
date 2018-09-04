@@ -47,9 +47,9 @@ if [ ! -f ${GATK4} ];then
     return 1
 fi
 
-export WORKDIR=/local/work_dir
-export fastq_dir=$WORKDIR/fastq
-export baseline=$WORKDIR/baselines
+WORKDIR=/local/work_dir
+fastq_dir=$WORKDIR/fastq
+baseline=$WORKDIR/baselines
 
 if [[ ! -d ${fastq_dir} ]] && [[ ! -d ${baselines} ]];then 
    echo "${fastq_dir} or ${baselines} are missing"
@@ -62,35 +62,27 @@ db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
-if [[ ! -f $ref_genome ]] && [[ ! -f ${db138_SNPs} ]] && [[ ! -f ${cosmic} ]];then
-   echo "$ref_genome or ${db138_SNPs} or ${cosmic} are missing. Download from aws s3:"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ /local/ref/  --recursive  --exclude \"*\" --include \"dbsnp_138.b37*\" &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ /local/ref/  --recursive  --exclude \"*\" --include \"*1000*\" &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ /local/ref/  --recursive  --exclude \"*\" --include \"b37*\" &>aws.log  &"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ /local/ref/  --recursive  --exclude \"*\" --include \"human_g1k_v37*\" &>aws.log &"
-   return 1
-fi
-
 PON=/local/gatk4_inputs/mutect_gatk4_pon.vcf 
 GNOMAD=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
-if [ ! -d ${PON} ];then
-   echo "$PON and $GNOMAD not present. Download from aws s3:"
-   echo "aws s3 cp s3://fcs-genome-data/gnomad/af-only-gnomad.raw.sites.b37.vcf.gz      /local/gatk4_inputs/ &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/gnomad/af-only-gnomad.raw.sites.b37.vcf.gz.tbi  /local/gatk4_inputs/ &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/panels_of_normals/mutect_gatk4_pon.vcf      /local/gatk4_inputs/ &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/panels_of_normals/mutect_gatk4_pon.vcf.idx  /local/gatk4_inputs/ &>aws.log &"
+
+if [[ ! -f "$ref_genome" ]] || \
+   [[ ! -f "$db138_SNPs" ]] || \
+   [[ ! -f "$cosmic" ]] ||\
+   [[ ! -f "$PON" ]] || \
+   [[ ! -f "$GNOMAD" ]] ; then
+   echo "reference file(s) missing"
    return 1
 fi
 
+
 VCFDIFF=/local/vcfdiff/vcfdiff
+TB_DATA_DIR=/genome/data-suite/
 if [[ ! -f ${VCFDIFF} ]];then 
     echo "VCFDIFF not present"
     return 1
 fi 
 
-if [ ! -d "${WORK_DIR}/genome/" ];then
-   echo "FPGA input data not available. Download from  aws s3:"
-   echo "aws s3 cp  s3://fcs-genome-data/data-suite/genome_fpga_test.tar.gz . &>aws.log &"
+if [ ! -d "$TB_DATA_DIR" ];then
    return 1   
 fi
 

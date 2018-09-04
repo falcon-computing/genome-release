@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load global
+load ../global
 
 helper_normalRun() {
   #"normal run for mutect2"
@@ -21,18 +21,18 @@ helper_normalRun() {
         --normal_name TCRBOA1-Normal \
         --tumor_name TCRBOA1-Tumor \
         --panels_of_normals ${PON} --germline ${GNOMAD} \
-        --output $WORKDIR/temp/${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed ${tag}
+        --output ${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed ${tag}
   else
       run ${FCSBIN} mutect2 \
         -r ${ref_genome} \
         --normal ${normalBAM} \
         --tumor  ${tumorBAM} \
         --dbsnp ${db138_SNPs} --cosmic ${cosmic} \
-        --output $WORKDIR/temp/${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed 
+        --output ${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed 
   fi
 
   [ "$status" -eq 0 ]
-  [ -f $WORKDIR/temp/${id}.vcf.gz ]
+  [ -f ${id}.vcf.gz ]
 }
 
 helper_compareVCF() {
@@ -40,7 +40,7 @@ helper_compareVCF() {
   local -r id="$1"
   local -r tag="$2"
 
-  subjectVCF="$WORKDIR/temp/${id}.vcf.gz"
+  subjectVCF="${id}.vcf.gz"
   if [[ "$tag" == "gatk4" ]];then 
      baselineVCF="${WORKDIR}/baselines/mutect2/4.0/${id}.vcf"
   else
@@ -50,14 +50,13 @@ helper_compareVCF() {
 
   echo "${output}"
   [ "$status" -eq 0 ]
- 
 }
 
 helper_vcfdiff() {
   #Compare using vcfdiff
   local -r id="$1"
   local -r tag="$2"
-  subjectVCF="$WORKDIR/temp/${id}.vcf.gz"
+  subjectVCF="${id}.vcf.gz"
   if [ "$tag" == "gatk4" ];then
      baselineVCF="${WORKDIR}/baselines/mutect2/4.0/${id}.vcf"
   else

@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-load global
+load ../global
 
 fastq_dir=$WORKDIR/fastq
 
@@ -16,13 +16,13 @@ helper_normalRun() {
     -r $ref_genome \
     -1 ${fastq_dir}/${id}_1.fastq.gz \
     -2 ${fastq_dir}/${id}_2.fastq.gz \
-    -o $WORKDIR/temp/${id}.bam \
+    -o ${id}.bam \
      --rg ${id} --sp ${id} --pl Illumina --lb $id -f
 
   echo "${output}"
 
   [ "$status" -eq 0 ]
-  [ -f "$WORKDIR/temp/${id}.bam" ]
+  [ -f "${id}.bam" ]
 }
 
 helper_bamCompare() {
@@ -40,7 +40,7 @@ helper_bamCompare() {
 helper_flagstatCompare() {
   #"Compare flagstat against baseline"
   local -r id="$1"
-  subjectBAM="$WORKDIR/temp/${id}.bam"
+  subjectBAM="${id}.bam"
   baselineBAM="$WORKDIR/baselines/bwa/${id}_marked.bam"
   run compare_flagstat "$subjectBAM" "$baselineBAM" "$id"
   

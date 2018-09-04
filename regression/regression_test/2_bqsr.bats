@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load global
+load ../global
 
 helper_normalRun() {
   #"Normal run for BQSR"
@@ -9,18 +9,18 @@ helper_normalRun() {
   run ${FCSBIN} baserecal \
     -r ${ref_genome} \
     -i $baseline/bwa/${id}_marked.bam \
-    -o $WORKDIR/temp/${id}_BQSR.table \
+    -o ${id}_BQSR.table \
     --knownSites $db138_SNPs -f -L $WORKDIR/capture/IlluminaNexteraCapture.bed ${tag}
 
   [ "$status" -eq 0 ]
-  [ -f $WORKDIR/temp/${id}_BQSR.table ]
+  [ -f ${id}_BQSR.table ]
 }
 
 helper_compareBQSR() {
   #"Compare BQSR table against baseline"
   local -r id="$1" 
   local -r tag="$2"
-  subjectBQSR="$WORKDIR/temp/${id}_BQSR.table"
+  subjectBQSR="${id}_BQSR.table"
   if [ "$tag" = "--gatk4" ];then
      baselineBQSR="$WORKDIR/baselines/baserecal/4.0/${id}_BQSR.table"
   else

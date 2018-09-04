@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
 ts=$(date +%Y%m%d-%H%M)
 if [ -z "$FALCON_HOME" ]; then
   FALCON_HOME=/usr/local/falcon
@@ -71,7 +73,7 @@ function run_mutect2 {
     local gatk4='--gatk4';
     local input_t=/local/${sample}-T/gatk4/${sample}-T.recal.bam;
     local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
-    local output= /local/$sample/${sample}-gatk4.vcf;
+    local output=/local/$sample/${sample}-gatk4.vcf;
     local extra="--normal_name ${sample}-N --tumor_name ${sample}-T";
     local extra="$extra -p $pon -m $gnomad";
     local log_fname=${sample}_mutect2_gatk4_${ts}.log;
@@ -79,7 +81,7 @@ function run_mutect2 {
     local gatk4=
     local input_t=/local/${sample}-T/gatk4/${sample}-T.recal.bam;
     local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
-    local output= /local/$sample/${sample}-gatk3.vcf;
+    local output=/local/$sample/${sample}-gatk3.vcf;
     local extra="--dbsnp $dbsnp --cosmic $cosmic";
     local log_fname=${sample}_mutect2_gatk3_${ts}.log;
   fi;
@@ -94,15 +96,15 @@ function run_mutect2 {
   # TODO: compare vcf results
 }
 
-for sample in $(cat germline.list); do
-#run_align $sample
+for sample in $(cat $DIR/germline.list); do
+  run_align $sample
   run_bqsr  $sample
   run_htc   $sample
   run_bqsr  $sample gatk4
   run_htc   $sample gatk4
 done
 
-for pair in $(cat mutect2); do
+for pair in $(cat $DIR/mutect.list); do
   for sample in ${pair}-N ${pair}-T; do
     run_align $sample 
     run_bqsr  $sample 
@@ -115,5 +117,5 @@ done
 cp *_${ts}.log log-${ts}/
 
 # format the table
-./parse.sh $ts > performance-${ts}.csv
+#./parse.sh $ts > performance-${ts}.csv
 
