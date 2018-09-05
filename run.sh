@@ -32,6 +32,12 @@ if [ $? -ne 0 ]; then
 fi
 ./install.sh 
 
+# load module
+module purge
+module load genome/latest
+
+wall "Genomics daily test starting now..."
+
 cd $regr_dir; 
 $DIR/regression/regression.sh
 
@@ -63,3 +69,4 @@ aws sns publish \
       --message file://$message
 
 rm -f $message;
+wall "Genomics daily test is finished."
