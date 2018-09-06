@@ -33,6 +33,7 @@ fi
 ./install.sh 
 
 # load module
+source /curr/software/util/modules-tcl/init/bash
 module purge
 module load genome/latest
 

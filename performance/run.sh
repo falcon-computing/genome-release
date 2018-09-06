@@ -24,7 +24,7 @@ function run_align {
     -2 /local/$sample/${sample}_2.fastq.gz \
     -o /local/$sample/${sample}_marked.bam \
     -R $sample -L $sample -P illumina -S $sample \
-    -f 2> $log_fname;
+    -f 1> /dev/null 2> $log_fname;
 }
 
 function run_bqsr {
@@ -43,7 +43,7 @@ function run_bqsr {
     -i /local/$sample/${sample}_marked.bam \
     -K $dbsnp \
     -o $output \
-    -f $gatk4 2> $log_fname;
+    -f $gatk4 1> /dev/null 2> $log_fname;
 }
 
 function run_htc {
@@ -63,7 +63,7 @@ function run_htc {
     -r $ref \
     -i $input \
     -o $output \
-    -f -v $gatk4 2> $log_fname;
+    -f -v $gatk4 1> /dev/null 2> $log_fname;
 
   # TODO: compare vcf results
 }
@@ -93,7 +93,7 @@ function run_mutect2 {
     -t $input_t \
     $extra \
     -o $output \
-    -f $gatk4 2> $log_fname;
+    -f $gatk4 1> /dev/null 2> $log_fname;
   # TODO: compare vcf results
 }
 
