@@ -15,28 +15,28 @@ load ../global
 @test "Align without reference specified" {
    run ${FCSBIN} align -1 $fastq1 -2 $fastq2 -o output.bam --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f  
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"the option '--ref' is required but missing"* ]]
+   [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "Align without output specified" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -f
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"the option '--output' is required but missing"* ]]
+   [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "Align without defining input FASTQ file R1 (-1 not specified)" {
    run ${FCSBIN} al -r ${ref_genome} -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"FASTQ filenames (fastq1, fastq2) = (undefined, defined)"* ]]
+   [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome al"* ]]
 }
 
 @test "Align without defining input FASTQ file R2 (-2 specified)" {
    run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o output.bam -f
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"FASTQ filenames (fastq1, fastq2) = (defined, undefined)"* ]]
+   [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome al"* ]]
 }
 
