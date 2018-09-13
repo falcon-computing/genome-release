@@ -103,7 +103,7 @@ function cmake_build {
   check_run cd $dir/release;
   check_run cmake -DCMAKE_BUILD_TYPE=Release -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
   check_run make -j 8;
-  #check_run make test;
+  check_run make test;
   check_run make install; # will copy to correct place
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;

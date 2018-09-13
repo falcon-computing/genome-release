@@ -7,6 +7,8 @@ if [ $? -ne 0 ]; then
    exit 1
 fi
 
+failed=0
+
 if [[ `get_cloud` == "aws" ]] ;then
    AMI=`get_image_id`
    CLOUD=`get_cloud`
@@ -121,6 +123,9 @@ echo -e "=======================================================================
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
 $BATS $CURR_DIR/features_test/ >> regression.log
+if [ $? -ne 0 ]; then
+  failed=1
+fi
 rm -rf `pwd`/output.bam
 
 echo -e "============================================================================" >> regression.log
@@ -136,6 +141,9 @@ for id in ${array[@]}
     echo "Processing $id"
     export id=$id
     $BATS $CURR_DIR/regression_test/  >> regression.log
+    if [ $? -ne 0 ]; then
+      failed=1
+    fi
   done
 
 echo -e "============================================================================" >> regression.log
@@ -147,6 +155,9 @@ for id in ${array[@]}
     echo "Processing $id"
     export id=$id
     $BATS $CURR_DIR/mutect2_test2/ >> regression.log
+    if [ $? -ne 0 ]; then
+      failed=1
+    fi
   done
  
 end_ts=$(date +%s)
@@ -159,5 +170,4 @@ DATE=`date +"%Y-%m-%d"`
 echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
 #source sender.sh
 
-
-
+exit $failed

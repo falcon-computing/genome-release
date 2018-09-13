@@ -98,23 +98,23 @@ function run_mutect2 {
 }
 
 for sample in $(cat $DIR/germline.list); do
-  run_align $sample
-  run_bqsr  $sample
+#  run_align $sample
+#  run_bqsr  $sample
   run_htc   $sample
-  run_bqsr  $sample gatk4
+#  run_bqsr  $sample gatk4
   run_htc   $sample gatk4
 done
 
 for pair in $(cat $DIR/mutect.list); do
-  for sample in ${pair}-N ${pair}-T; do
-    run_align $sample 
-    run_bqsr  $sample 
-    run_bqsr  $sample gatk4
-  done
+#  for sample in ${pair}-N ${pair}-T; do
+#    run_align $sample 
+#    run_bqsr  $sample 
+#    run_bqsr  $sample gatk4
+#  done
   run_mutect2 $pair 
   run_mutect2 $pair gatk4
 done
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
-
+exit ${PIPESTATUS[0]} # catch the return value for parse.sh
