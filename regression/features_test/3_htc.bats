@@ -58,3 +58,11 @@ load ../global
    [[ "${output}" == *"ERROR"* ]]
    run rm -rf log/
 }
+
+@test "HTC sample name not defined" {
+   run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_BAM} -o out.vcf -L ${INTERVAL_FILE} --sample-name
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
+}
+
+
