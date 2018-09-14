@@ -65,7 +65,7 @@ load ../global
 }
  
 @test "Output file directory not writeable" {
-   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o /local/fake/output.bam -f
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o /output.bam -f
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }
