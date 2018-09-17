@@ -27,7 +27,6 @@ function get_time {
 
   if ! ls $log_fname &>/dev/null; then
     echo "0"
-    return 1
   else
     local line=$(grep "${extra}.* finishes" $log_fname)
     if [ ! -z "$line" ]; then

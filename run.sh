@@ -10,7 +10,19 @@ mkdir -p $regr_dir
 mkdir -p $perf_dir
 
 message=/tmp/message-${USER}-${ts}.txt
-subject="Daily Build $(date +%Y%m%d) on `hostname`"
+
+function send_email {
+  local status=$1;
+  local subject="Daily Build $(date +%Y%m%d) on `hostname`"
+  if [ -z "$status" ]; then
+    result="Running"
+  fi;
+  aws sns publish \
+      --region "us-east-1" \
+      --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
+      --subject "$subject $status" \
+      --message file://$message;
+}
 
 failed=0
 rm -rf $message
@@ -27,6 +39,10 @@ if [ $? -ne 0 ]; then
   echo "Build failed" | tee --append $message
   cat $log >> $message
 else # build is successful
+  echo "Build Passed" >> $message
+  send_email
+  echo ""
+
   ./install.sh 
   
   # load module
@@ -45,6 +61,11 @@ else # build is successful
     grep "not ok" $regr_dir/regression.log >> $message
     failed=1
   else
+    echo "Regression Passed" >> $message
+    send_email 
+
+    echo "" >> $message
+
     # if regression passed, run performance
     cd $perf_dir
     rm -rf $regr_dir
@@ -65,11 +86,7 @@ else
   result="Failed"
 fi
 
-aws sns publish \
-      --region "us-east-1" \
-      --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
-      --subject "$subject $result" \
-      --message file://$message
+send_email $result
 
 rm -f $message;
 wall "Genomics daily test is finished."
