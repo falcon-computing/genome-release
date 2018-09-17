@@ -28,7 +28,7 @@ helper_normalRun() {
 helper_bamCompare() {
   #"Compare BAM file against baseline" 
   local -r id="$1"
-  subjectBAM="$WORKDIR/temp/${id}.bam"
+  subjectBAM="$temp_dir/${id}.bam"
   baselineBAM="$WORKDIR/baselines/bwa/${id}_marked.bam"
   run compare_BAM "$subjectBAM" "$baselineBAM" "$id"
 

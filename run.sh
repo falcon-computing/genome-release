@@ -11,63 +11,82 @@ mkdir -p $perf_dir
 
 message=/tmp/message-${USER}-${ts}.txt
 
+function send_email {
+  local status=$1;
+  local subject="Daily Build $(date +%Y%m%d) on `hostname`"
+  if [ -z "$status" ]; then
+    result="Running"
+  fi;
+  aws sns publish \
+      --region "us-east-1" \
+      --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
+      --subject "$subject $status" \
+      --message file://$message;
+}
+
+failed=0
+rm -rf $message
+
 # do a build first
 cd $buld_dir
 ./build.sh
 if [ $? -ne 0 ]; then
+  failed=1
+
   version=$(git describe --tags)
   log="build-$version"".log"
-  cat $log > $message
 
-  echo "Build failed, exiting"
+  echo "Build failed" | tee --append $message
+  cat $log >> $message
+else # build is successful
+  echo "Build Passed" >> $message
+  send_email
+  echo ""
 
-  aws sns publish \
-    --region "us-east-1" \
-    --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
-    --subject "Daily Build $(date +%Y%m%d) on `hostname` Failed" \
-    --message file://$message
-  rm -f $message;
+  ./install.sh 
+  
+  # load module
+  source /curr/software/util/modules-tcl/init/bash
+  module purge
+  module load genome/latest
+  
+  wall "Genomics daily test starting now..."
+  
+  # run regression test
+  cd $regr_dir; 
+  $DIR/regression/regression.sh
+  
+  if [ $? -ne 0 ]; then
+    echo "Regression test failed" | tee --append $message
+    grep "not ok" $regr_dir/regression.log >> $message
+    failed=1
+  else
+    echo "Regression Passed" >> $message
+    send_email 
 
-  exit 1
+    echo "" >> $message
+
+    # if regression passed, run performance
+    cd $perf_dir
+    rm -rf $regr_dir
+    
+    echo "Performance Results" >> $message
+    $DIR/performance/run.sh >> $message
+    
+    if [ $? -ne 0 ]; then
+      failed=1
+    fi
+  fi # check regression
+fi # check build
+
+
+if [ -z "$failed" ]; then
+  result="Passed"
+else
+  result="Failed"
 fi
-./install.sh 
 
-# load module
-source /curr/software/util/modules-tcl/init/bash
-module purge
-module load genome/latest
-
-wall "Genomics daily test starting now..."
-
-cd $regr_dir; 
-$DIR/regression/regression.sh
-
-if [ $? -ne 0 ]; then
-  grep "not ok" $regr_dir/regression.log >> $message
-  echo "Regression failed, exiting"
-
-  aws sns publish \
-    --region "us-east-1" \
-    --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
-    --subject "Daily Regression $(date +%Y%m%d) on `hostname` Failed" \
-    --message file://$message
-
-  rm -f $message;
-
-  exit 1
-fi
-
-cd $perf_dir
-rm -rf $regr_dir
-
-echo "Performance Results" >> $message
-$DIR/performance/run.sh >> $message
-
-aws sns publish \
-      --region "us-east-1" \
-      --topic-arn "arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results" \
-      --subject "Daily Regression $(date +%Y%m%d) on `hostname` Passed" \
-      --message file://$message
+send_email $result
 
 rm -f $message;
 wall "Genomics daily test is finished."

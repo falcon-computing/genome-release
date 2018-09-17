@@ -117,4 +117,4 @@ done
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
-
+exit ${PIPESTATUS[0]} # catch the return value for parse.sh
