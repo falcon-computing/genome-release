@@ -37,18 +37,6 @@ helper_bamCompare() {
 
 }
 
-helper_flagstatCompare() {
-  #"Compare flagstat against baseline"
-  local -r id="$1"
-  subjectBAM="${id}.bam"
-  baselineBAM="$WORKDIR/baselines/bwa/${id}_marked.bam"
-  run compare_flagstat "$subjectBAM" "$baselineBAM" "$id"
-  
-  echo "${output}"
-  [ "$status" -eq 0 ]
-
-}
-
 @test "Normal run for alignment: $id" {
   helper_normalRun "$id" 
 }
@@ -57,6 +45,3 @@ helper_flagstatCompare() {
   helper_bamCompare "$id"
 }
 
-@test "Compare flagstat against baseline: $id" {
-  helper_flagstatCompare "$id"
-}
