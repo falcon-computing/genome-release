@@ -7,8 +7,8 @@ helper_normalRun() {
   # run with configuration settings
   run $FCSBIN depth \
     -r $ref_genome \
-    -i $WORKDIR/temp/${id}.bam \
-    -o $WORKDIR/temp/${id} \
+    -i $temp_dir/${id}.bam \
+    -o $temp_dir/${id} \
     -L $WORKDIR/genes/genelist_by_exons.bed \
     --geneList $WORKDIR/genes/genelist_by_exons.txt --omitBaseOutput -f
   [ "$status" -eq 0 ]
@@ -17,7 +17,7 @@ helper_normalRun() {
 helper_CompareDepth() {
   #"Compare BAM file against baseline" 
   local -r id="$1"
-  local SUBJECT=$WORKDIR/temp/${id}.sample_gene_summary
+  local SUBJECT=$temp_dir/${id}.sample_gene_summary
   local BASELINE=$WORKDIR/baselines/depth/3.8/${id}.sample_gene_summary
   run compare_depth "$SUBJECT" "$BASELINE"
   [ "$status" -eq 0 ]
