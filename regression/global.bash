@@ -117,16 +117,16 @@ function compare_BAM {
   local subjectBAM=$1;
   #convert BAM to SAM
   export TMPDIR=/local/temp/
-  samtools view "$subjectBAM"  | awk '{print $1}' | sort -u  > $WORKDIR/temp/subject_bwa.dat;
+  samtools view "$subjectBAM"  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa.dat;
   countTotal=`diff $WORKDIR/temp/subject_bwa.dat $WORKDIR/baselines/bwa/$id_marked_counts.dat | wc -l`
 
-  samtools view "$subjectBAM" -F4  | awk '{print $1}' | sort -u  > $WORKDIR/temp/subject_bwa_mapped.dat;
+  samtools view "$subjectBAM" -F4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_mapped.dat;
   countMapped=`diff $WORKDIR/temp/subject_bwa_mapped.dat $WORKDIR/baselines/bwa/$id_marked_mapped.dat | wc -l`
 
-  samtools view "$subjectBAM" -f4  | awk '{print $1}' | sort -u  > $WORKDIR/temp/subject_bwa_unmapped.dat;
+  samtools view "$subjectBAM" -f4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_unmapped.dat;
   countUnmapped=`diff $WORKDIR/temp/subject_bwa_unmapped.dat $WORKDIR/baselines/bwa/$id_marked_unmapped.dat | wc -l`
 
-  samtools view "$subjectBAM" -f1024  | awk '{print $1}' | sort -u  > $WORKDIR/temp/subject_bwa_duplicates.dat;
+  samtools view "$subjectBAM" -f1024  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_duplicates.dat;
   countDups=`diff $WORKDIR/temp/subject_bwa_duplicates.dat $WORKDIR/baselines/bwa/$id_duplicates.dat | wc -l`
 
   if [[ "$countTotal" -eq "0" ]] && [[ "$countMapped" -eq "0" ]] && [[ "$countUnmapped" -eq "0" ]] && [[ "$countDups" -eq "0" ]];then
