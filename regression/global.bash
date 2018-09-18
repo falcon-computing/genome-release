@@ -118,7 +118,7 @@ function compare_BAM {
   #convert BAM to SAM
   export TMPDIR=/local/temp/
   samtools view "$subjectBAM"  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa.dat;
-  countTotal=`diff $WORKDIR/temp/subject_bwa.dat $WORKDIR/baselines/bwa/$id_marked_counts.dat | wc -l`
+  countTotal=`diff $temp_dir/subject_bwa.dat $WORKDIR/baselines/bwa/$id_marked_counts.dat | wc -l`
 
   samtools view "$subjectBAM" -F4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_mapped.dat;
   countMapped=`diff $temp_dir/subject_bwa_mapped.dat $WORKDIR/baselines/bwa/$id_marked_mapped.dat | wc -l`
