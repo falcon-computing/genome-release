@@ -18,6 +18,12 @@ mkdir -p $log_dir
 function run_align {
   local sample=$1;
   local log_fname=$log_dir/${sample}_align.log;
+
+  # run xbsak if available
+  if which xbsak_gem &> /dev/null; then
+    xbsak_gem dmatest
+  fi;
+
   $FALCON_HOME/bin/fcs-genome align \
     -r $ref \
     -1 /local/$sample/${sample}_1.fastq.gz \

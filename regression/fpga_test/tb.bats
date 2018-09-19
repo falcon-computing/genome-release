@@ -31,8 +31,10 @@ load ../global
 }
 
 @test "smem testbench" {
-  # run xbsak_gem
-  xbsak_gem dmatest
+  # run xbsak_gem if available
+  if which xbsak_gem &> /dev/null; then
+    xbsak_gem dmatest
+  fi
 
   run $SMEM_TB \
     $SMEM_BIT $ref_genome \

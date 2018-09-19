@@ -76,12 +76,13 @@ echo -e "GATK          : $GATK_VERSION"                                         
 echo -e "============================================================================\n" >> regression.log
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing feature in fcs-genome "                                               >> regression.log
+echo -e "Testing FPGA "                                                                >> regression.log
 echo -e "============================================================================\n" >> regression.log
 $BATS $CURR_DIR/fpga_test/ >> regression.log
 if [ $? -ne 0 ]; then
   exit 1
 fi
+echo "FPGA test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
@@ -91,6 +92,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 rm -rf `pwd`/output.bam
+echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
@@ -105,6 +107,7 @@ for id in ${array[@]}
       exit 1
     fi
   done
+echo "Germline test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Pair Sample for Mutect2"                                                      >> regression.log
@@ -119,6 +122,7 @@ for id in ${array[@]}
       exit 1
     fi
   done
+echo "Somatic test passed"
  
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
