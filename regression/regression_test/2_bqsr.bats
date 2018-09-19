@@ -8,10 +8,11 @@ helper_normalRun() {
   local -r tag="$2"
   run ${FCSBIN} baserecal \
     -r ${ref_genome} \
-    -i $baseline/bwa/${id}_marked.bam \
+    -i $baseline_dir/bwa/${id}_marked.bam \
     -o ${id}_BQSR.table \
     --knownSites $db138_SNPs -f -L $WORKDIR/capture/IlluminaNexteraCapture.bed ${tag}
 
+  echo "output = ${output}"
   [ "$status" -eq 0 ]
   [ -f ${id}_BQSR.table ]
 }
@@ -22,9 +23,9 @@ helper_compareBQSR() {
   local -r tag="$2"
   subjectBQSR="${id}_BQSR.table"
   if [ "$tag" = "--gatk4" ];then
-     baselineBQSR="$WORKDIR/baselines/baserecal/4.0/${id}_BQSR.table"
+     baselineBQSR="$baseline_dir/baserecal/4.0/${id}_BQSR.table"
   else
-     baselineBQSR="$WORKDIR/baselines/baserecal/3.8/${id}_BQSR.table"
+     baselineBQSR="$baseline_dir/baserecal/3.8/${id}_BQSR.table"
   fi
   run compare_bqsr "$subjectBQSR" "$baselineBQSR" "$id"  
   echo "${output}"

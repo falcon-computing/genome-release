@@ -6,8 +6,6 @@ fastq_dir=$WORKDIR/fastq
 helper_normalRun() {
   #"normal run for alignment"
   local -r id="$1"
-  run mkdir -p $WORKDIR
-  [ -f $ref_genome ]
   [ -f ${fastq_dir}/${id}_1.fastq.gz ]
   [ -f ${fastq_dir}/${id}_2.fastq.gz ]
   
@@ -17,7 +15,7 @@ helper_normalRun() {
     -1 ${fastq_dir}/${id}_1.fastq.gz \
     -2 ${fastq_dir}/${id}_2.fastq.gz \
     -o ${id}.bam \
-     --rg ${id} --sp ${id} --pl Illumina --lb $id -f
+    --rg ${id} --sp ${id} --pl Illumina --lb $id -f
 
   echo "${output}"
 
@@ -29,7 +27,7 @@ helper_bamCompare() {
   #"Compare BAM file against baseline" 
   local -r id="$1"
   subjectBAM="$temp_dir/${id}.bam"
-  baselineBAM="$WORKDIR/baselines/bwa/${id}_marked.bam"
+  baselineBAM="$baseline_dir/bwa/${id}_marked.bam"
   run compare_BAM "$subjectBAM" "$baselineBAM" "$id"
 
   echo "${output}" 
@@ -41,7 +39,7 @@ helper_flagstatCompare() {
   #"Compare flagstat against baseline"
   local -r id="$1"
   subjectBAM="${id}.bam"
-  baselineBAM="$WORKDIR/baselines/bwa/${id}_marked.bam"
+  baselineBAM="$baseline_dir/bwa/${id}_marked.bam"
   run compare_flagstat "$subjectBAM" "$baselineBAM" "$id"
   
   echo "${output}"
@@ -58,5 +56,6 @@ helper_flagstatCompare() {
 }
 
 @test "Compare flagstat against baseline: $id" {
+  skip
   helper_flagstatCompare "$id"
 }
