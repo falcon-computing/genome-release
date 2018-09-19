@@ -3,48 +3,16 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 CLOUD=`hostname`
 
-BATS=$DIR/../common/bats/bats
 
 if [[ -z "$FALCON_HOME" ]]; then 
    if  [ "${CLOUD}" == "merlin3" ]; then
-       clear
-       echo -e "\n"
        echo "Merlin 3: FALCON_HOME is not defined"
        echo "To solve it , execute:  module load genome/latest"
        echo "prior the Regression Test"
-       echo -e "\n"
        exit 1
    else
        FALCON_HOME=/usr/local/falcon
    fi
-fi
-
-if [ -z "$FALCON_DIR" ]; then
-  FALCON_DIR=${FALCON_HOME}
-fi
-
-FCSBIN=$FALCON_DIR/bin/fcs-genome
-if [ ! -f ${FCSBIN} ];then
-   echo "${FCSBIN} does not exist"
-   return 1
-fi 
-
-BWABIN=$FALCON_DIR/tools/bin/bwa-flow
-if [ ! -f ${BWABIN} ];then
-    echo "${BWABIN} does not exist"
-    return 1
-fi
-
-GATK3=$FALCON_DIR/tools/package/GATK3.jar
-if [ ! -f ${GATK3} ];then
-    echo"${GATK3} does not exist"
-    return 1
-fi
-
-GATK4=$FALCON_DIR/tools/package/GATK4.jar
-if [ ! -f ${GATK4} ];then
-    echo"${GATK4} does not exist"
-    return 1
 fi
 
 if [ -z "$USER" ]; then
@@ -53,54 +21,51 @@ else
   user=$USER
 fi
 
-WORKDIR=/local/work_dir
+
+if [ -z "$FALCON_DIR" ]; then
+  FALCON_DIR=${FALCON_HOME}
+fi
+
 temp_dir=/local/temp/$user
-fastq_dir=$WORKDIR/fastq
-baseline=$WORKDIR/baselines
+mkdir -p $temp_dir
 
 ref_dir=/local/ref
+WORKDIR=/local/work_dir
+
+fastq_dir=$WORKDIR/fastq
+baseline_dir=$WORKDIR/baselines
+tbdata_dir=$WORKDIR/tb
+
+FCSBIN=$FALCON_DIR/bin/fcs-genome
+BWABIN=$FALCON_DIR/tools/bin/bwa-flow
+GATK3=$FALCON_DIR/tools/package/GATK3.jar
+GATK4=$FALCON_DIR/tools/package/GATK4.jar
+SW_TB=$DIR/tb/sw_tb
+PMM_TB=$DIR/tb/pmm_tb
+SMEM_TB=$DIR/tb/smem_tb
+SW_BIT=$FALCON_DIR/fpga/sw.xclbin
+PMM_BIT=$FALCON_DIR/fpga/pmm.xclbin
+SMEM_BIT=$FALCON_DIR/fpga/sw.xclbin
+VCFDIFF=$DIR/../common/vcfdiff
+BATS=$DIR/../common/bats/bats
+
 ref_genome=$ref_dir/human_g1k_v37.fasta
 db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
-PON=/local/gatk4_inputs/mutect_gatk4_pon.vcf 
-GNOMAD=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
-
-if [[ ! -d ${fastq_dir} ]] && [[ ! -d ${baselines} ]];then 
-   echo "${fastq_dir} or ${baselines} are missing"
-   return 1;
-fi
-
-if [[ ! -f "$ref_genome" ]] || \
-   [[ ! -f "$db138_SNPs" ]] || \
-   [[ ! -f "$cosmic" ]] ||\
-   [[ ! -f "$PON" ]] || \
-   [[ ! -f "$GNOMAD" ]] ; then
-   echo "reference file(s) missing"
-   return 1
-fi
-
-VCFDIFF=/local/vcfdiff/vcfdiff
-TB_DATA_DIR=/genome/data-suite/
-if [[ ! -f ${VCFDIFF} ]];then 
-    echo "VCFDIFF not present"
-    return 1
-fi 
-
-if [ ! -d "$TB_DATA_DIR" ];then
-   return 1   
-fi
+PON=$ref_dir/mutect_gatk4_pon.vcf 
+GNOMAD=$ref_dir/af-only-gnomad.raw.sites.b37.vcf.gz
 
 # For Features Test:
 SAMPLE_ID=NA12878
 RGID=${SAMPLE_ID}
 PLATFORM="Illumina"
 LIB=${SAMPLE_ID}
-fastq1=${WORKDIR}/fastq/${SAMPLE_ID}_1.fastq.gz
-fastq2=${WORKDIR}/fastq/${SAMPLE_ID}_2.fastq.gz
-INPUT_BAM=${WORKDIR}/baselines/bwa/${SAMPLE_ID}_marked.bam
-REPORT=${WORKDIR}/baselines/baserecal/3.8/${SAMPLE_ID}_BQSR.table
+fastq1=${fastq_dir}/${SAMPLE_ID}_1.fastq.gz
+fastq2=${fastq_dir}/${SAMPLE_ID}_2.fastq.gz
+INPUT_BAM=${baseline_dir}/bwa/${SAMPLE_ID}_marked.bam
+REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
 
 function check_dev_version {
   local bin=$1;
@@ -183,6 +148,7 @@ function compare_flagstat {
     if [ $DIFF -ne 0 ]; then
       equal=$(awk -v dividend="$DIFF" -v divisor="${b_array[$idx]}" 'BEGIN {printf "%.6f",sqrt((dividend/divisor)^2); exit(0)}')
       if (( $(echo "$equal $threshold" | awk '{print ($1 >= $2)}') )); then
+        echo "$equal $threshold"
         echo "Failed flagstat compare for $id"
         return 1
       fi

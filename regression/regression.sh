@@ -44,50 +44,7 @@ fi
 
 start_ts=$(date +%s)
 
-SW_XCLBIN=${FALCON_HOME}/fpga/sw.xclbin
-SW_INPUT=${TB_DATA_DIR}/sw/input/
-GOLDEN_OUT=${TB_DATA_DIR}/sw/golden_out/
-
-PMM_XCLBIN=${FALCON_HOME}/fpga/pmm.xclbin
-PMM_TEST=${TB_DATA_DIR}/pmm/test1-wes/
-
-echo "${CURR_DIR}/tb/sw_tb ${SW_XCLBIN} ${REF} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info"
-${CURR_DIR}/tb/sw_tb ${SW_XCLBIN} ${ref_genome} ${SW_INPUT} ${GOLDEN_OUT} >> fpga.info
-if [ $? -ne 0 ]; then
-    ERROR_MESSAGE="${CURR_DIR}/tb/sw_tb Failed for ${CLOUD} : Check fpga.info"
-    echo $ERROR_MESSAGE
-    echo $ERROR_MESSAGE >> error.log
-    cat fpga.info >> error.log
-    SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
-    echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > sender.sh
-    source sender.sh
-    exit 1
-fi
-
-if [[ ${CLOUD} == "merlin3" ]]; then
-   echo "${CURR_DIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info"
-   ${CURR_DIR}/tb/pmm_tb ${PMM_XCLBIN} ${PMM_TEST} >> fpga.info
-   if [ $? -ne 0 ]; then
-       ERROR_MESSAGE="${CURR_DIR}/tb/pmm_tb Failed for ${CLOUD} : Check fpga.info"
-       echo $ERROR_MESSAGE
-       echo $ERROR_MESSAGE >> error.log
-       cat fpga.info >> error.log
-       SUBJECT_STRING="--subject \"ERROR : From "${INSTANCE_TYPE}" ID: "${INSTANCE_ID}" running "${include}" in "${CLOUD}"\" --message \"file://error.log\""
-       echo "aws sns publish  ${REGION_STRING}   ${TOPIC}   ${SUBJECT_STRING}" > sender.sh
-       source sender.sh
-       exit 1
-   fi
-fi
-
 rm -rf regression.log
-
-echo -e "============================================================================" >> regression.log
-echo -e "FPGA INFORMATION"                                                             >> regression.log
-echo -e "============================================================================" >> regression.log
-head -n7  fpga.info                                                                    >> regression.log
-grep -A8  -e "cases passed the test" fpga.info                                         >> regression.log   
-grep -e Pass fpga.info | wc -l | awk '{print "Number of Pass Messages: "$1" Status: OK"}' >> regression.log
-echo -e "============================================================================\n" >> regression.log
 
 echo -e "============================================================================" >> regression.log 
 echo -e "CPU INFO      "                                                               >> regression.log
@@ -118,19 +75,24 @@ echo -e "BWA           : $BWABIN_VERSION"                                       
 echo -e "GATK          : $GATK_VERSION"                                                >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
+echo -e "============================================================================" >> regression.log
+echo -e "Testing FPGA "                                                                >> regression.log
+echo -e "============================================================================\n" >> regression.log
+$BATS $CURR_DIR/fpga_test/ >> regression.log
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+echo "FPGA test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
 $BATS $CURR_DIR/features_test/ >> regression.log
 if [ $? -ne 0 ]; then
-  failed=1
+  exit 1
 fi
 rm -rf `pwd`/output.bam
-
-echo -e "============================================================================" >> regression.log
-echo -e "Regression Test In Progress"                                                  >> regression.log
-echo -e "============================================================================\n" >> regression.log
+echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
@@ -142,9 +104,10 @@ for id in ${array[@]}
     export id=$id
     $BATS $CURR_DIR/regression_test/  >> regression.log
     if [ $? -ne 0 ]; then
-      failed=1
+      exit 1
     fi
   done
+echo "Germline test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Pair Sample for Mutect2"                                                      >> regression.log
@@ -156,18 +119,14 @@ for id in ${array[@]}
     export id=$id
     $BATS $CURR_DIR/mutect2_test2/ >> regression.log
     if [ $? -ne 0 ]; then
-      failed=1
+      exit 1
     fi
   done
+echo "Somatic test passed"
  
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
 
-#echo "rm -rf /local/work_dir/temp/*  log/"
-#      rm -rf /local/work_dir/temp/*  log/
-
-DATE=`date +"%Y-%m-%d"`
-echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
+#DATE=`date +"%Y-%m-%d"`
+#echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
 #source sender.sh
-
-exit $failed
