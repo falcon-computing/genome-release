@@ -42,4 +42,8 @@ load ../global
    [[ "${output}" == *"ERROR"* ]]
 }
 
-
+@test "INDEL sample tag set but undefined" {
+   run ${FCSBIN} indel -r ${ref_genome} -i ${INPUT_BAM} -o check/output.bam -K ${db138_SNPs} --sample-tag 
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
+}

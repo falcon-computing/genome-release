@@ -107,3 +107,8 @@ load ../global
    run rm -rf output.bam
 }
 
+@test "Folder with FASTQ Files does not exist" {
+   run ${FCSBIN} al -r ${ref_genome} -o output.bam -f --sample-sheet /local/doesnotexist/
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
+}
