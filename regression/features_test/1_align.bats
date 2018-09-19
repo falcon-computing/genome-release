@@ -65,9 +65,9 @@ load ../global
 }
  
 @test "Output file directory not writeable" {
-   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o fake/output.bam -f
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o /output.bam -f
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
+   [[ "${output}" == *"ERROR"* ]]
 }
 
 @test "Read Group not set (--rg)" {

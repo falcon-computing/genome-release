@@ -42,3 +42,9 @@ load ../global
    run rm -rf output.bam log/
 }
 
+@test "BQSR sample name not defined" {
+   run ${FCSBIN} bqsr -r ${ref_genome} -i doesnotexist -o output.bam -K ${db138_SNPs} -L ${INTERVAL_FILE} --sample-name
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR:"* ]]
+}
+

@@ -31,7 +31,14 @@ load ../global
    run rm -rf log/  outputdir/
 }
 
-@test "printReads output file directory not writeable" {
-  # TODO: not sure how to test
-  skip
+@test "printReads output file directory not writeable" {   
+   run ${FCSBIN} printreads -r ${ref_genome} -i ${INPUT_BAM} -o / -b ${REPORT}
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
+}
+
+@test "printReads sample name not defined" {
+   run ${FCSBIN} printreads -r ${ref_genome} -i ${INPUT_BAM} -o outputdir -b ${REPORT} --sample-name
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
 }

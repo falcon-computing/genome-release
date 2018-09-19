@@ -44,8 +44,10 @@ load ../global
    [[ "${output}" == *"fcs-genome mutect2"* ]]
 }
 
-@test "MUTECT2 without Interval File specified" {
-   run ${FCSBIN} mutect2 -r ${ref_genome} --normal ${INPUT_BAM} --tumor ${INPUT_BAM}  --dbsnp ${db138_SNPs} --cosmic ${cosmic} -L 
+@test "MUTECT2 without Interval File specified and cosmic VCF index out of date" {
+   run sleep 1
+   run touch ${cosmic}.idx
+   run ${FCSBIN} mutect2 -r ${ref_genome} --normal ${INPUT_BAM} --tumor ${INPUT_BAM}  --dbsnp ${db138_SNPs} --cosmic ${cosmic} -L
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome mutect2"* ]]
