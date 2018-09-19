@@ -4,6 +4,12 @@ load ../global
 fastq_dir=$WORKDIR/fastq
 
 helper_normalRun() {
+
+  # run xbsak_gem if available
+  if which xbsak_gem &> /dev/null; then
+    xbsak_gem dmatest
+  fi
+
   #"normal run for alignment"
   local -r id="$1"
   [ -f ${fastq_dir}/${id}_1.fastq.gz ]
@@ -32,19 +38,6 @@ helper_bamCompare() {
 
   echo "${output}" 
   [ "$status" -eq 0 ]
-
-}
-
-helper_flagstatCompare() {
-  #"Compare flagstat against baseline"
-  local -r id="$1"
-  subjectBAM="${id}.bam"
-  baselineBAM="$baseline_dir/bwa/${id}_marked.bam"
-  run compare_flagstat "$subjectBAM" "$baselineBAM" "$id"
-  
-  echo "${output}"
-  [ "$status" -eq 0 ]
-
 }
 
 @test "Normal run for alignment: $id" {
@@ -53,9 +46,4 @@ helper_flagstatCompare() {
 
 @test "Compare BAM file against baseline: $id" {
   helper_bamCompare "$id"
-}
-
-@test "Compare flagstat against baseline: $id" {
-  skip
-  helper_flagstatCompare "$id"
 }
