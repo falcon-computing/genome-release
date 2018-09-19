@@ -114,25 +114,53 @@ function check_dev_version {
 }
 
 function compare_BAM {
-
   local subjectBAM=$1;
-  local baselineBAM=$2;
-  local id=$3;
   #convert BAM to SAM
   export TMPDIR=/local/temp/
-  samtools view "$subjectBAM"  | sort > $temp_dir/subject_bwa.sam;
-  samtools view "$baselineBAM" | sort > $temp_dir/baseline_bwa.sam; 
-  
-  subject=`wc -l $temp_dir/subject_bwa.sam`;
-  baseline=`wc -l $temp_dir/baseline_bwa.sam`  
+  samtools view "$subjectBAM"  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa.dat;
+  countTotal=`diff $temp_dir/subject_bwa.dat $WORKDIR/baselines/bwa/$id_marked_counts.dat | wc -l`
 
-  cutoff=`awk 'BEGIN{print sqrt((subject-baseline)*(subject-baseline))}'`
-  if [ "$cutoff" -lt "20" ];then
+  samtools view "$subjectBAM" -F4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_mapped.dat;
+  countMapped=`diff $temp_dir/subject_bwa_mapped.dat $WORKDIR/baselines/bwa/$id_marked_mapped.dat | wc -l`
+
+  samtools view "$subjectBAM" -f4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_unmapped.dat;
+  countUnmapped=`diff $temp_dir/subject_bwa_unmapped.dat $WORKDIR/baselines/bwa/$id_marked_unmapped.dat | wc -l`
+
+  samtools view "$subjectBAM" -f1024  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_duplicates.dat;
+  countDups=`diff $temp_dir/subject_bwa_duplicates.dat $WORKDIR/baselines/bwa/$id_duplicates.dat | wc -l`
+
+  if [[ "$countTotal" -eq "0" ]] && [[ "$countMapped" -eq "0" ]] && [[ "$countUnmapped" -eq "0" ]] && [[ "$countDups" -eq "0" ]];then
     return 0
   else
-    echo "Failed BAM compare for $id"
+    echo "Failed Mapped Reads Comparison for $id"
     return 1
-  fi; 
+  fi;
+}
+
+function compare_depth {
+  local subject_file=$1; 
+  local baseline_file=$2;
+
+  r=$(paste ${subject_file} ${baseline_file} |  awk -v total=0 '{
+    split($0,a,"\t");
+    if(a[1]==a[10]){
+       sum_xy+=a[2]*a[11];
+       sum_x+=a[2]; sum_x2+=a[2]*a[2];
+       sum_y+=a[11]; sum_y2+=a[11]*a[11];
+       total++;
+    }
+  }END{
+    numerator=total*sum_xy-(sum_x*sum_y);
+    denominator=sqrt( (total*sum_x2- (sum_x*sum_x) )*( total*sum_y2 - (sum_y*sum_y) )  );
+    r=100*numerator/denominator;
+    if(r>=99.99){print 1};
+  }')
+
+  if [ "$r" == "1" ]; then
+    return 0;
+  else
+    return 1;
+  fi
 
 }
 
