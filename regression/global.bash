@@ -101,6 +101,8 @@ fastq1=${WORKDIR}/fastq/${SAMPLE_ID}_1.fastq.gz
 fastq2=${WORKDIR}/fastq/${SAMPLE_ID}_2.fastq.gz
 INPUT_BAM=${WORKDIR}/baselines/bwa/${SAMPLE_ID}_marked.bam
 REPORT=${WORKDIR}/baselines/baserecal/3.8/${SAMPLE_ID}_BQSR.table
+INTERVAL_LIST=${WORKDIR}/genes/genelist_by_exons.bed
+GENES_LIST=${WORKDIR}/genes/genelist_by_exons.txt
 
 function check_dev_version {
   local bin=$1;

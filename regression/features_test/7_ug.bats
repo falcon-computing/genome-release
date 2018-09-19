@@ -44,9 +44,16 @@ load ../global
    if [ `hostname` == "merlin3" ];then
       run ${FCSBIN} ug -r ${ref_genome} -i ${WORK_DIR}/doesnotexist -o ${OUTPUT_VCF}
       [ "$status" -ne 0 ]
-      #[[ "${output}" == *"ERROR: Cannot find"* ]]
+      [[ "${output}" == *"ERROR"* ]]
    else
      skip
    fi
 }
+
+@test "UG sample tag option set but not defined" {
+   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_VCF} --sample-tag
+   [ "$status" -ne 0 ]
+   #[[ "${output}" == *"ERROR: Cannot find"* ]]
+}
+
 
