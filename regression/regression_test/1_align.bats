@@ -5,9 +5,9 @@ fastq_dir=$WORKDIR/fastq
 
 helper_normalRun() {
 
-  # run xbsak_gem if available
-  if which xbsak_gem &> /dev/null; then
-    xbsak_gem dmatest
+  # run xbutil if available
+  if which xbutil &> /dev/null; then
+    xbutil dmatest
   fi
 
   #"normal run for alignment"

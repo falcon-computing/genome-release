@@ -32,8 +32,8 @@ load ../global
 
 @test "smem testbench" {
   # run xbsak_gem if available
-  if which xbsak_gem &> /dev/null; then
-    xbsak_gem dmatest
+  if which xbutil &> /dev/null; then
+    xbutil dmatest
   fi
 
   run $SMEM_TB \

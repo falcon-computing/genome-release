@@ -45,8 +45,15 @@ while [[ $# -gt 0 ]]; do
   --no-fpga)
     no_fpga=1
     ;;
+  --debug)
+    debug=1
+    ;;
   -u|--upload)
     upload=1
+    ;;
+  -v|--version)
+    version="$2"
+    shift
     ;;
   -h|--help)
     print_help
@@ -62,7 +69,10 @@ while [[ $# -gt 0 ]]; do
   shift # past argument or value
 done
 
-version=$(git describe --tags)
+if [ -z "$version" ]; then
+  version="Internal"
+fi
+#version=$(git describe --tags)
 
 start_ts=$(date +%s)
 
@@ -72,10 +82,23 @@ if [ ! -z "$platform" ]; then
 fi
 log=${log}.log
 
+# get release version string
+case $platform in
+  hwc)
+    release_version="$version on Huawei Cloud"
+    ;;
+  aws)
+    release_version="$version on AWS"
+    ;;
+  *)
+    release_version="$version"
+    ;;
+  esac
+
 function check_run {
   local cmd="$@";
   >&2 echo "$cmd";
-  $cmd >> $pwd_dir/$log 2>&1;
+  eval "$cmd" >> $pwd_dir/$log 2>&1;
   if [ "$?" -ne 0 ]; then
     echo "failed to execute: $cmd";
     exit 1
@@ -101,9 +124,18 @@ function cmake_build {
   local dir=$(git_clone $git);
   check_run mkdir -p $dir/release;
   check_run cd $dir/release;
-  check_run cmake -DCMAKE_BUILD_TYPE=Release -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
+  if [ -z "$debug" ]; then
+    check_run cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DRELEASE_VERSION=""$release_version"" \
+      -DDEPLOYMENT_DST=$platform \
+      -DCMAKE_INSTALL_PREFIX=$dst ..;
+  else
+    check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
+  fi;
+
   check_run make -j 8;
-  check_run make test;
+#check_run make test;
   check_run make install; # will copy to correct place
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;
@@ -146,7 +178,11 @@ check_run rsync -av --exclude=".*" $script_dir/common/ $dst_dir/
 # load sdx
 if [ -z "$no_fpga" ]; then
   source /curr/software/util/modules-tcl/init/bash
-  module load sdx/17.4
+  if [ -z "$platform" ]; then
+    module load xrt # use the latest sdx version
+  else
+    module load sdx/17.4
+  fi
 else
   # do not load fpga framework
   echo "verbose: 0" > $dst_dir/blaze/conf

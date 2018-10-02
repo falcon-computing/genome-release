@@ -19,9 +19,9 @@ function run_align {
   local sample=$1;
   local log_fname=$log_dir/${sample}_align.log;
 
-  # run xbsak if available
-  if which xbsak_gem &> /dev/null; then
-    xbsak_gem dmatest
+  # run xbutil if available
+  if which xbutil &> /dev/null; then
+    xbutil dmatest &> $log_fname 
   fi;
 
   $FALCON_HOME/bin/fcs-genome align \
@@ -30,7 +30,7 @@ function run_align {
     -2 /local/$sample/${sample}_2.fastq.gz \
     -o /local/$sample/${sample}_marked.bam \
     -R $sample -L $sample -P illumina -S $sample \
-    -f 1> /dev/null 2> $log_fname;
+    -f 1> /dev/null 2>> $log_fname;
 }
 
 function run_bqsr {
