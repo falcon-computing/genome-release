@@ -33,6 +33,7 @@ ref_dir=/local/ref
 WORKDIR=/local/work_dir
 
 fastq_dir=$WORKDIR/fastq
+genes_dir=$WORKDIR/genes
 baseline_dir=$WORKDIR/baselines
 tbdata_dir=$WORKDIR/tb
 
@@ -66,6 +67,9 @@ fastq1=${fastq_dir}/${SAMPLE_ID}_1.fastq.gz
 fastq2=${fastq_dir}/${SAMPLE_ID}_2.fastq.gz
 INPUT_BAM=${baseline_dir}/bwa/${SAMPLE_ID}_marked.bam
 REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
+
+INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
+GENES_LIST=${genes_dir}/genelist_by_exons.txt
 
 function check_dev_version {
   local bin=$1;

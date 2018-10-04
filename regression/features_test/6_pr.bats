@@ -31,7 +31,17 @@ load ../global
    run rm -rf log/  outputdir/
 }
 
-@test "printReads output file directory not writeable" {
-  # TODO: not sure how to test
-  skip
+@test "printReads output file in directory with no writing permission" {
+   run mkdir temp_dir
+   run chmod u-w temp_dir
+   run ${FCSBIN} printreads -r ${ref_genome} -i ${INPUT_BAM} -o temp_dir/file.bam -b report.grp 
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
+   run rm -rf temp_dir
+}
+
+@test "printReads sample name not defined" {
+   run ${FCSBIN} printreads -r ${ref_genome} -i ${INPUT_BAM} -o outputdir -b ${REPORT} --sample-name
+   [ "$status" -ne 0 ]
+   [[ "${output}" == *"ERROR"* ]]
 }
