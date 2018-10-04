@@ -59,8 +59,8 @@ load ../global
    run rm -rf log/
 }
 
-@test "DEPTH sample tag option set but not defined" {
-   run ${FCSBIN} depth -r ${ref_genome} -i ${INPUT_BAM} -o depth.cov -L ${INTERVAL_LIST} -g ${GENES_LIST} --sample-tag
+@test "DEPTH sample id option set but not defined" {
+   run ${FCSBIN} depth -r ${ref_genome} -i ${INPUT_BAM} -o depth.cov -L ${INTERVAL_LIST} -g ${GENES_LIST} --sample-id
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
    [[ "${output}" == *"fcs-genome depth"* ]]

@@ -59,8 +59,8 @@ load ../global
    run rm -rf log/
 }
 
-@test "HTC sample tag set but undefined" {
-   run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_BAM} -o out.vcf -L ${INTERVAL_LIST} --sample-tag 
+@test "HTC sample id set but undefined" {
+   run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_BAM} -o out.vcf -L ${INTERVAL_LIST} --sample-id 
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
    run rm -rf log/

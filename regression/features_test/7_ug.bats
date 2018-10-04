@@ -50,8 +50,8 @@ load ../global
    fi
 }
 
-@test "UG sample tag option set but not defined" {
-   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_VCF} --sample-tag
+@test "UG sample id option set but not defined" {
+   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_VCF} --sample-id
    [ "$status" -ne 0 ]
    #[[ "${output}" == *"ERROR: Cannot find"* ]]
 }
