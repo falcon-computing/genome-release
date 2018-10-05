@@ -123,6 +123,33 @@ for id in ${array[@]}
     fi
   done
 echo "Somatic test passed"
+
+echo -e "============================================================================" >> regression.log
+echo -e "Start tests for hg38"                                                      >> regression.log
+echo -e "============================================================================\n" >> regression.log
+source $CURR_DIR/hg38.bash
+array=(NA12878 NA12891 NA12892)
+for id in ${array[@]}
+  do
+    echo "Processing $id"
+    export id=$id
+    $BATS $CURR_DIR/regression_test/  >> regression.log
+    if [ $? -ne 0 ]; then
+      exit 1
+    fi
+  done
+echo "Hg38 Germline test passed"
+array=(TCRBOA1)
+for id in ${array[@]}
+  do
+    echo "Processing $id"
+    export id=$id
+    $BATS $CURR_DIR/mutect2_test2/ >> regression.log
+    if [ $? -ne 0 ]; then
+      exit 1
+    fi
+  done
+echo "Hg38 Somatic test passed"
  
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
