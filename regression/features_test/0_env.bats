@@ -37,8 +37,8 @@ load ../global
 }
 
 @test "Check if work_dir/baselines exists" {
-  [ -d "$baseline" ]
-  [ ! -z "$baseline" ]
+  [ -d "$baseline_dir" ]
+  [ ! -z "$baseline_dir" ]
 }
 
 @test "Check if /local/vcfdiff/vcfdiff exists" {
