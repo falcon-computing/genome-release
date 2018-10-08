@@ -28,7 +28,20 @@ load ../global
 
 @test "Check if reference genome exists" {
   [ ! -z "$ref_genome" ]
-  [ -f $ref_genome ]
+  [ ! -z "$db138_SNPs" ]
+  [ ! -z "$g1000_indels" ]
+  [ ! -z "$g1000_gold_standard_indels" ]
+  [ ! -z "$cosmic" ]
+  [ ! -z "$PON" ]
+  [ ! -z "$GNOMAD" ]
+
+  [ -f "$ref_genome" ]
+  [ -f "$db138_SNPs" ]
+  [ -f "$g1000_indels" ]
+  [ -f "$g1000_gold_standard_indels" ]
+  [ -f "$cosmic" ]
+  [ -f "$PON" ]
+  [ -f "$GNOMAD" ]
 }
 
 @test "Check if work_dir/fastq exists" {
@@ -41,7 +54,7 @@ load ../global
   [ ! -z "$baseline_dir" ]
 }
 
-@test "Check if /local/vcfdiff/vcfdiff exists" {
+@test "Check if vcfdiff exists" {
   [ -f "$VCFDIFF" ]
   [ ! -z "VCFDIFF" ]
 }
