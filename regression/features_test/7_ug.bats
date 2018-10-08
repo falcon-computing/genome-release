@@ -42,7 +42,7 @@ load ../global
 
 @test "UG input file does not exist" {
    if [ `hostname` == "merlin3" ];then
-      run ${FCSBIN} ug -r ${ref_genome} -i ${WORK_DIR}/doesnotexist -o ${OUTPUT_VCF}
+      run ${FCSBIN} ug -r ${ref_genome} -i ${WORK_DIR}/doesnotexist -o fake.vcf
       [ "$status" -ne 0 ]
       [[ "${output}" == *"ERROR"* ]]
    else
@@ -50,8 +50,8 @@ load ../global
    fi
 }
 
-@test "UG sample tag option set but not defined" {
-   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_BAM} -o ${OUTPUT_VCF} --sample-tag
+@test "UG sample id option set but not defined" {
+   run ${FCSBIN} ug -r ${ref_genome} -i ${INPUT_BAM} -o fake.vcf --sample-id
    [ "$status" -ne 0 ]
    #[[ "${output}" == *"ERROR: Cannot find"* ]]
 }
