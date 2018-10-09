@@ -1,14 +1,38 @@
 #!/bin/bash
-
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-CLOUD=`hostname`
 
+if [ -z "$CLOUD" ]; then
+  source $DIR/cloud-helper.sh
+  
+  CLOUD=`get_cloud`
+  if [[ "$CLOUD" == "aws" ]]; then
+    AMI=`get_image_id`
+    REGION=`get_region`
+    INSTANCE_TYPE=`aws_get_instance_type`
+  elif [[ `get_cloud` == "hwc" ]]; then
+    AMI=`get_image_id`
+    REGION=`get_region`
+    INSTANCE_TYPE=`hwc_get_instance_type`
+  else
+    AMI="local"
+    REGION="local"
+    INSTANCE_TYPE="local"
+    CLOUD="local"
+  fi
+fi  
+
+INSTANCE_ID="$(hostname)"
+
+export CLOUD
+
+if [ "${CLOUD}" == "aws" ];then
+  export LM_LICENSE_FILE=2300@fcs.fcs-internal
+fi
 
 if [[ -z "$FALCON_HOME" ]]; then 
-   if  [ "${CLOUD}" == "merlin3" ]; then
-       echo "Merlin 3: FALCON_HOME is not defined"
-       echo "To solve it , execute:  module load genome/latest"
-       echo "prior the Regression Test"
+   if  [ "${CLOUD}" == "local" ]; then
+       echo "FALCON_HOME needs to be defined"
+       echo "run 'module load genome/latest' prior the Regression Test"
        exit 1
    else
        FALCON_HOME=/usr/local/falcon
@@ -20,7 +44,6 @@ if [ -z "$USER" ]; then
 else
   user=$USER
 fi
-
 
 if [ -z "$FALCON_DIR" ]; then
   FALCON_DIR=${FALCON_HOME}
@@ -41,9 +64,9 @@ FCSBIN=$FALCON_DIR/bin/fcs-genome
 BWABIN=$FALCON_DIR/tools/bin/bwa-flow
 GATK3=$FALCON_DIR/tools/package/GATK3.jar
 GATK4=$FALCON_DIR/tools/package/GATK4.jar
-SW_TB=$DIR/tb/sw_tb
-PMM_TB=$DIR/tb/pmm_tb
-SMEM_TB=$DIR/tb/smem_tb
+SW_TB=$DIR/tb/$CLOUD/sw_tb
+PMM_TB=$DIR/tb/$CLOUD/pmm_tb
+SMEM_TB=$DIR/tb/$CLOUD/smem_tb
 SW_BIT=$FALCON_DIR/fpga/sw.xclbin
 PMM_BIT=$FALCON_DIR/fpga/pmm.xclbin
 SMEM_BIT=$FALCON_DIR/fpga/sw.xclbin

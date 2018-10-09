@@ -1,46 +1,14 @@
 #!/bin/bash
 CURR_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-source $CURR_DIR/cloud-helper.sh
 source $CURR_DIR/global.bash
 if [ $? -ne 0 ]; then
-   echo "Please check"
+   echo "loading global settings failed"
    exit 1
 fi
 
 failed=0
 
-if [[ `get_cloud` == "aws" ]] ;then
-   AMI=`get_image_id`
-   CLOUD=`get_cloud`
-   REGION=`get_region`
-   INSTANCE_TYPE=`aws_get_instance_type`
-fi
-
-if [[ `get_cloud` == "hwc" ]] ;then
-   AMI=`get_image_id`
-   CLOUD=`get_cloud`
-   REGION=`get_region`
-   INSTANCE_TYPE=`hwc_get_instance_type`
-fi
-INSTANCE_ID=`date +%Y%m%d%s`
-
-if [ "${CLOUD}" == "aws" ];then
-   export LM_LICENSE_FILE=2300@fcs.fcs-internal
-fi
-output_log=${INSTANCE_TYPE}_${include}_${INSTANCE_ID}.log
-
-if [ "${CLOUD}" = "" ] ; then
-   CLOUD=`hostname`
-   echo "Local Machine : $CLOUD"
-   if [ ! -z $FALCON_HOME ];then
-      INSTALL_DIR=$FALCON_HOME
-   else
-      INSTALL_DIR=/usr/local/falcon
-   fi
-   AMI=`hostname`
-   REGION="us-east-1"
-   INSTANCE_TYPE="CPU"
-fi
+output_log=${INSTANCE_TYPE}_$(date +%Y%m%d%s).log
 
 start_ts=$(date +%s)
 
@@ -80,6 +48,7 @@ echo -e "Testing FPGA "                                                         
 echo -e "============================================================================\n" >> regression.log
 $BATS $CURR_DIR/fpga_test/ >> regression.log
 if [ $? -ne 0 ]; then
+  echo "FPGA test failed"
   exit 1
 fi
 echo "FPGA test passed"
