@@ -25,6 +25,8 @@ print_help() {
   echo "           local dir for the build, default is $build_dir";
   echo "   -u|--upload: ";
   echo "           whether to upload to s3 bucket, default false";
+  echo "   --profiling: ";
+  echo "           whether to enable profiling in the build, default false";
   echo "   --no-fpga: ";
   echo "           disable FPGA in the build, default false";
   echo "";
@@ -41,6 +43,9 @@ while [[ $# -gt 0 ]]; do
   -d|--build-dir)
     build_dir="$2"
     shift
+    ;;
+  --profiling)
+    profiling=1
     ;;
   --no-fpga)
     no_fpga=1
@@ -131,7 +136,11 @@ function cmake_build {
       -DDEPLOYMENT_DST=$platform \
       -DCMAKE_INSTALL_PREFIX=$dst ..;
   else
-    check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
+    if [ -z "$profiling" ]; then
+      check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DNO_PROFILE=1 -DCMAKE_INSTALL_PREFIX=$dst ..;
+    else
+      check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
+    fi;
   fi;
 
   check_run make -j 8;
@@ -151,7 +160,11 @@ function gatk_build {
   local dir=$(git_clone $git);
 
   check_run cd $dir;
-  check_run ./build.sh $platform;
+  if [ -z "$profiling" ]; then
+    check_run ./build.sh -p $platform;
+  else
+    check_run ./build.sh -p $platform --profiling;
+  fi;
   check_run cp ./export/*.jar $dst;
 
   check_run cd $curr_dir;
