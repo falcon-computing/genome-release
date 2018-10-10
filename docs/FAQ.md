@@ -108,7 +108,7 @@ Affected command displays ERROR Message:
 The chromosome block chr19 is not contiguous, consider running with -a
 ```
 #### Answer
-This ERROR message indicates that the data contains unsorted inputs or entries that were not generated sequentially. fcs-genome pipeline assumes that parts BAM files were generated following the coordinates from the reference fasta file. If the sample was sequenced using a capture kit, then the BED file that covers the regions defined by the capture should be used in every fcs-genome tool where the interval option (-L) is available such as BQSR, HTC, mutect2, etc. It is recommended that BED file should be sorted by chromosome and position before execution:
+This ERROR message indicates that the data contains unsorted inputs or entries that were not generated sequentially. Current pipeline assumes that parts BAM files were generated following the coordinates from the reference fasta file. If the sample was sequenced using a capture kit, then the BED file that covers the regions defined by the capture should be set in every fcs-genome tool used in the pipeline where the interval option (-L) is available such as BQSR, HTC, mutect2, etc. It is recommended that BED file should be sorted by chromosome and position before execution:
 
 sort -k1,1V -k2,2n IntervalFile.bed > IntervalFile_sorted.bed
 
