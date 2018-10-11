@@ -13,7 +13,7 @@ helper_normalRun() {
   run ${FCSBIN} joint \
     -r ${ref_genome} \
     -i ${VCF_DIR} \
-    -o test.vcf --sample-id ${id} ${tag}
+    -o test.vcf --sample-id ${id} ${tag} -f 
   
   [ "$status" -eq 0 ]
   [ -f test.vcf.gz ]
@@ -29,7 +29,7 @@ helper_compareVCF() {
   else
      baselineVCF="${WORKDIR}/baselines/joint/3.8/joint.vcf.gz"
   fi
-  run compare_vcf "$subjectVCF" "$baselineVCF" 
+  run compare_vcfdiff "$subjectVCF" "$baselineVCF" 
 
   [ "$status" -eq 0 ]
 }
