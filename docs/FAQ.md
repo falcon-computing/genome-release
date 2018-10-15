@@ -115,4 +115,3 @@ sort -k1,1V -k2,2n IntervalFile.bed > IntervalFile_sorted.bed
 
 
 
-
