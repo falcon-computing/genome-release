@@ -1,0 +1,6 @@
+# build docker image:
+sh docker_0_build.sh $name
+
+# run fcs in docker image
+sh docker_1_run.sh
+
