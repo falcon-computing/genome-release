@@ -3,51 +3,58 @@
 load ../global
 
 helper_normalRun() {
-  #"normal run for htc"
+  #"normal run for joint"
   local -r tag="$1"
-  VCF_DIR=$WORKDIR/baselines/joint/3.8/vcf
-  if [[ "${tag}" == "--gatk4" ]];then
-      VCF_DIR=$WORKDIR/baselines/joint/4.0/vcf
+  VCF_DIR=$WORKDIR/baselines/joint/vcf/
+  if [ "${tag}" = "--gatk4" ];then
+     DB=" --database_name my_database "
+     run rm -rf my_database
   fi
 
   run ${FCSBIN} joint \
     -r ${ref_genome} \
     -i ${VCF_DIR} \
-    -o test.vcf --sample-id ${id} ${tag} -f 
+    -o test.vcf --sample-id ${id} -f ${DB} ${tag} 
+
+  run rm -rf my_database
   
   [ "$status" -eq 0 ]
-  [ -f test.vcf.gz ]
+
 }
 
 helper_compareVCF() {
   #"Compare vcf file against baseline"
   local -r tag="$1"
 
-  subjectVCF="test.vcf.gz"
-  if [[ "$tag" == "gatk4" ]];then 
-     baselineVCF="${WORKDIR}/baselines/joint/4.0/joint.vcf.gz"
+  if [  "$tag" =  "gatk4"  ];then
+     subjectVCF="test.vcf" 
+     baselineVCF="${WORKDIR}/baselines/joint/4.0/joint.vcf"
   else
+     subjectVCF="test.vcf.gz"
      baselineVCF="${WORKDIR}/baselines/joint/3.8/joint.vcf.gz"
   fi
   run compare_vcfdiff "$subjectVCF" "$baselineVCF" 
+  run rm -rf test.vcf*
 
   [ "$status" -eq 0 ]
 }
 
-@test "Normal run for Joint GATK3: $id" {
-  helper_normalRun  "group"  " "
+@test "Normal run for Joint GATK3:" {
+  #skip
+  helper_normalRun  " "
 }
   
-@test "Compare using vcfdiff for Joint GATK3 outputs: $id" {
+@test "Compare using vcfdiff for Joint GATK3 outputs:" {
+  #skip
   helper_compareVCF  " "
 }
 
-@test "Normal run for Joint GATK4: $id" {
-  skip
-  helper_normalRun  "--gatk4"
+@test "Normal run for Joint GATK4:" {
+  #skip
+  helper_normalRun --gatk4
 }
 
-@test "Compare using vcfdiff for Joint GATK4 outputs: $id" {
-  skip
-  helper_compareVCF  "gatk4"
+@test "Compare using vcfdiff for Joint GATK4 outputs:" {
+  #skip
+  helper_compareVCF "gatk4"
 }

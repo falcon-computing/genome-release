@@ -28,9 +28,9 @@ function get_time {
   if ! ls $log_fname &>/dev/null; then
     echo "0"
   else
-    local line=$(grep "${extra}.* finishes" $log_fname)
+    local line=$(grep "${extra}.* finishes" $log_fname | awk '{total+=$(NF-1)}END{printf total}')
     if [ ! -z "$line" ]; then
-      echo $line | awk '{printf $(NF-1)}';
+      echo $line;
     else
       echo "-1"
       return 1
@@ -45,31 +45,33 @@ for gatk in 3 4; do
   printf "GATK $gatk\n"
 
   # Germline table
-  printf "Sample, BWA, MD, BQSR, HTC\n"
+  printf "Sample, BWA, MD, BQSR, HTC, Total\n"
   for sample in NA12878 NA12891 NA12892 NA12878-Garvan-Vial1; do
     bwa_t=$(get_time $sample align "bwa mem"); ret=$(($ret | $?))
     md_t=$(get_time $sample align "Mark Duplicates"); ret=$(($ret | $?))
     bqsr_t=$(get_time $sample bqsr $gatk); ret=$(($ret | $?))
     htc_t=$(get_time $sample htc $gatk); ret=$(($ret | $?))
-    printf "%s, %d, %d, %d, %d\n" $sample $bwa_t $md_t $bqsr_t $htc_t
+    let total=${bwa_t}+${md_t}+${bqsr_t}+${htc_t}
+    total=`awk -v a=${total} 'BEGIN{printf "%3.3f", (a/3600)}'`
+    printf "%s, %d, %d, %d, %d, %3.3f\n" $sample $bwa_t $md_t $bqsr_t $htc_t $total
   done
   
   printf "\n"
   
   # Mutect table
-  printf "Sample, BWA, MD, BQSR, Mutect2\n"
+  total=0
+  printf "Sample, BWA, MD, BQSR, Mutect2, Total\n"
   for pair in TCRBOA1; do 
     for sample in ${pair}-N ${pair}-T; do
       bwa_t=$(get_time $sample align "bwa mem"); ret=$(($ret | $?))
       md_t=$(get_time $sample align "Mark Duplicates"); ret=$(($ret | $?))
       bqsr_t=$(get_time $sample bqsr $gatk); ret=$(($ret | $?))
+      let total=${total}+${bwa_t}+${md_t}+${bqsr_t}
       printf "%s, %d, %d, %d, " $sample $bwa_t $md_t $bqsr_t
-      if [ "$sample" = "TCRBOA1-N" ]; then
-        printf "\n"
-      fi
     done
     mutect_t=$(get_time $pair mutect2 $gatk); ret=$(($ret | $?))
-    printf "%d\n" $mutect_t
+    total=`awk -v a=${total} -v b=${mutect_t} 'BEGIN{printf "%3.3f", (a+b)/3600}'`
+    printf "%d %3.3f\n" $mutect_t  ${total}
   done
 
   printf "\n"

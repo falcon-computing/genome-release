@@ -35,7 +35,14 @@ function run_align {
 
 function run_bqsr {
   local sample=$1;
-  if [ $# -gt 1 ]; then
+  local capture=$2
+  local gatk_version=$3
+  local SET_INTERVAL=
+  if [[ ! -z "$capture" ]];then 
+     SET_INTERVAL=" -L /local/capture/${capture} "
+  fi
+
+  if [[ "$gatk_version" == "gatk4" ]]; then
     local gatk4='--gatk4';
     local output=/local/$sample/gatk4/${sample}.recal.bam
     local log_fname=$log_dir/${sample}_bqsr_gatk4.log;
@@ -49,12 +56,19 @@ function run_bqsr {
     -i /local/$sample/${sample}_marked.bam \
     -K $dbsnp \
     -o $output \
+    ${SET_INTERVAL} \
     -f $gatk4 1> /dev/null 2> $log_fname;
 }
 
 function run_htc {
   local sample=$1;
-  if [ $# -gt 1 ]; then
+  local capture=$2
+  local gatk_version=$3
+  if [[ ! -z "$capture" ]];then
+    SET_INTERVAL=" -L /local/capture/${capture} "
+  fi
+
+  if [[ "$gatk_version" == "gatk4" ]];then
     local gatk4='--gatk4';
     local input=/local/$sample/gatk4/${sample}.recal.bam
     local output=/local/$sample/gatk4/${sample}.vcf;
@@ -76,7 +90,7 @@ function run_htc {
 
 function run_mutect2 {
   local sample=$1;
-  if [ $# -gt 1 ]; then
+  if [ $# -gt 2 ]; then
     local gatk4='--gatk4';
     local input_t=/local/${sample}-T/gatk4/${sample}-T.recal.bam;
     local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
@@ -103,22 +117,32 @@ function run_mutect2 {
   # TODO: compare vcf results
 }
 
-for sample in $(cat $DIR/germline.list); do
+capture=$NexteraCapture
+for sample in $(cat $DIR/wes_germline.list); do
   run_align $sample
-  run_bqsr  $sample
-  run_htc   $sample
-  run_bqsr  $sample gatk4
-  run_htc   $sample gatk4
+  run_bqsr  $sample $capture " "
+  run_htc   $sample $capture " "
+  run_bqsr  $sample $capture gatk4
+  run_htc   $sample $capture gatk4
 done
 
+for sample in $(cat $DIR/wgs_germline.list); do
+  run_align $sample
+  run_bqsr  $sample "" ""
+  run_htc   $sample "" ""
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+done
+
+capture=$RocheCapture
 for pair in $(cat $DIR/mutect.list); do
   for sample in ${pair}-N ${pair}-T; do
     run_align $sample 
-    run_bqsr  $sample 
-    run_bqsr  $sample gatk4
+    run_bqsr  $sample $capture " "
+    run_bqsr  $sample $capture gatk4
   done
-  run_mutect2 $pair 
-  run_mutect2 $pair gatk4
+  run_mutect2 $pair $capture " "
+  run_mutect2 $pair $capture gatk4
 done
 
 # format the table
