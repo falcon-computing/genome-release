@@ -75,13 +75,11 @@ function run_htc {
     local input=/local/$sample/gatk4/${sample}.recal.bam
     local output=/local/$sample/gatk4/${sample}.vcf;
     local log_fname=$log_dir/${sample}_htc_gatk4.log;
-    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf.gz
   else
     local gatk4=
     local input=/local/$sample/gatk3/${sample}.recal.bam
     local output=/local/$sample/gatk3/${sample}.vcf;
     local log_fname=$log_dir/${sample}_htc_gatk3.log;
-    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf.gz
   fi;
   $FALCON_HOME/bin/fcs-genome htc \
     -r $ref \
@@ -99,12 +97,12 @@ function run_VCFcompare {
     local gatk4='--gatk4';
     local testVCF=/local/$sample/gatk4/${sample}.vcf;
     local testVCFlog=/local/$sample/gatk4/${sample}.vcfdiff.log
-    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf.gz
+    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf
   else
     local gatk4=
     local testVCF=/local/$sample/gatk3/${sample}.vcf;
     local testVCFlog=/local/$sample/gatk3/${sample}.vcfdiff.log
-    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf.gz
+    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf
   fi;
   ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
 
