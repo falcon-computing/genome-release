@@ -28,9 +28,10 @@ function get_time {
   if ! ls $log_fname &>/dev/null; then
     echo "0"
   else
-    local line=$(grep "${extra}.* finishes" $log_fname)
+    local line=$(grep "${extra}.* finishes" $log_fname | awk 'BEGIN {s=0;} { s+=$(NF-1);} END {print s}')
     if [ ! -z "$line" ]; then
-      echo $line | awk '{printf $(NF-1)}';
+      # sum all the lines
+      echo $line
     else
       echo "-1"
       return 1

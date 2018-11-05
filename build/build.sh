@@ -130,17 +130,22 @@ function cmake_build {
   check_run mkdir -p $dir/release;
   check_run cd $dir/release;
   if [ -z "$debug" ]; then
-    check_run cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DRELEASE_VERSION=""$release_version"" \
-      -DDEPLOYMENT_DST=$platform \
-      -DCMAKE_INSTALL_PREFIX=$dst ..;
-  else
     if [ -z "$profiling" ]; then
-      check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DNO_PROFILE=1 -DCMAKE_INSTALL_PREFIX=$dst ..;
+      check_run cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DRELEASE_VERSION=""$release_version"" \
+        -DDEPLOYMENT_DST=$platform \
+        -DNO_PROFILE=1 \
+        -DCMAKE_INSTALL_PREFIX=$dst ..;
     else
-      check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
-    fi;
+      check_run cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DRELEASE_VERSION=""$release_version"" \
+        -DDEPLOYMENT_DST=$platform \
+        -DCMAKE_INSTALL_PREFIX=$dst ..;
+    fi
+  else
+    check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
   fi;
 
   check_run make -j 8;

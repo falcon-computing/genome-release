@@ -21,7 +21,8 @@ function run_align {
 
   # run xbutil if available
   if which xbutil &> /dev/null; then
-    xbutil dmatest &> $log_fname 
+    xbutil program -p $FALCON_HOME/fpga/sw.xclbin &> $log_fname 
+    xbutil dmatest &>> $log_fname 
   fi;
 
   $FALCON_HOME/bin/fcs-genome align \
@@ -86,8 +87,8 @@ function run_mutect2 {
     local log_fname=$log_dir/${sample}_mutect2_gatk4.log;
   else
     local gatk4=
-    local input_t=/local/${sample}-T/gatk4/${sample}-T.recal.bam;
-    local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
+    local input_t=/local/${sample}-T/gatk3/${sample}-T.recal.bam;
+    local input_n=/local/${sample}-N/gatk3/${sample}-N.recal.bam;
     local output=/local/$sample/${sample}-gatk3.vcf;
     local extra="--dbsnp $dbsnp --cosmic $cosmic";
     local log_fname=$log_dir/${sample}_mutect2_gatk3.log;
