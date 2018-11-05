@@ -98,12 +98,12 @@ function run_VCFcompare {
   if [[ "$gatk_version" == "gatk4" ]];then
     local gatk4='--gatk4';
     local testVCF=/local/$sample/gatk4/${sample}.vcf;
-    local testVCFlog=/local/$sample/gatk4/${sample}.vcf.log
+    local testVCFlog=/local/$sample/gatk4/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf.gz
   else
     local gatk4=
     local testVCF=/local/$sample/gatk3/${sample}.vcf;
-    local testVCFlog=/local/$sample/gatk3/${sample}.vcf.log
+    local testVCFlog=/local/$sample/gatk3/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf.gz
   fi;
   ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
@@ -150,8 +150,10 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_align $sample
   run_bqsr  $sample $capture " "
   run_htc   $sample $capture " "
+  run_VCFcompare $sample " "
   run_bqsr  $sample $capture gatk4
   run_htc   $sample $capture gatk4
+  run_VCFcompare $sample gatk4
 done
 
 for sample in $(cat $DIR/wgs_germline.list); do
