@@ -68,6 +68,9 @@ for gatk in 3 4; do
       bqsr_t=$(get_time $sample bqsr $gatk); ret=$(($ret | $?))
       let total=${total}+${bwa_t}+${md_t}+${bqsr_t}
       printf "%s, %d, %d, %d, " $sample $bwa_t $md_t $bqsr_t
+      if [ "$sample" = "TCRBOA1-N" ]; then
+        printf "\n"
+      fi
     done
     mutect_t=$(get_time $pair mutect2 $gatk); ret=$(($ret | $?))
     total=`awk -v a=${total} -v b=${mutect_t} 'BEGIN{printf "%3.3f", (a+b)/3600}'`

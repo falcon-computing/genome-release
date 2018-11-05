@@ -12,6 +12,8 @@ cosmic=/local/ref/b37_cosmic_v54_120711.vcf
 pon=/local/gatk4_inputs/mutect_gatk4_pon.vcf
 gnomad=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
 
+vcfdiff=/local/vcfdiff/vcfdiff
+
 log_dir=log-$ts
 mkdir -p $log_dir
 
@@ -71,19 +73,40 @@ function run_htc {
   if [[ "$gatk_version" == "gatk4" ]];then
     local gatk4='--gatk4';
     local input=/local/$sample/gatk4/${sample}.recal.bam
-    local output=/local/$sample/gatk4/${sample}_test.vcf;
+    local output=/local/$sample/gatk4/${sample}.vcf;
     local log_fname=$log_dir/${sample}_htc_gatk4.log;
+    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf.gz
   else
     local gatk4=
     local input=/local/$sample/gatk3/${sample}.recal.bam
     local output=/local/$sample/gatk3/${sample}.vcf;
     local log_fname=$log_dir/${sample}_htc_gatk3.log;
+    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf.gz
   fi;
   $FALCON_HOME/bin/fcs-genome htc \
     -r $ref \
     -i $input \
     -o $output \
     -f -v $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
+
+  # TODO: compare vcf results
+}
+
+function run_VCFcompare {
+  local sample=$1;
+  local gatk_version=$2
+  if [[ "$gatk_version" == "gatk4" ]];then
+    local gatk4='--gatk4';
+    local testVCF=/local/$sample/gatk4/${sample}.vcf;
+    local testVCFlog=/local/$sample/gatk4/${sample}.vcf.log
+    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf.gz
+  else
+    local gatk4=
+    local testVCF=/local/$sample/gatk3/${sample}.vcf;
+    local testVCFlog=/local/$sample/gatk3/${sample}.vcf.log
+    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf.gz
+  fi;
+  ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
 
   # TODO: compare vcf results
 }
@@ -131,25 +154,25 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_htc   $sample $capture gatk4
 done
 
- for sample in $(cat $DIR/wgs_germline.list); do
-   run_align $sample
-   run_bqsr  $sample "" ""
-   run_htc   $sample "" ""
-   run_bqsr  $sample "" gatk4
-   run_htc   $sample "" gatk4
- done
+for sample in $(cat $DIR/wgs_germline.list); do
+  run_align $sample
+  run_bqsr  $sample "" ""
+  run_htc   $sample "" ""
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+done
  
 capture=$RocheCapture
 for pair in $(cat $DIR/mutect.list); do
   for sample in ${pair}-N ${pair}-T; do
-    #run_align $sample 
-    #run_bqsr  $sample $capture " "
+    run_align $sample 
+    run_bqsr  $sample $capture " "
     run_bqsr  $sample $capture gatk4
   done
   run_mutect2 $pair $capture " "
   run_mutect2 $pair $capture gatk4
 done
-# 
-# # format the table
-# $DIR/parse.sh $log_dir | tee performance-${ts}.csv
-# exit ${PIPESTATUS[0]} # catch the return value for parse.sh
+
+# format the table
+$DIR/parse.sh $log_dir | tee performance-${ts}.csv
+exit ${PIPESTATUS[0]} # catch the return value for parse.sh
