@@ -39,7 +39,7 @@ function run_bqsr {
   local gatk_version=$3
   local SET_INTERVAL=
   if [[ ! -z "$capture" ]];then 
-     SET_INTERVAL=" -L /local/capture/${capture} "
+     SET_INTERVAL=" -L ${capture} "
   fi
 
   if [[ "$gatk_version" == "gatk4" ]]; then
@@ -65,13 +65,13 @@ function run_htc {
   local capture=$2
   local gatk_version=$3
   if [[ ! -z "$capture" ]];then
-    SET_INTERVAL=" -L /local/capture/${capture} "
+    SET_INTERVAL=" -L ${capture} "
   fi
 
   if [[ "$gatk_version" == "gatk4" ]];then
     local gatk4='--gatk4';
     local input=/local/$sample/gatk4/${sample}.recal.bam
-    local output=/local/$sample/gatk4/${sample}.vcf;
+    local output=/local/$sample/gatk4/${sample}_test.vcf;
     local log_fname=$log_dir/${sample}_htc_gatk4.log;
   else
     local gatk4=
@@ -83,14 +83,19 @@ function run_htc {
     -r $ref \
     -i $input \
     -o $output \
-    -f -v $gatk4 1> /dev/null 2> $log_fname;
+    -f -v $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
 
   # TODO: compare vcf results
 }
 
 function run_mutect2 {
   local sample=$1;
-  if [ $# -gt 2 ]; then
+  local capture=$2
+  local gatk_version=$3
+  if [[ ! -z "$capture" ]];then
+    SET_INTERVAL=" -L ${capture} "
+  fi
+  if [[ "$gatk_version" == "gatk4" ]]; then
     local gatk4='--gatk4';
     local input_t=/local/${sample}-T/gatk4/${sample}-T.recal.bam;
     local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
@@ -113,7 +118,7 @@ function run_mutect2 {
     -t $input_t \
     $extra \
     -o $output \
-    -f $gatk4 1> /dev/null 2> $log_fname;
+    -f $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
   # TODO: compare vcf results
 }
 
@@ -126,25 +131,25 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_htc   $sample $capture gatk4
 done
 
-for sample in $(cat $DIR/wgs_germline.list); do
-  run_align $sample
-  run_bqsr  $sample "" ""
-  run_htc   $sample "" ""
-  run_bqsr  $sample "" gatk4
-  run_htc   $sample "" gatk4
-done
-
+ for sample in $(cat $DIR/wgs_germline.list); do
+   run_align $sample
+   run_bqsr  $sample "" ""
+   run_htc   $sample "" ""
+   run_bqsr  $sample "" gatk4
+   run_htc   $sample "" gatk4
+ done
+ 
 capture=$RocheCapture
 for pair in $(cat $DIR/mutect.list); do
   for sample in ${pair}-N ${pair}-T; do
-    run_align $sample 
-    run_bqsr  $sample $capture " "
+    #run_align $sample 
+    #run_bqsr  $sample $capture " "
     run_bqsr  $sample $capture gatk4
   done
   run_mutect2 $pair $capture " "
   run_mutect2 $pair $capture gatk4
 done
-
-# format the table
-$DIR/parse.sh $log_dir | tee performance-${ts}.csv
-exit ${PIPESTATUS[0]} # catch the return value for parse.sh
+# 
+# # format the table
+# $DIR/parse.sh $log_dir | tee performance-${ts}.csv
+# exit ${PIPESTATUS[0]} # catch the return value for parse.sh

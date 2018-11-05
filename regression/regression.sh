@@ -80,6 +80,21 @@ echo "DNA Case Sample test passed"
 
 
 echo -e "============================================================================" >> regression.log
+echo -e "Testing Data-Dependent Alignment                               "              >> regression.log
+echo -e "============================================================================\n" >> regression.log
+array=(GEN-637)
+for id in ${array[@]}
+  do
+    echo "Processing $id"
+    export id=$id
+    $BATS $CURR_DIR/regression_test/1_align.bats  >> regression.log
+    if [ $? -ne 0 ]; then
+      exit 1
+    fi
+  done
+echo "Data-Dependent Alignment test passed"
+
+echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 array=(NA12878 NA12891 NA12892)
@@ -139,6 +154,6 @@ echo "Hg38 Somatic test passed"
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
 
-#DATE=`date +"%Y-%m-%d"`
-#echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
-#source sender.sh
+DATE=`date +"%Y-%m-%d"`
+echo "aws sns publish --topic-arn arn:aws:sns:us-east-1:520870693817:Genomics_Pipeline_Results --region us-east-1 --subject \"Regression Test on ${INSTANCE} ${DATE}\" --message file://regression.log" > sender.sh
+source sender.sh
