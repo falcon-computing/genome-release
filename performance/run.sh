@@ -169,7 +169,7 @@ for sample in $(cat $DIR/wgs_germline.list); do
   run_VCFcompare $sample " "
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
-  run_VCFcompare $sample " " gatk4
+  run_VCFcompare $sample gatk4
 done
  
 capture=$RocheCapture
@@ -185,4 +185,5 @@ done
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
+$DIR/parseVCF.sh >> performance-${ts}.csv 
 exit ${PIPESTATUS[0]} # catch the return value for parse.sh
