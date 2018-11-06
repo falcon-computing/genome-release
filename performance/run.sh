@@ -100,19 +100,25 @@ function run_VCFcompare {
   local sample=$1;
   local gatk_version=$2
   if [[ "$gatk_version" == "gatk4" ]];then
-    local gatk4='--gatk4';
     local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk4/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf
+    if [[ "$sample" == "TCRBOA1" ]];then
+       testVCF=/local/$sample/${sample}-gatk4.vcf.gz;
+       testVCFlog=/local/$sample/${sample}-gatk4.vcfdiff.log
+       baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_mutect2.vcf
+    fi
   else
-    local gatk4=
     local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk3/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf
+    if [[ "$sample" == "TCRBOA1" ]];then
+       testVCF=/local/$sample/${sample}-gatk3.vcf.gz;
+       testVCFlog=/local/$sample/${sample}-gatk3.vcfdiff.log
+       baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_mutect2.vcf
+    fi
   fi;
   ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
-
-  # TODO: compare vcf results
 }
 
 function run_mutect2 {
@@ -185,5 +191,8 @@ done
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
+echo "==================================" >> performance-${ts}.csv
+echo "Variants Comparison " >> performance-${ts}.csv
+echo "==================================" >> performance-${ts}.csv
 $DIR/parseVCF.sh >> performance-${ts}.csv 
 exit ${PIPESTATUS[0]} # catch the return value for parse.sh
