@@ -12,7 +12,10 @@ cosmic=/local/ref/b37_cosmic_v54_120711.vcf
 pon=/local/gatk4_inputs/mutect_gatk4_pon.vcf
 gnomad=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
 
-vcfdiff=/local/vcfdiff/vcfdiff
+NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
+RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
+
+vcfdiff=/local/vcf_baselines/vcfdiff
 
 log_dir=log-$ts
 mkdir -p $log_dir
@@ -39,9 +42,10 @@ function run_bqsr {
   local sample=$1;
   local capture=$2
   local gatk_version=$3
-  local SET_INTERVAL=
   if [[ ! -z "$capture" ]];then 
      SET_INTERVAL=" -L ${capture} "
+  else
+     SET_INTERVAL=" "
   fi
 
   if [[ "$gatk_version" == "gatk4" ]]; then
@@ -68,6 +72,8 @@ function run_htc {
   local gatk_version=$3
   if [[ ! -z "$capture" ]];then
     SET_INTERVAL=" -L ${capture} "
+  else
+    SET_INTERVAL=" "
   fi
 
   if [[ "$gatk_version" == "gatk4" ]];then
@@ -95,12 +101,12 @@ function run_VCFcompare {
   local gatk_version=$2
   if [[ "$gatk_version" == "gatk4" ]];then
     local gatk4='--gatk4';
-    local testVCF=/local/$sample/gatk4/${sample}.vcf;
+    local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk4/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf
   else
     local gatk4=
-    local testVCF=/local/$sample/gatk3/${sample}.vcf;
+    local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk3/${sample}.vcfdiff.log
     local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf
   fi;
@@ -115,6 +121,8 @@ function run_mutect2 {
   local gatk_version=$3
   if [[ ! -z "$capture" ]];then
     SET_INTERVAL=" -L ${capture} "
+  else
+    SET_INTERVAL=" "
   fi
   if [[ "$gatk_version" == "gatk4" ]]; then
     local gatk4='--gatk4';
@@ -158,8 +166,10 @@ for sample in $(cat $DIR/wgs_germline.list); do
   run_align $sample
   run_bqsr  $sample "" ""
   run_htc   $sample "" ""
+  run_VCFcompare $sample " "
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
+  run_VCFcompare $sample " " gatk4
 done
  
 capture=$RocheCapture

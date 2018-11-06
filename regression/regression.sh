@@ -64,22 +64,6 @@ rm -rf `pwd`/output.bam
 echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "DNA Case Sample (GEN-637)"                                                    >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(GEN-637)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $CURR_DIR/regression_test/1_align.bats  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "DNA Case Sample test passed"
-
-
-echo -e "============================================================================" >> regression.log
 echo -e "Testing Data-Dependent Alignment                               "              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 array=(GEN-637)
