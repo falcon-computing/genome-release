@@ -29,7 +29,7 @@ rm -rf $message
 
 # do a build first
 cd $buld_dir
-./build.sh
+./build.sh --profiling
 if [ $? -ne 0 ]; then
   failed=1
 
@@ -80,7 +80,7 @@ else # build is successful
 fi # check build
 
 
-if [ -z "$failed" ]; then
+if [ "$failed" -eq 0 ]; then
   result="Passed"
 else
   result="Failed"

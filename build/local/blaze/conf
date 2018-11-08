@@ -1,4 +1,5 @@
 verbose : 0
+profile : true
 platform {
   id: "cpu"
 }
