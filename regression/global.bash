@@ -94,6 +94,10 @@ REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
 INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
 GENES_LIST=${genes_dir}/genelist_by_exons.txt
 
+INPUT_DIR=/local/work_dir/baselines/joint/vcf/
+DATABASE=my_database
+
+
 function check_dev_version {
   local bin=$1;
   local version="$($bin --version | grep -i 'version' | awk '{print $NF}')";

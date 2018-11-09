@@ -36,7 +36,7 @@ helper_bamCompare() {
   baselineBAM="$baseline_dir/bwa/${id}_marked.bam"
   run compare_BAM "$subjectBAM" "$baselineBAM" "$id"
 
-  echo "${output}" 
+  run rm -rf $subjectBAM
   [ "$status" -eq 0 ]
 }
 
