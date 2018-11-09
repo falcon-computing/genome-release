@@ -15,7 +15,7 @@ gnomad=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
 NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
 RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
-vcfdiff=/local/vcf_baselines/vcfdiff
+vcfdiff=/local/genome-release/common/vcfdiff
 
 log_dir=log-$ts
 mkdir -p $log_dir
@@ -186,13 +186,11 @@ for pair in $(cat $DIR/mutect.list); do
     run_bqsr  $sample $capture gatk4
   done
   run_mutect2 $pair $capture " "
+  run_VCFcompare $sample ""
   run_mutect2 $pair $capture gatk4
+  run_VCFcompare $sample gatk4
 done
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
-echo "==================================" >> performance-${ts}.csv
-echo "Variants Comparison " >> performance-${ts}.csv
-echo "==================================" >> performance-${ts}.csv
-$DIR/parseVCF.sh >> performance-${ts}.csv 
 exit ${PIPESTATUS[0]} # catch the return value for parse.sh
