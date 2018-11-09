@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job 
+metadata:
+  name: fcs
+spec:
+  template:
+    metadata:
+      name: fcs
+    spec:
+      containers:
+      - name: hello 
+        image: memoryzpp/buildfalcon3 
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /fastq
+          name: fastq-volume
+        - mountPath: /ref
+          name: ref-volume
+        command: ["sh","-c"]
+        args: ["/bwa.sh; /bqsr.sh; /htc.sh"]
+      volumes:
+      - name: fastq-volume
+        hostPath:
+          path: /pool/storage/fastq
+      - name: ref-volume
+        hostPath:
+          path: /local/ref
+      nodeSelector:
+        devicetype: merlin3
+      restartPolicy: Never

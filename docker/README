@@ -1,0 +1,23 @@
+# first please download latest falcon and untar
+WORK_DIR="./"  
+
+# download falcon folder: either using the latest version or using the software(sw) only version
+#download latest version  path in s3
+aws s3 cp s3://fcs-genome-build/release/aws/latest ${WORK_DIR}
+latestS3=`cat ${WORK_DIR}/latest`
+
+#get the file name from s3 path
+latestFileName=$(basename "$latestS3")
+tar zxf ${WORK_DIR}/${latestFileName} ./ 
+
+# or download the sw only version
+aws s3 cp s3://fcs-genome-build/release/falcon-genome-v2.1.0-sw.tgz ${WORK_DIR}
+tar zxvf ${WORK_DIR}/falcon-genome-v2.1.0-sw.tgz -C ${WORK_DIR}
+
+#
+# build docker image:
+sh docker_0_build.sh $name
+
+# run fcs in docker image
+sh docker_1_run.sh
+
