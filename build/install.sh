@@ -1,6 +1,11 @@
 #!/bin/bash
 
 version=$(date +"%y%m%d")
+
+if [ "$#" -gt 0 ]; then
+  version="$1"
+fi
+
 base_dir=/curr/software/falcon-genome
 inst_dir=${base_dir}/$version
 module_dir=/curr/software/util/modulefiles/genome/

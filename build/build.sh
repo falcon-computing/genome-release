@@ -75,9 +75,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -z "$version" ]; then
-  version="Internal"
+  version="internal-$(date +"%y%m%d")"
 fi
-#version=$(git describe --tags)
 
 start_ts=$(date +%s)
 
@@ -90,10 +89,10 @@ log=${log}.log
 # get release version string
 case $platform in
   hwc)
-    release_version="$version on Huawei Cloud"
+    release_version="${version}--HuaweiCloud"
     ;;
   aws)
-    release_version="$version on AWS"
+    release_version="${version}--AWS"
     ;;
   *)
     release_version="$version"
@@ -129,23 +128,28 @@ function cmake_build {
   local dir=$(git_clone $git);
   check_run mkdir -p $dir/release;
   check_run cd $dir/release;
+  if [ "$platform" = "hwc" -o "$platform" = "aws" ]; then
+    local license_dst=$platform;
+  else
+    local license_dst="local";
+  fi;
   if [ -z "$debug" ]; then
     if [ -z "$profiling" ]; then
-      check_run cmake \
+      check_run cmake3 \
         -DCMAKE_BUILD_TYPE=Release \
         -DRELEASE_VERSION=""$release_version"" \
-        -DDEPLOYMENT_DST=$platform \
+        -DDEPLOYMENT_DST=$license_dst \
         -DNO_PROFILE=1 \
         -DCMAKE_INSTALL_PREFIX=$dst ..;
     else
-      check_run cmake \
+      check_run cmake3 \
         -DCMAKE_BUILD_TYPE=Release \
         -DRELEASE_VERSION=""$release_version"" \
-        -DDEPLOYMENT_DST=$platform \
+        -DDEPLOYMENT_DST=$license_dst \
         -DCMAKE_INSTALL_PREFIX=$dst ..;
     fi
   else
-    check_run cmake -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
+    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$dst ..;
   fi;
 
   check_run make -j 8;
@@ -163,12 +167,18 @@ function gatk_build {
   check_run cd $build_dir;
 
   local dir=$(git_clone $git);
-
   check_run cd $dir;
-  if [ -z "$profiling" ]; then
-    check_run ./build.sh -p $platform;
+
+  if [ "$platform" = "hwc" -o "$platform" = "aws" ]; then
+    local license_dst=$platform;
   else
-    check_run ./build.sh -p $platform --profiling;
+    local license_dst="local"
+  fi;
+
+  if [ -z "$profiling" ]; then
+    check_run ./build.sh -p $license_dst;
+  else
+    check_run ./build.sh -p $license_dst --profiling;
   fi;
   check_run cp ./export/*.jar $dst;
 
@@ -198,6 +208,10 @@ if [ -z "$no_fpga" ]; then
   source /curr/software/util/modules-tcl/init/bash
   if [ -z "$platform" ]; then
     module load xrt # use the latest sdx version
+  elif [ "$platform" = "520N" ]; then
+    module load aocl/18.0.1-nalla
+  elif [ "$platform" = "intel-pac" ]; then
+    module load aocl/17.1.1-pac
   else
     module load sdx/17.4
   fi
