@@ -29,13 +29,13 @@ load ../global
 }
 
 @test "HTC output directory does not exist" {
-   run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_BAM} -o fake_dir/out.vcf 
+   run ${FCSBIN} htc -r ${ref_genome} -i ${INPUT_BAM} -o fake_dir/out.vcf -f
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }
 
 @test "HTC input directory exists but input file does not exist" {
-   run ${FCSBIN} htc -r ${ref_genome} -i ${WORK_DIR}/doesnotexist -o out.vcf
+   run ${FCSBIN} htc -r ${ref_genome} -i ${WORK_DIR}/doesnotexist -o out.vcf -f
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }
