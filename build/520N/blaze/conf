@@ -1,0 +1,26 @@
+verbose : 0
+profile : true
+
+platform {
+  id: "cpu"
+}
+
+platform {
+  id: "altr_opencl"
+  path : "/usr/local/falcon/blaze/platforms/libaltr_opencl.so"
+  cache_loc: "cpu"
+  acc {
+    id: "PairHMM"
+    path: "/usr/local/falcon/blaze/acc/libPairHMMTask.so"
+    param { key: "num_command_queues" value: "2" }
+    param {
+      key: "program_path"
+      value : "/usr/local/falcon/fpga/pmm.aocx"
+    }
+    param { key: "kernel_name" value: "pmm_intel" }
+    param { key: "num_kernels" value: "1" }
+    param { key: "num_sub_kernels" value: "2" }
+    param { key: "sub_kernel_name[0]" value: "pairhmm_driver" }
+    param { key: "sub_kernel_name[1]" value: "pairhmm_output" }
+  }
+}

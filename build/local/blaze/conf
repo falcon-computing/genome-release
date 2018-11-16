@@ -9,7 +9,7 @@ platform {
   cache_loc: "cpu"
   acc {
     id: "PairHMM"
-    path: "/usr/local/falcon/blaze/examples/libPairHMMTask.so"
+    path: "/usr/local/falcon/blaze/acc/libPairHMMTask.so"
     param {
       key: "program_path"
       value : "/usr/local/falcon/fpga/pmm.xclbin"
