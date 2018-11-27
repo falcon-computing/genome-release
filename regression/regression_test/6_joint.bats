@@ -14,10 +14,12 @@ helper_normalRun() {
   run ${FCSBIN} joint \
     -r ${ref_genome} \
     -i ${VCF_DIR} \
-    -o test.vcf --sample-id ${id} -f ${DB} ${tag} 
+    -o test.vcf --sample-id PlatinumTrio -f ${DB} ${tag} 
 
-  run rm -rf my_database
-  
+  if [ "${tag}" = "--gatk4" ];then
+    run rm -rf my_database
+  fi  
+
   [ "$status" -eq 0 ]
 
 }
