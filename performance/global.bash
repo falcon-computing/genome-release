@@ -165,7 +165,7 @@ if [[ ! -f $ref_genome ]] && [[ ! -f ${db138_SNPs} ]] && [[ ! -f ${cosmic} ]];th
 fi
 
 export NexteraCapture=/local/capture/IlluminaNexteraCapture.bed  
-export RocheCapture=/local/capture/VCRome_2_1_hg19_capture_targets.bed
+export RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
 export PanelsOfNormals=/local/mutect2_inputs/mutect_gatk4_pon.vcf
 export GermLineVCF=/local/mutect2_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
