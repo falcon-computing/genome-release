@@ -86,13 +86,6 @@ load ../global
    [[ "${output}" == *"fcs-genome mutect2"* ]]
 }
 
-@test "MUTECT2 (gatk4) contamination table set but not defined" {
-   run ${FCSBIN} mutect2 -r ${ref_genome} --normal ${INPUT_BAM} --tumor ${INPUT_BAM}  --normal_name NA12878 --tumor_name NA12878  -p ${PON} -m ${GNOMAD} --contamination_table  --gatk4
-   [ "$status" -ne 0 ]
-   [[ "${output}" == *"ERROR"* ]]
-   [[ "${output}" == *"fcs-genome mutect2"* ]]
-}
-
 @test "MUTECT2 (gatk4) filtered_vcf set but not defined" {
    run ${FCSBIN} mutect2 -r ${ref_genome} --normal ${INPUT_BAM} --tumor ${INPUT_BAM}  --normal_name NA12878 --tumor_name NA12878  -p ${PON} -m ${GNOMAD} --contamination_table MyTable --filtered_vcf --gatk4
    [ "$status" -ne 0 ]
