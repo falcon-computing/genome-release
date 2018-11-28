@@ -138,6 +138,7 @@ function run_mutect2 {
     local output=/local/$sample/${sample}-gatk4.vcf;
     local extra="--normal_name ${sample}-N --tumor_name ${sample}-T";
     local extra="$extra -p $pon -m $gnomad";
+    local filtered=" --filtered_vcf /local/$sample/${sample}-gatk4_filtered.vcf";
     local log_fname=$log_dir/${sample}_mutect2_gatk4.log;
   else
     local gatk4=
@@ -145,6 +146,7 @@ function run_mutect2 {
     local input_n=/local/${sample}-N/gatk3/${sample}-N.recal.bam;
     local output=/local/$sample/${sample}-gatk3.vcf;
     local extra="--dbsnp $dbsnp --cosmic $cosmic";
+    local filtered=
     local log_fname=$log_dir/${sample}_mutect2_gatk3.log;
   fi;
   mkdir -p /local/$sample/;
@@ -153,7 +155,7 @@ function run_mutect2 {
     -n $input_n \
     -t $input_t \
     $extra \
-    -o $output \
+    -o $output ${filtered} \
     -f $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
   # TODO: compare vcf results
 }
