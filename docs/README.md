@@ -175,6 +175,7 @@ Given a set of pair-end FASTQ data as input, it produces a BAM file with all rea
 SampleA,SampleA_1.fastq.gz,SampleA_2.fastq.gz,SampleA,Illumina,ABC
 SampleB,SampleB_1.fastq.gz,SampleB_2.fastq.gz,SampleB,Illumina,ABC
 ```
+The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample. 
 
 #### Known Limitations
 1. `fcs-genome align` can only produce sorted BAM file, or mark duplicate BAM. For mark duplicate BAMs, duplications cannot be removed. To remove duplications, 3rd party tools such as `samtools` can be used.
