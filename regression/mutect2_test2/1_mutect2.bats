@@ -4,8 +4,8 @@ load ../global
 
 helper_normalRun() {
   #"normal run for mutect2"
-  local -r id="$1"
-  local -r tag="$2"
+  local id="$1"
+  local tag="$2"
   normalBAM=$WORKDIR/baselines/printreads/3.8/${id}-Normal_final_BAM.bam
   tumorBAM=$WORKDIR/baselines/printreads/3.8/${id}-Tumor_final_BAM.bam
   if [[ "${tag}" == "--gatk4" ]];then
@@ -21,7 +21,7 @@ helper_normalRun() {
         --normal_name TCRBOA1-Normal \
         --tumor_name TCRBOA1-Tumor \
         --panels_of_normals ${PON} --germline ${GNOMAD} \
-        --output ${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed ${tag}
+        --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed ${tag}
   else
       run ${FCSBIN} mutect2 \
         -r ${ref_genome} \
@@ -32,7 +32,7 @@ helper_normalRun() {
   fi
 
   [ "$status" -eq 0 ]
-  [ -f ${id}.vcf.gz ]
+  #[ -f ${id}.vcf.gz ]
 }
 
 helper_compareVCF() {
@@ -58,7 +58,8 @@ helper_vcfdiff() {
   local -r tag="$2"
   subjectVCF="${id}.vcf.gz"
   if [ "$tag" == "gatk4" ];then
-     baselineVCF="${WORKDIR}/baselines/mutect2/4.0/${id}.vcf"
+     baselineVCF="${WORKDIR}/baselines/mutect2/4.0/${id}_filtered.vcf"
+     subjectVCF="${id}_filtered.vcf.gz"
   else
      baselineVCF="${WORKDIR}/baselines/mutect2/3.8/${id}.vcf"
   fi
@@ -69,11 +70,13 @@ helper_vcfdiff() {
 }
 
 @test "Normal run for Mutect2 GATK3: $id" {
-  helper_normalRun "$id" " "
+  #skip
+  helper_normalRun "$id" gatk3
 }
   
 @test "Compare using vcfdiff for GATK3 outputs: $id" {
-  helper_vcfdiff "$id"  " "
+  #skip
+  helper_vcfdiff "$id"  gatk3
 }
 
 @test "Normal run for Mutect2 GATK4: $id" {
