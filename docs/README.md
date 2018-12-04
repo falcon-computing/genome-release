@@ -169,6 +169,14 @@ Given a set of pair-end FASTQ data as input, it produces a BAM file with all rea
 - In `fcs-genome align`, option `-O|--extra-options` only supports options in `bwa` (see [this link](http://bio-bwa.sourceforge.net/bwa.shtml#3) for more details), and the following options:
     - `-filter`: Filtering out records with INT bit seton the FLAG field, similar to the -F argument in samtools (default: 0)
 
+- If Sample Sheet is provided, it must be in csv format with a 6 columns header. Example:
+```
+#sample_id,fastq1,fastq2,rg,platform_id,library_id
+SampleA,SampleA_1.fastq.gz,SampleA_2.fastq.gz,SampleA,Illumina,ABC
+SampleB,SampleB_1.fastq.gz,SampleB_2.fastq.gz,SampleB,Illumina,ABC
+```
+The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample. By default, duplicate reads will be marked in the output BAM file unless the --align-only option is set. 
+
 #### Known Limitations
 1. `fcs-genome align` can only produce sorted BAM file, or mark duplicate BAM. For mark duplicate BAMs, duplications cannot be removed. To remove duplications, 3rd party tools such as `samtools` can be used.
 2. Apart from the listed options, no other options in the original `samtools` and `picard` are supported.
