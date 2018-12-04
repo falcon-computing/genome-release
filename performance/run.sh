@@ -119,7 +119,12 @@ function run_VCFcompare {
        baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_mutect2.vcf
     fi
   fi;
-  ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
+  if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
+     ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
+
 }
 
 function run_mutect2 {
