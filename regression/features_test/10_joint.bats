@@ -41,14 +41,14 @@ load ../global
 }
 
 @test "JOINT database name set but not defined" {
-   skip
+   #skip
    run ${FCSBIN} joint -r ${ref_genome} -i ${INPUT_DIR} -o test.vcf --database_name  --gatk4 -f
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }
 
 @test "JOINT sample id set but not defined" {
-   skip
+   #skip
    run ${FCSBIN} joint -r ${ref_genome} -i ${INPUT_DIR} -o out.vcf --database_name my_database --sample-id  --gatk4 -f
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
