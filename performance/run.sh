@@ -16,6 +16,8 @@ NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
 RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
 vcfdiff=/local/genome-release/common/vcfdiff
+BEDTOOLS=/local/vcf_baselines/bedtools
+RTG=/local/rtg/rtg.sh
 
 log_dir=log-$ts
 mkdir -p $log_dir
@@ -124,7 +126,64 @@ function run_VCFcompare {
   else
      echo "ERROR: vcfdiff for ${sample} not executed"
   fi
+}
 
+function run_ConsistencyTest {
+  local sample=$1;
+  local gatk_version=$2;
+  if [[ "$gatk_version" == "gatk4" ]];then
+    local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    local snp_base=/local/vcf_baselines/${sample}/gatk4/${sample}_snp_gatk4.vcf
+    local indel_base=/local/vcf_baselines/${sample}/gatk4/${sample}_indel_gatk4.vcf
+  else
+    local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    local snp_base=/local/vcf_baselines/${sample}/gatk3/${sample}_snp_gatk3.vcf
+    local indel_base=/local/vcf_baselines/${sample}/gatk3/${sample}_indel_gatk3.vcf
+  fi;
+
+  snp_test=snp_${sample}.vcf
+  indel_test=indel_${sample}.vcf
+  zcat ${testVCF} | awk -v SNP=${snp_test} -v INDEL=${indel_test} '/^#/ {
+        print $0 > SNP;
+        print $0 > INDEL;
+        next;
+    }\
+    /^[^\t]+\t[0-9]+\t[^\t]*\t[atgcATGC]\t[a-zA-Z]\t/ {
+        print $0 > SNP;
+        next;
+    }\
+    {
+        print $0 > INDEL;
+        next;
+    }'
+    snp_test_total=`grep -v "#" ${snp_test} | wc -l`
+    indel_test_total=`grep -v "#" ${indel_test} | wc -l`
+
+    snp_base_total=`grep -v "#" ${snp_base} | wc -l`
+    indel_base_total=`grep -v "#" ${indel_base} | wc -l`
+
+    shared_snp=`${BEDTOOLS} intersect -a ${snp_base} -b ${snp_test} -f 1.0 -r | wc -l`
+    shared_indel=`${BEDTOOLS} intersect -a ${indel_base} -b ${indel_test} -f 1.0 -r | wc -l`
+
+    pct_snp=`awk -v a=${shared_snp} -v b=${snp_base_total} 'BEGIN{printf "%4.3f", 100*a/b}'`
+    pct_indel=`awk -v a=${shared_indel} -v b=${indel_base_total} 'BEGIN{printf "%4.3f", 100*a/b}'`
+
+    printf "Sample,SNP base,SNP test,SNP shared(%%),Indel base,Indel test,Indel Shared(%%)\n" > ${testVCF%.vcf.gz}_consistency.log
+    printf "%4s,%4d,%4d,%4d(%4.3f),%4d,%4d,%4d(%4.3f)\n" ${sample} ${snp_base_total} ${snp_test_total} ${shared_snp} ${pct_snp} ${indel_base_total} ${indel_test_total} ${shared_indel} ${pct_indel} >> ${testVCF%.vcf.gz}_consistency.log
+    rm -rf ${snp_test} ${indel_test}
+}
+
+function run_AccuracyTest {
+    local sample=$1;
+    local tag=$2;
+    local Genome=$3;
+    local gatk_version=$4;
+    if [[ "$gatk_version" == "gatk4" ]];then
+      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    else
+      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    fi;
+    $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log   
 }
 
 function run_mutect2 {
@@ -170,20 +229,20 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_align $sample
   run_bqsr  $sample $capture " "
   run_htc   $sample $capture " "
-  run_VCFcompare $sample " "
+  run_ConsistencyTest $sample " "
   run_bqsr  $sample $capture gatk4
   run_htc   $sample $capture gatk4
-  run_VCFcompare $sample gatk4
+  run_ConsistencyTest $sample gatk4
 done
 
 for sample in $(cat $DIR/wgs_germline.list); do
   run_align $sample
   run_bqsr  $sample "" ""
   run_htc   $sample "" ""
-  run_VCFcompare $sample " "
+  run_ConsistencyTest $sample " "
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
-  run_VCFcompare $sample gatk4
+  run_ConsistencyTest $sample gatk4
 done
  
 capture=$RocheCapture
@@ -197,6 +256,20 @@ for pair in $(cat $DIR/mutect.list); do
   run_VCFcompare $sample ""
   run_mutect2 $pair $capture gatk4
   run_VCFcompare $sample gatk4
+done
+
+for sample in $(cat $DIR/giab_wgs.list); do
+  run_align $sample
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+  run_AccuracyTest $sample HG001 WGS gatk4
+done
+
+for sample in $(cat $DIR/giab_wes.list); do
+  run_align $sample
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+  run_AccuracyTest $sample HG001 WES gatk4
 done
 
 # format the table
