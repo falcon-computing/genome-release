@@ -80,6 +80,19 @@ for gatk in 3 4; do
   printf "\n"
 done
 
+for gatk in 3 4; do
+  printf "GATK $gatk\n"
+
+  # Mutect table
+  printf "sample,bench,case,consistence,presion,recall,Fmasure\n"
+  for pair in TCRBOA1; do
+      vcflog=/local/${pair}/${pair}-gatk${gatk}.vcfdiff.log
+      data=`tail -n1 ${vcflog} | sed 's/\t/,/g'`
+       printf "%s, %s\n" ${pair} ${data}
+  done
+
+  printf "\n"
+done
 
 baseline_dir=/local/vcf_baselines
 BEDTOOLS=${baseline_dir}/bedtools
