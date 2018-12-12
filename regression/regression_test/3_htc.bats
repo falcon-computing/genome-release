@@ -31,8 +31,12 @@ helper_compareVCF() {
   else
      baselineVCF="${WORKDIR}/baselines/htc/3.8/${id}.vcf"
   fi
-  run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
 
+  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
   echo "${output}"
   [ "$status" -eq 0 ]
  
@@ -48,7 +52,12 @@ helper_vcfdiff() {
   else
      baselineVCF="${WORKDIR}/baselines/htc/3.8/${id}.vcf"
   fi
-  run compare_vcfdiff "$subjectVCF" "$baselineVCF" "$id"
+
+  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
   
   echo "${output}"
   [ "$status" -eq 0 ]
