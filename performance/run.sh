@@ -119,7 +119,72 @@ function run_VCFcompare {
        baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_mutect2.vcf
     fi
   fi;
-  ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
+  if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
+     ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
+}
+
+function run_ConsistencyTest {
+  local sample=$1;
+  local gatk_version=$2;
+  if [[ "$gatk_version" == "gatk4" ]];then
+    local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    local snp_base=/local/vcf_baselines/${sample}/gatk4/${sample}_snp_gatk4.vcf
+    local indel_base=/local/vcf_baselines/${sample}/gatk4/${sample}_indel_gatk4.vcf
+  else
+    local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    local snp_base=/local/vcf_baselines/${sample}/gatk3/${sample}_snp_gatk3.vcf
+    local indel_base=/local/vcf_baselines/${sample}/gatk3/${sample}_indel_gatk3.vcf
+  fi;
+
+  snp_test=snp_${sample}.vcf
+  indel_test=indel_${sample}.vcf
+  zcat ${testVCF} | awk -v SNP=${snp_test} -v INDEL=${indel_test} '/^#/ {
+        print $0 > SNP;
+        print $0 > INDEL;
+        next;
+    }\
+    /^[^\t]+\t[0-9]+\t[^\t]*\t[atgcATGC]\t[a-zA-Z]\t/ {
+        print $0 > SNP;
+        next;
+    }\
+    {
+        print $0 > INDEL;
+        next;
+    }'
+    snp_test_total=`grep -v "#" ${snp_test} | wc -l`
+    indel_test_total=`grep -v "#" ${indel_test} | wc -l`
+
+    snp_base_total=`grep -v "#" ${snp_base} | wc -l`
+    indel_base_total=`grep -v "#" ${indel_base} | wc -l`
+
+    shared_snp=`${BEDTOOLS} intersect -a ${snp_base} -b ${snp_test} -f 1.0 -r | wc -l`
+    shared_indel=`${BEDTOOLS} intersect -a ${indel_base} -b ${indel_test} -f 1.0 -r | wc -l`
+
+    pct_snp=`awk -v a=${shared_snp} -v b=${snp_base_total} 'BEGIN{printf "%4.3f", 100*a/b}'`
+    pct_indel=`awk -v a=${shared_indel} -v b=${indel_base_total} 'BEGIN{printf "%4.3f", 100*a/b}'`
+
+    printf "Sample,SNP base,SNP test,SNP shared(%%),Indel base,Indel test,Indel Shared(%%)\n" > ${testVCF%.vcf.gz}_consistency.log
+    printf "%4s,%4d,%4d,%4d(%4.3f),%4d,%4d,%4d(%4.3f)\n" ${sample} ${snp_base_total} ${snp_test_total} ${shared_snp} ${pct_snp} ${indel_base_total} ${indel_test_total} ${shared_indel} ${pct_indel} >> ${testVCF%.vcf.gz}_consistency.log
+    rm -rf ${snp_test} ${indel_test}
+}
+
+function run_AccuracyTest {
+    local sample=$1;
+    local tag=$2;
+    local Genome=$3;
+    local gatk_version=$4;
+    if [[ "$gatk_version" == "gatk4" ]];then
+      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    else
+      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    fi;
+
+    if [ -f ${testVCF} ];then     
+      $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
+    fi
 }
 
 function run_mutect2 {
