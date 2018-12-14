@@ -171,22 +171,6 @@ function run_ConsistencyTest {
     rm -rf ${snp_test} ${indel_test}
 }
 
-function run_AccuracyTest {
-    local sample=$1;
-    local tag=$2;
-    local Genome=$3;
-    local gatk_version=$4;
-    if [[ "$gatk_version" == "gatk4" ]];then
-      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
-    else
-      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
-    fi;
-
-    if [ -f ${testVCF} ];then     
-      $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
-    fi
-}
-
 function run_mutect2 {
   local sample=$1;
   local capture=$2
@@ -230,20 +214,20 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_align $sample
   run_bqsr  $sample $capture " "
   run_htc   $sample $capture " "
-  run_VCFcompare $sample " "
+  run_ConsistencyTest $sample " "
   run_bqsr  $sample $capture gatk4
   run_htc   $sample $capture gatk4
-  run_VCFcompare $sample gatk4
+  run_ConsistencyTest $sample gatk4
 done
 
 for sample in $(cat $DIR/wgs_germline.list); do
   run_align $sample
   run_bqsr  $sample "" ""
   run_htc   $sample "" ""
-  run_VCFcompare $sample " "
+  run_ConsistencyTest $sample " "
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
-  run_VCFcompare $sample gatk4
+  run_ConsistencyTest $sample gatk4
 done
  
 capture=$RocheCapture
