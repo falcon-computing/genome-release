@@ -16,6 +16,7 @@ NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
 RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
 vcfdiff=/local/genome-release/common/vcfdiff
+BEDTOOLS=/local/vcf_baselines/bedtools
 
 log_dir=log-$ts
 mkdir -p $log_dir
