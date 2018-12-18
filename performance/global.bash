@@ -38,19 +38,6 @@ if [ ! -d "${WORK_DIR}/capture/" ];then
    return 1
 fi
 
-
-if [ ! -d "${WORK_DIR}/gatk4_inputs/" ];then
-   echo "mkdir ${WORK_DIR}/gatk4_inputs/"
-         mkdir ${WORK_DIR}/gatk4_inputs/
-   echo "${WORK_DIR}/mutect2_inputs/ contains VCF Input files for GATK4. If empty, copy over from aws s3 by typing the following command:\n"
-   echo "aws s3 cp s3://fcs-genome-data/gnomad/af-only-gnomad.raw.sites.b37.vcf.gz ${WORK_DIR}/gatk4_inputs/"
-   echo "aws s3 cp s3://fcs-genome-data/gnomad/af-only-gnomad.raw.sites.b37.vcf.gz.tbi ${WORK_DIR}/gatk4_inputs/"
-   echo "aws s3 cp s3://fcs-genome-data/panels_of_normals/mutect_gatk4_pon.vcf ${WORK_DIR}/gatk4_inputs/"
-   echo "aws s3 cp s3://fcs-genome-data/panels_of_normals/mutect_gatk4_pon.vcf.idx ${WORK_DIR}/gatk4_inputs/"
-   return 1
-fi
-
-
 # ==============================================================================================================
 # Check if Huawei, AWS or Merlin3 is used:
 # ==============================================================================================================
@@ -165,7 +152,7 @@ export pon=$ref_dir/mutect_gatk4_pon.vcf
 export gnomad=$ref_dir/af-only-gnomad.raw.sites.b37.vcf.gz
 export vcf_baselines_dir=${WORKDIR}/vcf_baselines
 
-if [[ ! -f $ref_genome ]] && [[ ! -f ${db138_SNPs} ]] && [[ ! -f ${cosmic} ]];then
+if [[ ! -f $ref_genome ]] || [[ ! -f ${db138_SNPs} ]] || [[ ! -f ${cosmic} ]] || [[ ! -f ${pon} ]] || [[ ! -f ${gnomad} ]] ; then
    echo "$ref_genome or ${db138_SNPs} or ${cosmic} are missing"
    echo "If possible, downloaded from aws s3:"
    echo "aws s3 cp s3://fcs-genome-data/ref/ ${WORK_DIR}/ref/ --recursive  --exclude \"*\" --include \"dbsnp_138.b37*\" &>aws.log &"   
@@ -177,6 +164,3 @@ fi
 
 export NexteraCapture=/local/capture/IlluminaNexteraCapture.bed  
 export RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
-
-export PanelsOfNormals=/local/ref/mutect_gatk4_pon.vcf
-export GermLineVCF=/local/ref/af-only-gnomad.raw.sites.b37.vcf.gz
