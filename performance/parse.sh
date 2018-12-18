@@ -107,8 +107,8 @@ for gatk in 3 4;
            snp_test_total=`grep -v "#" ${snp_test} | wc -l`
            indel_test_total=`grep -v "#" ${indel_test} | wc -l`
 
-           snp_base=${baseline_dir}/${acc[$i]}/gatk${gatk}/${acc[$i]}_snp_gatk${gatk}.vcf
-           indel_base=${baseline_dir}/${acc[$i]}/gatk${gatk}/${acc[$i]}_indel_gatk${gatk}.vcf
+           snp_base=${vcf_baselines_dir}/${acc[$i]}/gatk${gatk}/${acc[$i]}_snp_gatk${gatk}.vcf
+           indel_base=${vcf_baselines_dir}/${acc[$i]}/gatk${gatk}/${acc[$i]}_indel_gatk${gatk}.vcf
 
            snp_base_total=`grep -v "#" ${snp_base} | wc -l`
            indel_base_total=`grep -v "#" ${indel_base} | wc -l`

@@ -119,20 +119,20 @@ fi
 
 export WORKDIR=/local
 export fastq_dir=${WORKDIR}/fastq
-export common_dir=${WORKDIR}/genome-release/common/
+export common_dir=${WORKDIR}/genome-release/common
 
 if [[ ! -d ${fastq_dir} ]] ;then 
    echo "${fastq_dir} is  missing"
    return 1;
 fi
 
-VCFDIFF=${common_dir}/vcfdiff
+export VCFDIFF=${common_dir}/vcfdiff
 if [[ ! -f ${VCFDIFF} ]];then
     echo "VCFDIFF"
     return 1
 fi
 
-BEDTOOLS=${common_dir}/vcfdiff
+export BEDTOOLS=${common_dir}/bedtools
 if [[ ! -f ${BEDTOOLS} ]];then
     echo "BEDTOOLS"
     return 1
@@ -142,7 +142,7 @@ fi
 #  Check Input Files:
 #==============================================================================================================
 
-export ref_dir=${WORKDIR}/ref
+export ref_dir=${WORK_DIR}/ref
 export ref_genome=$ref_dir/human_g1k_v37.fasta
 export db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 export g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
