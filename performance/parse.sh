@@ -81,9 +81,6 @@ for gatk in 3 4; do
   printf "\n"
 done
 
-baseline_dir=/local/vcf_baselines
-BEDTOOLS=${baseline_dir}/bedtools
-
 # Consistency Test:
 acc=(NA12878 NA12891 NA12892)
 for gatk in 3 4;
@@ -137,7 +134,7 @@ for gatk in 3 4; do
   for pair in TCRBOA1; do
       vcflog=/local/${pair}/${pair}-gatk${gatk}.vcfdiff.log
       data=`tail -n1 ${vcflog} | sed 's/\t/,/g'`
-       printf "%s, %s\n" ${pair} ${data}
+      printf "%s, %s\n" ${pair} ${data}
   done
 
   printf "\n"

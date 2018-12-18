@@ -6,17 +6,6 @@ ts=$(date +%Y%m%d-%H%M)
 if [ -z "$FALCON_HOME" ]; then
   FALCON_HOME=/usr/local/falcon
 fi
-ref=/local/ref/human_g1k_v37.fasta
-dbsnp=/local/ref/dbsnp_138.b37.vcf
-cosmic=/local/ref/b37_cosmic_v54_120711.vcf
-pon=/local/ref/mutect_gatk4_pon.vcf
-gnomad=/local/ref/af-only-gnomad.raw.sites.b37.vcf.gz
-
-NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
-RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
-
-vcfdiff=/local/genome-release/common/vcfdiff
-BEDTOOLS=/local/vcf_baselines/bedtools
 
 log_dir=log-$ts
 mkdir -p $log_dir
@@ -32,7 +21,7 @@ function run_align {
   fi;
 
   $FALCON_HOME/bin/fcs-genome align \
-    -r $ref \
+    -r $ref_genome \
     -1 /local/$sample/${sample}_1.fastq.gz \
     -2 /local/$sample/${sample}_2.fastq.gz \
     -o /local/$sample/${sample}_marked.bam \
@@ -60,9 +49,9 @@ function run_bqsr {
     local log_fname=$log_dir/${sample}_bqsr_gatk3.log;
   fi;
   $FALCON_HOME/bin/fcs-genome bqsr \
-    -r $ref \
+    -r $ref_genome \
     -i /local/$sample/${sample}_marked.bam \
-    -K $dbsnp \
+    -K $db138_SNPs \
     -o $output \
     ${SET_INTERVAL} \
     -f $gatk4 1> /dev/null 2> $log_fname;
@@ -90,7 +79,7 @@ function run_htc {
     local log_fname=$log_dir/${sample}_htc_gatk3.log;
   fi;
   $FALCON_HOME/bin/fcs-genome htc \
-    -r $ref \
+    -r $ref_genome \
     -i $input \
     -o $output \
     -f -v $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
@@ -104,20 +93,20 @@ function run_VCFcompare {
   if [[ "$gatk_version" == "gatk4" ]];then
     local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk4/${sample}.vcfdiff.log
-    local baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_htc_gatk4.vcf
+    local baseVCF=${vcf_baselines_dir}/${sample}/gatk4/${sample}_htc_gatk4.vcf
     if [[ "$sample" == "TCRBOA1" ]];then
        testVCF=/local/$sample/${sample}-gatk4.vcf.gz;
        testVCFlog=/local/$sample/${sample}-gatk4.vcfdiff.log
-       baseVCF=/local/vcf_baselines/${sample}/gatk4/${sample}_mutect2.vcf
+       baseVCF=${vcf_baselines_dir}/${sample}/gatk4/${sample}_mutect2.vcf
     fi
   else
     local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
     local testVCFlog=/local/$sample/gatk3/${sample}.vcfdiff.log
-    local baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_htc_gatk3.vcf
+    local baseVCF=${vcf_baselines_dir}/${sample}/gatk3/${sample}_htc_gatk3.vcf
     if [[ "$sample" == "TCRBOA1" ]];then
        testVCF=/local/$sample/${sample}-gatk3.vcf.gz;
        testVCFlog=/local/$sample/${sample}-gatk3.vcfdiff.log
-       baseVCF=/local/vcf_baselines/${sample}/gatk3/${sample}_mutect2.vcf
+       baseVCF=${baselines_dir}/${sample}/gatk3/${sample}_mutect2.vcf
     fi
   fi;
   if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
@@ -132,12 +121,12 @@ function run_ConsistencyTest {
   local gatk_version=$2;
   if [[ "$gatk_version" == "gatk4" ]];then
     local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
-    local snp_base=/local/vcf_baselines/${sample}/gatk4/${sample}_snp_gatk4.vcf
-    local indel_base=/local/vcf_baselines/${sample}/gatk4/${sample}_indel_gatk4.vcf
+    local snp_base=${vcf_baselines_dir}/${sample}/gatk4/${sample}_snp_gatk4.vcf
+    local indel_base=${vcf_baselines_dir}/${sample}/gatk4/${sample}_indel_gatk4.vcf
   else
     local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
-    local snp_base=/local/vcf_baselines/${sample}/gatk3/${sample}_snp_gatk3.vcf
-    local indel_base=/local/vcf_baselines/${sample}/gatk3/${sample}_indel_gatk3.vcf
+    local snp_base=${vcf_baselines_dir}/${sample}/gatk3/${sample}_snp_gatk3.vcf
+    local indel_base=${vcf_baselines_dir}/${sample}/gatk3/${sample}_indel_gatk3.vcf
   fi;
 
   snp_test=snp_${sample}.vcf

@@ -131,16 +131,23 @@ if [ ! -f ${GATK4} ];then
 fi
 
 export WORKDIR=/local
-export fastq_dir=$WORKDIR/fastq
+export fastq_dir=${WORKDIR}/fastq
+export common_dir=${WORKDIR}/genome-release/common/
 
 if [[ ! -d ${fastq_dir} ]] ;then 
    echo "${fastq_dir} is  missing"
    return 1;
 fi
 
-VCFDIFF=/local/vcfdiff/vcfdiff
+VCFDIFF=${common_dir}/vcfdiff
 if [[ ! -f ${VCFDIFF} ]];then
     echo "VCFDIFF"
+    return 1
+fi
+
+BEDTOOLS=${common_dir}/vcfdiff
+if [[ ! -f ${BEDTOOLS} ]];then
+    echo "BEDTOOLS"
     return 1
 fi
 
@@ -148,12 +155,16 @@ fi
 #  Check Input Files:
 #==============================================================================================================
 
-export ref_dir=/local/ref
+export ref_dir=${WORKDIR}/ref
 export ref_genome=$ref_dir/human_g1k_v37.fasta
 export db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
 export g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
 export g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
 export cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
+export pon=$ref_dir/mutect_gatk4_pon.vcf
+export gnomad=$ref_dir/af-only-gnomad.raw.sites.b37.vcf.gz
+export vcf_baselines_dir=${WORKDIR}/vcf_baselines
+
 if [[ ! -f $ref_genome ]] && [[ ! -f ${db138_SNPs} ]] && [[ ! -f ${cosmic} ]];then
    echo "$ref_genome or ${db138_SNPs} or ${cosmic} are missing"
    echo "If possible, downloaded from aws s3:"
@@ -167,5 +178,5 @@ fi
 export NexteraCapture=/local/capture/IlluminaNexteraCapture.bed  
 export RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
-export PanelsOfNormals=/local/mutect2_inputs/mutect_gatk4_pon.vcf
-export GermLineVCF=/local/mutect2_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
+export PanelsOfNormals=/local/ref/mutect_gatk4_pon.vcf
+export GermLineVCF=/local/ref/af-only-gnomad.raw.sites.b37.vcf.gz
