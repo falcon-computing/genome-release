@@ -9,8 +9,8 @@ fi
 ref=/local/ref/human_g1k_v37.fasta
 dbsnp=/local/ref/dbsnp_138.b37.vcf
 cosmic=/local/ref/b37_cosmic_v54_120711.vcf
-pon=/local/gatk4_inputs/mutect_gatk4_pon.vcf
-gnomad=/local/gatk4_inputs/af-only-gnomad.raw.sites.b37.vcf.gz
+pon=/local/ref/mutect_gatk4_pon.vcf
+gnomad=/local/ref/af-only-gnomad.raw.sites.b37.vcf.gz
 
 NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
 RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
@@ -239,9 +239,9 @@ for pair in $(cat $DIR/mutect.list); do
     run_bqsr  $sample $capture gatk4
   done
   run_mutect2 $pair $capture " "
-  run_VCFcompare $sample ""
+  run_VCFcompare $pair ""
   run_mutect2 $pair $capture gatk4
-  run_VCFcompare $sample gatk4
+  run_VCFcompare $pair gatk4
 done
 
 # format the table
