@@ -16,6 +16,7 @@ NexteraCapture=/local/capture/IlluminaNexteraCapture.bed
 RocheCapture=/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed
 
 vcfdiff=/local/genome-release/common/vcfdiff
+RTG=/local/rtg/rtg.sh
 
 log_dir=log-$ts
 mkdir -p $log_dir
@@ -122,6 +123,20 @@ function run_VCFcompare {
   ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
 }
 
+function run_AccuracyTest {
+    local sample=$1;
+    local tag=$2;
+    local Genome=$3;
+    local gatk_version=$4;
+    if [[ "$gatk_version" == "gatk4" ]];then
+      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    else
+      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    fi;
+    echo "$RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log"
+    $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
+}
+
 function run_mutect2 {
   local sample=$1;
   local capture=$2
@@ -193,6 +208,21 @@ for pair in $(cat $DIR/mutect.list); do
   run_mutect2 $pair $capture gatk4
   run_VCFcompare $sample gatk4
 done
+
+for sample in $(cat $DIR/giab_wgs.list); do
+  run_align $sample
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+  run_AccuracyTest $sample HG001 WGS gatk4
+done
+
+for sample in $(cat $DIR/giab_wes.list); do
+  run_align $sample
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+  run_AccuracyTest $sample HG001 WES gatk4
+done
+
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
