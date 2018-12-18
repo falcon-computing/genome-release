@@ -204,19 +204,20 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_align $sample
   run_bqsr  $sample $capture " "
   run_htc   $sample $capture " "
-  run_ConsistencyTest $sample " "
   run_bqsr  $sample $capture gatk4
   run_htc   $sample $capture gatk4
-  run_ConsistencyTest $sample gatk4
 done
 
 for sample in $(cat $DIR/wgs_germline.list); do
   run_align $sample
   run_bqsr  $sample "" ""
   run_htc   $sample "" ""
-  run_ConsistencyTest $sample " "
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
+done
+
+for sample in $(cat $DIR/wes_germline.list $DIR/wgs_germline.list); do
+  run_ConsistencyTest $sample " "
   run_ConsistencyTest $sample gatk4
 done
  
