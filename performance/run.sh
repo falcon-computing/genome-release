@@ -161,23 +161,6 @@ function run_ConsistencyTest {
     rm -rf ${snp_test} ${indel_test}
 }
 
-function run_AccuracyTest {
-    local sample=$1;
-    local tag=$2;
-    local Genome=$3;
-    local gatk_version=$4;
-    if [[ "$gatk_version" == "gatk4" ]];then
-      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
-    else
-      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
-    fi;
-    if [[ -f $RTG ]] && [[ -f ${testVCF} ]]; then
-      $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
-    else
-      printf "Check if %s and %s exist\n" $RTG ${testVCF}
-    fi;
-}
-
 function run_mutect2 {
   local sample=$1;
   local capture=$2
@@ -250,10 +233,6 @@ for pair in $(cat $DIR/mutect.list); do
   run_mutect2 $pair $capture gatk4
   run_VCFcompare $pair gatk4
 done
-
-# Genome in a Bottle Samples:
-
-
 
 # format the table
 $DIR/parse.sh $log_dir | tee performance-${ts}.csv
