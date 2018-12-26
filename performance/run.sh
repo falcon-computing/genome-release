@@ -133,8 +133,12 @@ function run_AccuracyTest {
     else
       local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
     fi;
-    echo "$RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log"
-    $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
+    if [[ -f $RTG ]] && [[ -f ${testVCF} ]]; then  
+      $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
+    else
+      printf "Check if %s and %s exist\n" $RTG ${testVCF}
+    fi;
+
 }
 
 function run_mutect2 {
