@@ -17,6 +17,7 @@ Release v2.0.0
 	- [`fcs-genome align` Options](#fcs-genome-align-options)
 	- [`fcs-genome bqsr` Options](#fcs-genome-bqsr-options)
 	- [`fcs-genome baserecal` Options](#fcs-genome-baserecal-options)
+        - [`fcs-genome germline` Options](#fcs-genome-germline-options)
 	- [`fcs-genome printreads` Options](#fcs-genome-printreads-options)
 	- [`fcs-genome htc` Options](#fcs-genome-htc-options)
 	- [`fcs-genome joint` Options](#fcs-genome-joint-options)
@@ -104,6 +105,7 @@ fcs-genome align -r ref.fasta -F SampleSheet.csv -o output_dir [--align-only]
 
 fcs-genome bqsr -r ref.fasta -i indel.bam -o recal.bam [--bqsr bqsr.grp] [--gatk4]
 fcs-genome baserecal -r ref.fasta -i indel.bam -o bqsr.grp [--gatk4]
+fcs-genome germline -r ref.fasta input_1.fastq -2 input_2.fastq -o output.bam 
 fcs-genome printreads -r ref.fasta -b bqsr.grp -i output.bam -o recal.bam [--gatk4]
 
 fcs-genome htc -r ref.fasta -i recal.bam -o germline.gvcf [--gatk4]
