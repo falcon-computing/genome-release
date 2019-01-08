@@ -82,7 +82,7 @@ for gatk in 3 4; do
 done
 
 # Consistency Test:
-acc=(NA12878 NA12891 NA12892)
+acc=(cat ${DIR}/wes_germline.list)
 for gatk in 3 4;
    do
      echo -e "Sample,SNP Baseline,SNP Falcon,SNP Intersection,Indel Baseline,Indel Falcon,Indel Intersection"
@@ -140,7 +140,7 @@ for gatk in 3 4; do
   printf "\n"
 done
 
-acc=(HG001-NA12878 HG001-NA12878-WES)
+acc=(cat ${DIR}/giab_wgs.list ${DIR}/giab_wes.list)
 for gatk in 4;
    do
      for sample in ${acc[@]}
