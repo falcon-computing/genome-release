@@ -17,13 +17,13 @@ Release v2.0.0
 	- [`fcs-genome align` Options](#fcs-genome-align-options)
 	- [`fcs-genome bqsr` Options](#fcs-genome-bqsr-options)
 	- [`fcs-genome baserecal` Options](#fcs-genome-baserecal-options)
-        - [`fcs-genome germline` Options](#fcs-genome-germline-options)
 	- [`fcs-genome printreads` Options](#fcs-genome-printreads-options)
 	- [`fcs-genome htc` Options](#fcs-genome-htc-options)
 	- [`fcs-genome joint` Options](#fcs-genome-joint-options)
 	- [`fcs-genome mutect2` Options](#fcs-genome-mutect2-options)
 	- [`fcs-genome depth` Options](#fcs-genome-depth-options)
 	- [`fcs-genome gatk` Options](#fcs-genome-gatk-options)
+	- [`fcs-genome germline` Options](#fcs-genome-germline-options)
 	- [Additional Commands](#additional-commands)
 - [Examples](#examples)
 	- [Germline Variant Calling for WGS](#germline-variant-calling-for-wgs)
@@ -105,7 +105,7 @@ fcs-genome align -r ref.fasta -F SampleSheet.csv -o output_dir [--align-only]
 
 fcs-genome bqsr -r ref.fasta -i indel.bam -o recal.bam [--bqsr bqsr.grp] [--gatk4]
 fcs-genome baserecal -r ref.fasta -i indel.bam -o bqsr.grp [--gatk4]
-fcs-genome germline -r ref.fasta input_1.fastq -2 input_2.fastq -o output.bam 
+fcs-genome germline -r ref.fasta input_1.fastq -2 input_2.fastq --output-bam output.bam --output-vcf output.vcf [--gatk4]  
 fcs-genome printreads -r ref.fasta -b bqsr.grp -i output.bam -o recal.bam [--gatk4]
 
 fcs-genome htc -r ref.fasta -i recal.bam -o germline.gvcf [--gatk4]
@@ -124,7 +124,7 @@ The following options are available for all `fcs-genome` commands.
 | -O | --extra-options | String(\*) | access to GATK tools extra options. Use " " to enclose the option name and argument(s). Example "--option argrement" |
 
 - The option `--force | -f` will force `fcs-genome` to overwrite output file if it already exists. By default, the tool will prompt user input if the specified output file(s) already exists.  
-- The option `--extra-options | -O` is used to apply additional options to the downstream tools (bwa, GATK) that are not included in `fcs-genome`.
+- The option `--extra-options | -O` is used to apply additional options to the downstream tools (bwa, GATK) that are not included in `fcs-genome`. All additional parameters in the GATK methods are available through that option. 
 For example:  
    ```
    fcs-genome htc
@@ -301,6 +301,27 @@ The `gatk` emulates the original GATK 3.x commands and as such, there is no Falc
 
 #### Known Limitations
 This command only supports GATK 3.x in the current version, GATK 4.x support will come in future releases.
+
+### `fcs-genome germline` Options
+The `germline` command performs alignment (using minimap2) and HaplotypeCaller (htc) in one single command. It generates a single BAM file and one single VCF file. 
+
+| Option | Alternative | Argument | Description |
+| --- | --- | --- | --- |
+| -r | --ref | String | reference genome path |
+| -1 | --fastq1 | String | input pair-end Read 1 FASTQ file |
+| -2 | --fastq2 | String | input pair-end Read 2 FASTQ file |
+| -F | --sample_sheet | String | a sample sheet or path to a folder to FASTQ files|
+| | --output-bam | String | output BAM file, with  |
+| -R | --rg | String | read group ID ('ID' in BAM header) |
+| -S | --sp | String | sample ID ('SM' in BAM header) |
+| -P | --pl | String | platform ID ('PL' in BAM header) |
+| -L | --lb | String | library ID ('LB' in BAM header) |
+| -l | --align-only | | skip mark duplicates |
+| -r | --ref | String | reference genome path |
+| -i | --input | String | input BAM file or directory |
+|    | --output-vcf | String | output gVCF/VCF file (if --skip-concat is set the output will be a directory of gVCF files) |
+| -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
+| -s | --skip-concat | | (deprecated) produce a set of GVCF/VCF files instead of one |
 
 ### Additional Commands
 
