@@ -56,7 +56,7 @@ echo "FPGA test passed"
 echo -e "============================================================================" >> regression.log
 echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
-$BATS $CURR_DIR/features_test/ >> regression.log
+#$BATS $CURR_DIR/features_test/ >> regression.log
 if [ $? -ne 0 ]; then
   exit 1
 fi

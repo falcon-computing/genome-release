@@ -31,7 +31,7 @@ load ../global
 }
 
 @test "INDEL output directory does not exist" {
-   run ${FCSBIN} indel -r ${ref_genome} -i ${INPUT_BAM} -o fake/output.bam 
+   run ${FCSBIN} indel -r ${ref_genome} -i ${INPUT_BAM} -o fake/output.bam -f 
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }

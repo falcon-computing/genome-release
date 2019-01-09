@@ -2,9 +2,9 @@
 load ../global
 
 @test "check if tb binaries exist" {
-  [ ! -z "$SW_TB" ]
+[ ! -z "$SW_TB" ]
   [ ! -z "$PMM_TB" ]
-  [ ! -z "$SMEM_TB" ]
+#  [ ! -z "$SMEM_TB" ]
 
   [ -f "$SW_TB" ]
   [ -f "$PMM_TB" ]
@@ -18,19 +18,29 @@ load ../global
 
   [ -f "$SW_BIT" ]
   [ -f "$PMM_BIT" ]
-  [ -f "$SMEM_BIT" ]
+#  [ -f "$SMEM_BIT" ]
 }
 
 @test "sw testbench" {
+  echo "run $SW_TB \
+    $SW_BIT $ref_genome \
+    $tbdata_dir/sw/input \
+    $tbdata_dir/sw/golden_out
+    "
   run $SW_TB \
     $SW_BIT $ref_genome \
     $tbdata_dir/sw/input \
     $tbdata_dir/sw/golden_out
-
+  echo "run $SW_TB \
+    $SW_BIT $ref_genome \
+    $tbdata_dir/sw/input \
+    $tbdata_dir/sw/golden_out
+    "
   [ "$status" -eq 0 ]
 }
 
 @test "smem testbench" {
+  skip
   # run xbsak_gem if available
   if which xbutil &> /dev/null; then
     xbutil dmatest
