@@ -35,7 +35,13 @@ helper_compareVCF() {
      subjectVCF="test.vcf.gz"
      baselineVCF="${WORKDIR}/baselines/joint/3.8/joint.vcf.gz"
   fi
-  run compare_vcfdiff "$subjectVCF" "$baselineVCF" 
+
+  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "test"
+  else
+     echo "ERROR: vcfdiff for test not executed"
+  fi
+
   run rm -rf test.vcf*
 
   [ "$status" -eq 0 ]

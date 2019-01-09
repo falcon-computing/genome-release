@@ -30,7 +30,12 @@ helper_compareVCF() {
   else
      baselineVCF="${WORKDIR}/baselines/ug/3.8/${id}.ug.g.vcf.gz"
   fi
-  run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+
+  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
 
   echo "${output}"
   [ "$status" -eq 0 ]
@@ -46,7 +51,12 @@ helper_vcfdiff() {
   else
      baselineVCF="${WORKDIR}/baselines/ug/3.8/${id}.ug.g.vcf.gz"
   fi
-  run compare_vcfdiff "$subjectVCF" "$baselineVCF" "$id"
+
+  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
   
   echo "${output}"
   [ "$status" -eq 0 ]
@@ -57,7 +67,7 @@ helper_vcfdiff() {
 }
   
 @test "Compare using vcfdiff for GATK3 outputs: $id" {
-  helper_vcfdiff  "$id"
+  helper_vcfdiff  "$id"  " "
 }
 
 @test "Normal run for UG GATK4: $id" {
