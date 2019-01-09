@@ -20,24 +20,6 @@ helper_normalRun() {
   [ -f ${id}.vcf.gz ]
 }
 
-helper_compareVCF() {
-  #"Compare vcf file against baseline"
-  local -r id="$1"
-  local -r tag="$2"
-
-  subjectVCF="${id}.vcf.gz"
-  if [[ "$tag" == "gatk4" ]];then 
-     baselineVCF="${WORKDIR}/baselines/htc/4.0/${id}.vcf"
-  else
-     baselineVCF="${WORKDIR}/baselines/htc/3.8/${id}.vcf"
-  fi
-  run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
-
-  echo "${output}"
-  [ "$status" -eq 0 ]
- 
-}
-
 helper_vcfdiff() {
   #Compare using vcfdiff
   local -r id="$1"
@@ -48,7 +30,12 @@ helper_vcfdiff() {
   else
      baselineVCF="${WORKDIR}/baselines/htc/3.8/${id}.vcf"
   fi
-  run compare_vcfdiff "$subjectVCF" "$baselineVCF" "$id"
+
+  if [[ -f ${baselineVCF} ]]  && [[ -f ${subjectVCF} ]];then
+     run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
   
   echo "${output}"
   [ "$status" -eq 0 ]
@@ -63,9 +50,11 @@ helper_vcfdiff() {
 }
 
 @test "Normal run for HTC GATK4: $id" {
+  skip
   helper_normalRun "$id" "--gatk4"
 }
 
 @test "Compare using vcfdiff for GATK4 outputs: $id" {
+  skip
   helper_vcfdiff "$id" "gatk4"
 }

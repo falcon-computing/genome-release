@@ -138,6 +138,18 @@ if [[ ! -f ${BEDTOOLS} ]];then
     return 1
 fi
 
+export RTGjar=${common_dir}/rtg-tools-3.9.1/RTG.jar
+if [[ ! -f ${RTGjar} ]];then
+    echo "RTGjar"
+    return 1
+fi
+
+export RTG=${common_dir}/rtg/rtg.sh
+if [[ ! -f ${RTG} ]];then
+    echo "RTG"
+    return 1
+fi
+
 #==============================================================================================================
 #  Check Input Files:
 #==============================================================================================================

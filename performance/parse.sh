@@ -82,7 +82,7 @@ for gatk in 3 4; do
 done
 
 # Consistency Test:
-acc=(NA12878 NA12891 NA12892)
+acc=(cat ${DIR}/wes_germline.list)
 for gatk in 3 4;
    do
      echo -e "Sample,SNP Baseline,SNP Falcon,SNP Intersection,Indel Baseline,Indel Falcon,Indel Intersection"
@@ -130,7 +130,7 @@ for gatk in 3 4;
 for gatk in 3 4; do
   printf "GATK $gatk\n"
   # Mutect table
-  printf "sample,bench,case,consistence,presion,recall,Fmasure\n"
+  printf "sample,bench,case,consistence,presion,recall,Fmeasure\n"
   for pair in TCRBOA1; do
       vcflog=/local/${pair}/${pair}-gatk${gatk}.vcfdiff.log
       data=`tail -n1 ${vcflog} | sed 's/\t/,/g'`
@@ -140,5 +140,15 @@ for gatk in 3 4; do
   printf "\n"
 done
 
+acc=(cat ${DIR}/giab_wgs.list ${DIR}/giab_wes.list)
+for gatk in 4;
+   do
+     for sample in ${acc[@]}
+        do
+          if [[ -f /local/${sample}/gatk$gatk/${sample}-rtg.log ]]; then
+            grep -A 10 -e "SNP Sensitivity" /local/${sample}/gatk$gatk/${sample}-rtg.log 
+          fi
+        done
+   done
 
 exit $ret

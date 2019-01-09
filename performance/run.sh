@@ -159,6 +159,22 @@ function run_ConsistencyTest {
     printf "Sample,SNP base,SNP test,SNP shared(%%),Indel base,Indel test,Indel Shared(%%)\n" > ${testVCF%.vcf.gz}_consistency.log
     printf "%4s,%4d,%4d,%4d(%4.3f),%4d,%4d,%4d(%4.3f)\n" ${sample} ${snp_base_total} ${snp_test_total} ${shared_snp} ${pct_snp} ${indel_base_total} ${indel_test_total} ${shared_indel} ${pct_indel} >> ${testVCF%.vcf.gz}_consistency.log
     rm -rf ${snp_test} ${indel_test}
+
+function run_AccuracyTest {
+    local sample=$1;
+    local tag=$2;
+    local Genome=$3;
+    local gatk_version=$4;
+    if [[ "$gatk_version" == "gatk4" ]];then
+      local testVCF=/local/$sample/gatk4/${sample}.vcf.gz;
+    else
+      local testVCF=/local/$sample/gatk3/${sample}.vcf.gz;
+    fi;
+    if [[ -f $RTG ]] && [[ -f ${testVCF} ]]; then
+      $RTG ${testVCF} ${tag} ${Genome} ${testVCF%.vcf.gz}-rtg > ${testVCF%.vcf.gz}-rtg.log
+    else
+      printf "Check if %s and %s exist\n" $RTG ${testVCF}
+    fi;
 }
 
 function run_mutect2 {
@@ -232,6 +248,20 @@ for pair in $(cat $DIR/mutect.list); do
   run_VCFcompare $pair ""
   run_mutect2 $pair $capture gatk4
   run_VCFcompare $pair gatk4
+done
+
+for sample in $(cat $DIR/giab_wgs.list $DIR/giab_wes.list); do
+  run_align $sample
+  run_bqsr  $sample "" gatk4
+  run_htc   $sample "" gatk4
+done
+
+for sample in $(cat $DIR/giab_wes.list); do
+  run_AccuracyTest $sample HG001 WGS gatk4
+done
+
+for sample in $(cat $DIR/giab_wes.list); do
+  run_AccuracyTest $sample HG001 WES gatk4
 done
 
 # format the table
