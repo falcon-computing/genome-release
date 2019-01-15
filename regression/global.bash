@@ -211,9 +211,16 @@ function compare_vcf {
   local subjectVCF=$1;
   local baselineVCF=$2;
   local id=$3;
-  grep -v "^[^#]" $baselineVCF > $temp_dir/base_grep.vcf;
-  if [[ $subjectVCF == *.vcf.gz ]];then
-     zcat $subjectVCF | grep -v "^[^#]" > $temp_dir/mod_grep.vcf
+  if [[ ${baselineVCF##*.} == "gz" ]];then
+     zcat $baselineVCF |  grep -v "^#" | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/base_grep.vcf;
+  else
+     grep -v "^#" $baselineVCF | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/base_grep.vcf;
+  fi
+
+  if [[ ${subjectVCF##*.} == "gz" ]];then
+     zcat $subjectVCF | grep -v "^#" | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/mod_grep.vcf
+  else
+     grep -v "^#" $subjectVCF | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/mod_grep.vcf
   fi;
 
   DIFF=$(diff $temp_dir/base_grep.vcf $temp_dir/mod_grep.vcf);
@@ -232,7 +239,11 @@ function compare_vcfdiff {
   local baselineVCF=$2;
   local id=$3;
 
-  $VCFDIFF $baselineVCF $subjectVCF > $temp_dir/vcfdiff.txt;
+  if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
+     ${vcfdiff} ${baseVCF} ${testVCF} > $temp_dir/vcfdiff.txt;
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
 
   recall=$(tail -n 1 $temp_dir/vcfdiff.txt | awk '{print $5}');
   echo $recall;
