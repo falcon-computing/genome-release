@@ -159,14 +159,14 @@ Given a set of pair-end FASTQ data as input, it produces a BAM file with all rea
 | -1 | --fastq1 | String | input pair-end Read 1 FASTQ file |
 | -2 | --fastq2 | String | input pair-end Read 2 FASTQ file |
 | -F | --sample_sheet | String | a sample sheet or path to a folder to FASTQ files|
-| -o | --output | String | output BAM file, with  |
+| -o | --output | String | output BAM file with marked duplicates implemented as default |
 | -R | --rg | String | read group ID ('ID' in BAM header) |
 | -S | --sp | String | sample ID ('SM' in BAM header) |
 | -P | --pl | String | platform ID ('PL' in BAM header) |
 | -L | --lb | String | library ID ('LB' in BAM header) |
 | -l | --align-only | | skip mark duplicates |
 
-- The options `-R, -S, -P, -L` specifies the read group in the aligned sample's header. If left blank, the tool will automatically select the appropriate values for each fields.
+- The options `-R, -S, -P, -L` specifies the read group in the aligned sample's header. If left blank, the tool will automatically select the appropriate values for each fields. Default value : "sample".
 - If the option `--align-only` is set, no mark duplicate will be performed, and the output will be a single sorted BAM file.
 - In `fcs-genome align`, option `-O|--extra-options` only supports options in `bwa` (see [this link](http://bio-bwa.sourceforge.net/bwa.shtml#3) for more details), and the following options:
     - `-filter`: Filtering out records with INT bit seton the FLAG field, similar to the -F argument in samtools (default: 0)
@@ -177,10 +177,10 @@ Given a set of pair-end FASTQ data as input, it produces a BAM file with all rea
 SampleA,SampleA_1.fastq.gz,SampleA_2.fastq.gz,SampleA,Illumina,ABC
 SampleB,SampleB_1.fastq.gz,SampleB_2.fastq.gz,SampleB,Illumina,ABC
 ```
-The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample. By default, duplicate reads will be marked in the output BAM file unless the --align-only option is set. 
+The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample, and save the BAM file in a folder with the sample name. By default, duplicate reads will be marked in the output BAM file unless the --align-only option is set. 
 
 #### Known Limitations
-1. `fcs-genome align` can only produce sorted BAM file, or mark duplicate BAM. For mark duplicate BAMs, duplications cannot be removed. To remove duplications, 3rd party tools such as `samtools` can be used.
+1. `fcs-genome align` can only produce sorted BAM file, or mark duplicate BAM. For mark duplicate BAMs, duplications cannot be removed at this moment. To remove duplications, 3rd party tools such as `samtools` can be used.
 2. Apart from the listed options, no other options in the original `samtools` and `picard` are supported.
 
 ### `fcs-genome bqsr` Options
@@ -303,7 +303,7 @@ The `gatk` emulates the original GATK 3.x commands and as such, there is no Falc
 This command only supports GATK 3.x in the current version, GATK 4.x support will come in future releases.
 
 ### `fcs-genome germline` Options
-The `germline` command performs alignment (using minimap2) and HaplotypeCaller (htc) in one single command. It generates a single BAM file and one single VCF file. 
+The `germline` command performs alignment (using minimap2) and HaplotypeCaller (htc) in one single command. It generates either a single VCF file with the option to generate a BAM file.  
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
@@ -311,17 +311,14 @@ The `germline` command performs alignment (using minimap2) and HaplotypeCaller (
 | -1 | --fastq1 | String | input pair-end Read 1 FASTQ file |
 | -2 | --fastq2 | String | input pair-end Read 2 FASTQ file |
 | -F | --sample_sheet | String | a sample sheet or path to a folder to FASTQ files|
-| | --output-bam | String | output BAM file, with  |
+| | --output-bam (optional)| String | output BAM file. Sorted by coordiantes and marked duplicated |
 | -R | --rg | String | read group ID ('ID' in BAM header) |
 | -S | --sp | String | sample ID ('SM' in BAM header) |
 | -P | --pl | String | platform ID ('PL' in BAM header) |
 | -L | --lb | String | library ID ('LB' in BAM header) |
-| -l | --align-only | | skip mark duplicates |
-| -r | --ref | String | reference genome path |
-| -i | --input | String | input BAM file or directory |
+| -r | --ref | String | reference genome path (fasta format)|
 |    | --output-vcf | String | output gVCF/VCF file (if --skip-concat is set the output will be a directory of gVCF files) |
 | -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
-| -s | --skip-concat | | (deprecated) produce a set of GVCF/VCF files instead of one |
 
 ### Additional Commands
 
