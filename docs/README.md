@@ -311,13 +311,13 @@ The `germline` command performs alignment (using minimap2) and HaplotypeCaller (
 | -1 | --fastq1 | String | input pair-end Read 1 FASTQ file |
 | -2 | --fastq2 | String | input pair-end Read 2 FASTQ file |
 | -F | --sample_sheet | String | a sample sheet or path to a folder to FASTQ files|
-| | --produce-bam (optional)| String | output BAM file. Sorted by coordinates and marked duplicated |
+| | --produce-bam (optional)| String | produce output BAM file. Sorted by coordinates and marked duplicated |
 | -R | --rg | String | read group ID ('ID' in BAM header) |
 | -S | --sp | String | sample ID ('SM' in BAM header) |
 | -P | --pl | String | platform ID ('PL' in BAM header) |
 | -L | --lb | String | library ID ('LB' in BAM header) |
 | -r | --ref | String | reference genome path (fasta format)|
-|    | --output | String | output gVCF/VCF file (if --skip-concat is set the output will be a directory of gVCF files) |
+|    | --output | String | output gVCF/VCF file. If --produce-bam, BAM filename takes the basename of the VCF file |
 | -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
 
 ### Additional Commands
