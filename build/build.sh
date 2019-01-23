@@ -25,8 +25,6 @@ print_help() {
   echo "           local dir for the build, default is $build_dir";
   echo "   -u|--upload: ";
   echo "           whether to upload to s3 bucket, default false";
-  echo "   --profiling: ";
-  echo "           whether to enable profiling in the build, default false";
   echo "   --no-fpga: ";
   echo "           disable FPGA in the build, default false";
   echo "";
@@ -44,21 +42,11 @@ while [[ $# -gt 0 ]]; do
     build_dir="$2"
     shift
     ;;
-  --profiling)
-    profiling=1
-    ;;
   --no-fpga)
     no_fpga=1
     ;;
-  --debug)
-    debug=1
-    ;;
   -u|--upload)
     upload=1
-    ;;
-  -v|--version)
-    version="$2"
-    shift
     ;;
   -h|--help)
     print_help
@@ -74,9 +62,7 @@ while [[ $# -gt 0 ]]; do
   shift # past argument or value
 done
 
-if [ -z "$version" ]; then
-  version="internal-$(date +"%y%m%d")"
-fi
+version=$(git describe --tags)
 
 start_ts=$(date +%s)
 
@@ -86,23 +72,10 @@ if [ ! -z "$platform" ]; then
 fi
 log=${log}.log
 
-# get release version string
-case $platform in
-  hwc)
-    release_version="${version}--HuaweiCloud"
-    ;;
-  aws)
-    release_version="${version}--AWS"
-    ;;
-  *)
-    release_version="$version"
-    ;;
-  esac
-
 function check_run {
   local cmd="$@";
   >&2 echo "$cmd";
-  eval "$cmd" >> $pwd_dir/$log 2>&1;
+  $cmd >> $pwd_dir/$log 2>&1;
   if [ "$?" -ne 0 ]; then
     echo "failed to execute: $cmd";
     exit 1
@@ -128,32 +101,9 @@ function cmake_build {
   local dir=$(git_clone $git);
   check_run mkdir -p $dir/release;
   check_run cd $dir/release;
-  if [ "$platform" = "hwc" -o "$platform" = "aws" ]; then
-    local license_dst=$platform;
-  else
-    local license_dst="local";
-  fi;
-  if [ -z "$debug" ]; then
-    if [ -z "$profiling" ]; then
-      check_run cmake3 \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DRELEASE_VERSION=""$release_version"" \
-        -DDEPLOYMENT_DST=$license_dst \
-        -DNO_PROFILE=1 \
-        -DCMAKE_INSTALL_PREFIX=$dst ..;
-    else
-      check_run cmake3 \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DRELEASE_VERSION=""$release_version"" \
-        -DDEPLOYMENT_DST=$license_dst \
-        -DCMAKE_INSTALL_PREFIX=$dst ..;
-    fi
-  else
-    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$dst ..;
-  fi;
-
+  check_run cmake -DCMAKE_BUILD_TYPE=Release -DDEPLOYMENT_DST=$platform -DCMAKE_INSTALL_PREFIX=$dst ..;
   check_run make -j 8;
-#check_run make test;
+  #check_run make test;
   check_run make install; # will copy to correct place
   check_run cd $curr_dir;
   check_run rm -rf $build_dir/$dir;
@@ -167,19 +117,9 @@ function gatk_build {
   check_run cd $build_dir;
 
   local dir=$(git_clone $git);
+
   check_run cd $dir;
-
-  if [ "$platform" = "hwc" -o "$platform" = "aws" ]; then
-    local license_dst=$platform;
-  else
-    local license_dst="local"
-  fi;
-
-  if [ -z "$profiling" ]; then
-    check_run ./build.sh -p $license_dst;
-  else
-    check_run ./build.sh -p $license_dst --profiling;
-  fi;
+  check_run ./build.sh $platform;
   check_run cp ./export/*.jar $dst;
 
   check_run cd $curr_dir;
@@ -206,15 +146,7 @@ check_run rsync -av --exclude=".*" $script_dir/common/ $dst_dir/
 # load sdx
 if [ -z "$no_fpga" ]; then
   source /curr/software/util/modules-tcl/init/bash
-  if [ -z "$platform" ]; then
-    module load xrt # use the latest sdx version
-  elif [ "$platform" = "520N" ]; then
-    module load aocl/18.0.1-nalla
-  elif [ "$platform" = "intel-pac" ]; then
-    module load aocl/17.1.1-pac
-  else
-    module load sdx/17.4
-  fi
+  module load sdx/17.4
 else
   # do not load fpga framework
   echo "verbose: 0" > $dst_dir/blaze/conf
