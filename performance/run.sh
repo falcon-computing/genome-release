@@ -207,7 +207,7 @@ function run_mutect2 {
   fi;
   mkdir -p /local/$sample/;
   $FALCON_HOME/bin/fcs-genome mutect2 \
-    -r $ref \
+    -r $ref_genome \
     -n $input_n \
     -t $input_t \
     $extra \

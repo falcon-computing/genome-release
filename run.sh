@@ -3,8 +3,8 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 ts=$(date +%Y%m%d-%H%M)
 buld_dir=$DIR/build
-regr_dir=/local/diwu/regression
-perf_dir=/local/diwu/performance
+regr_dir=/local/${USER}/regression
+perf_dir=/local/${USER}/performance
 
 mkdir -p $regr_dir 
 mkdir -p $perf_dir
