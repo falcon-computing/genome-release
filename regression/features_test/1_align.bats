@@ -51,12 +51,6 @@ load ../global
    [ $status -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
 }
-
-@test "Output file directory does not exist" {
-   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 --rg ${RGID} --sp ${SAMPLE_ID} --pl ${PLATFORM} --lb ${LIB} -o DOESNOTEXIST/output.bam -f
-   [ "$status" -ne 0 ]
-   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
-}
  
 @test "Input file directory does not exist" {
    run ${FCSBIN} al -r ${ref_genome} -1 doesnotexist/small_1.fastq.gz -2 $fastq2  -o output.bam -f
@@ -65,9 +59,9 @@ load ../global
 }
  
 @test "Output file directory not writeable" {
-   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o fake/output.bam -f
+   run ${FCSBIN} al -r ${ref_genome} -1 $fastq1 -2 $fastq2 -o /usr/fake/doesnotexist/output.bam -f
    [ "$status" -ne 0 ]
-   [[ "${output}" == *"ERROR: Cannot write to output path"* ]]
+   [[ "${output}" == *"ERROR:"* ]]
 }
 
 @test "Read Group not set (--rg)" {
@@ -107,7 +101,7 @@ load ../global
    run rm -rf output.bam
 }
 
-@test "Folder with FASTQ Files does not exist" {
+@test "FASTQ Files folder does not exist" {
    run ${FCSBIN} al -r ${ref_genome} -o output.bam -f --sample-sheet /local/doesnotexist/
    [ "$status" -ne 0 ]
    [[ "${output}" == *"ERROR"* ]]
