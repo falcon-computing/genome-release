@@ -257,7 +257,7 @@ for sample in $(cat $DIR/giab_wgs.list $DIR/giab_wes.list); do
   run_htc   $sample "" gatk4
 done
 
-for sample in $(cat $DIR/giab_wes.list); do
+for sample in $(cat $DIR/giab_wgs.list); do
   run_AccuracyTest $sample HG001 WGS gatk4
 done
 
