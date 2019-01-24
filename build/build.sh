@@ -10,6 +10,7 @@ script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 fcs_genome_git=git@github.com:falcon-computing/falcon-genome.git
 blaze_git=git@github.com:falcon-computing/blaze.git
 bwa_git=git@github.com:falcon-computing/bwa-flow.git
+mmflow_git=git@github.com:falcon-computing/minimap2.git
 gatk3_git=git@github.com:falcon-computing/gatk3.git
 gatk4_git=git@github.com:falcon-computing/gatk4.git
 release_git=git@github.com:falcon-computing/genome-release.git
@@ -226,6 +227,7 @@ fi
 # build projects
 cmake_build $fcs_genome_git $dst_dir/bin
 cmake_build $bwa_git $dst_dir/tools/bin
+cmake_build $mmflow_git $dst_dir/tools/bin
 cmake_build $blaze_git $dst_dir/blaze
 gatk_build $gatk3_git $dst_dir/tools/package/GATK3.jar
 gatk_build $gatk4_git $dst_dir/tools/package/GATK4.jar
