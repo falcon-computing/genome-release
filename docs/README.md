@@ -192,7 +192,7 @@ The `bqsr` command is equivalent to calling `baserecal` and `printreads` consecu
 | --- | --- | --- | --- |
 | -r | --ref | String | reference genome path |
 | -b | --bqsr | String | output BQSR report path (if left blank, no file will be produced) |
-| -i | --input | String | input BAM file path |
+| -i | --input | String | input BAM file path (can be a single BAM file or Bam folder) |
 | -o | --output | String | output path; by default the output will be a folder with multiple BAM file parts; if `-m` is set, then a single BAM file will be produced |
 | -K | --knownSites | List | known variant databses for recalibration (VCF format). If more than one VCF files are considered, multiple `-K` options should be used, one for each file |
 | -m | --merge-bam | | merge output BAM parts into a single BAM file
@@ -203,7 +203,7 @@ The `baserecal` command generates a Base Quality Score Recalibration report give
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
 | -r | --ref | String | reference genome path |
-| -i | --input | String | input BAM file |
+| -i | --input | String | input BAM file or BAM folder |
 | -o | --output | String | output BQSR report |
 | -K | --knownSites | List | known variant databses for recalibration (VCF format). If more than one VCF files are considered, multiple `-K` options should be used, one for each file |
 
@@ -214,7 +214,7 @@ The `printreads` command recalibrates the base qualities for a given BAM file in
 | --- | --- | --- | --- |
 | -r | --ref | String | reference genome path |
 | -b | --bqsr | String | input BQSR file |
-| -i | --input | String | input BAM file or directory |
+| -i | --input | String | input BAM file or BAM folder |
 | -o | --output | String | output path; by default the output will be a folder with multiple BAM file parts; if `-m` is set, then a single BAM file will be produced |
 | -m | --merge-bam | | merge output BAM parts into a single BAM file
 
@@ -224,7 +224,7 @@ The `htc` command calls SNP and INDEL variants using the *HaplotypeCaller* comma
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
 | -r | --ref | String | reference genome path |
-| -i | --input | String | input BAM file or directory |
+| -i | --input | String | input BAM file or BAM folder |
 | -o | --output | String | output gVCF/VCF file (if --skip-concat is set the output will be a directory of gVCF files) |
 | -v | --produce-vcf | | produce VCF files from HaplotypeCaller instead of gVCF |
 | -s | --skip-concat | | (deprecated) produce a set of GVCF/VCF files instead of one |
@@ -303,7 +303,7 @@ The `gatk` emulates the original GATK 3.x commands and as such, there is no Falc
 This command only supports GATK 3.x in the current version, GATK 4.x support will come in future releases.
 
 ### `fcs-genome germline` Options
-The `germline` command performs alignment (using minimap2) and HaplotypeCaller (htc) in one single command. It generates either a single VCF file with the option to generate a BAM file.  
+The `germline` command performs alignment (using minimap2) and HaplotypeCaller (htc) in one single command. It generates a single VCF files with the option to generate a BAM file.   
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
