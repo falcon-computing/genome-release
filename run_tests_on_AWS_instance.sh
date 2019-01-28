@@ -18,17 +18,13 @@ fi
 instance_ip=$1
 echo Ip: $instance_ip
 
-# Copy over some test directories. 
-scp -i /curr/software/aws/user.pem -r regression centos@$instance_ip:/local/
-scp -i /curr/software/aws/user.pem -r performance centos@$instance_ip:/local/
-scp -i /curr/software/aws/user.pem -r common centos@$instance_ip:/local/
 
 # Login to the instance and run the tests
-ssh -i ~/user.pem centos@${f16_ip} 'cd /local; sudo mkdir regression_test; sudo mkdir performance_test'
-ssh -i ~/user.pem centos@${f16_ip} 'cd /local/regression_test; sudo bash; sudo nohup /local/regression/regression.sh'
-ssh -i ~/user.pem centos@${f16_ip} 'cd /local/performance_test; sudo bash; sudo nohup /local/performance/run.sh'
+ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local; sudo mkdir regression_test; sudo mkdir performance_test'
+ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local/regression_test; sudo bash; sudo nohup /local/genome-release/regression/regression.sh'
+ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local/performance_test; sudo bash; sudo nohup /local/genome-release/performance/run.sh'
 
 # Upload the results to S3
-aws s3 cp /local/regression_test/regression.log s3://fcs-genome-local/logs/
-aws s3 cp /local/performance_test/performance.log s3://fcs-genome-local/logs/
+aws s3 cp /local/regression_test/regression.log s3://fcs-genome-logs/
+aws s3 cp /local/performance_test/performance.log s3://fcs-genome-logs/
 return 0

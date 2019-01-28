@@ -2,7 +2,7 @@ pipeline {
     // Run off the merlin3 server
     agent {label 'merlin'}
     stages {
-        stage ("Checkout Git-Internal") {
+        stage ("Request an AWS F1 instance") {
             steps {
                 // Change directory to /curr/limark/workspace/AWS-Deploy/ws-Internal on merlin3 
                 dir("ws-Internal") {
@@ -11,7 +11,25 @@ pipeline {
                             // Request an Amazon EC2 F1.16xlarge instance
                             sh "./falcon-aws request -i ami-04728517372feb021 -t JenkinsAWSDeploy -d f1.16xlarge --no-conf &>> build.log"
                             f16_ip = sh(returnStdout: true, script: 'cat build.log| grep "private ip:" | awk \'{printf $12}\'')
+                        }
+                    }
+                }
+            }
+        stage ("Prepare AWS instance") {
+                // Change directory to /curr/limark/workspace/AWS-Deploy/ws-Internal on merlin3 
+                dir("ws-Internal") {
+                    git branch: 'master', url: 'git@github.com:falcon-computing/internal.git'
+                    dir ("aws-manage") {
                             sh "/curr/chriseh/genome-release/prepare_AWS_instance.sh ${f16_ip}"
+                        }
+                    }
+                }
+            }
+        stage ("Prepare AWS instance") {
+                // Change directory to /curr/limark/workspace/AWS-Deploy/ws-Internal on merlin3 
+                dir("ws-Internal") {
+                    git branch: 'master', url: 'git@github.com:falcon-computing/internal.git'
+                    dir ("aws-manage") {
                             sh "/curr/chriseh/genome-release/run_tests_on_AWS_instance.sh ${f16_ip}"
                         }
                     }

@@ -8,13 +8,13 @@ load ../global
 
   [ -f "$SW_TB" ]
   [ -f "$PMM_TB" ]
-  [ -f "$SMEM_TB" ]
+#  [ -f "$SMEM_TB" ]
 }
 
 @test "check if bitstreams exist" {
   [ ! -z "$SW_BIT" ]; 
   [ ! -z "$PMM_BIT" ]
-  [ ! -z "$SMEM_BIT" ]
+#  [ ! -z "$SMEM_BIT" ]
 
   [ -f "$SW_BIT" ]
   [ -f "$PMM_BIT" ]
@@ -22,20 +22,10 @@ load ../global
 }
 
 @test "sw testbench" {
-  echo "run $SW_TB \
-    $SW_BIT $ref_genome \
-    $tbdata_dir/sw/input \
-    $tbdata_dir/sw/golden_out
-    "
   run $SW_TB \
     $SW_BIT $ref_genome \
     $tbdata_dir/sw/input \
     $tbdata_dir/sw/golden_out
-  echo "run $SW_TB \
-    $SW_BIT $ref_genome \
-    $tbdata_dir/sw/input \
-    $tbdata_dir/sw/golden_out
-    "
   [ "$status" -eq 0 ]
 }
 
