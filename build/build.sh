@@ -6,6 +6,8 @@ dst_dir=./falcon
 pwd_dir=$(pwd)
 script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+branch=release
+
 # github locations
 fcs_genome_git=git@github.com:falcon-computing/falcon-genome.git
 blaze_git=git@github.com:falcon-computing/blaze.git
@@ -43,6 +45,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   -d|--build-dir)
     build_dir="$2"
+    shift
+    ;;
+  -b|--branch)
+    branch="$2"
     shift
     ;;
   --profiling)
@@ -115,7 +121,12 @@ function git_clone {
   local dir=$(basename $loc);
   dir=${dir%%.*};
   export GIT_LFS_SKIP_SMUDGE=1;
-  check_run git clone -b release --single-branch $loc;
+  # check if branch exists
+  if [ ! -z "$(git ls-remote $loc $branch)" ]; then
+    check_run git clone -b $branch --single-branch $loc;
+  else
+    check_run git clone -b release --single-branch $loc;
+  fi;
   echo $dir;
 }
 
