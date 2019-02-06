@@ -192,6 +192,36 @@ function git_clone {
   echo $dir;
 }
 
+function s3_upload {
+  local src=$1;
+  local rp=$2;
+  local git_hash=$3;
+  if [ -d $src ]; then
+    local dir=$src
+  else
+    local dir=$(dirname $src)
+  fi;
+  check_run tar zcf ${git_hash}.tgz -C $dir .;
+  check_run aws s3 cp ${git_hash}.tgz s3://$s3_build_bucket/$rp/$platform/;
+  check_run rm -rf ${git_hash}.tgz;
+}
+
+function s3_download {
+  local rp=$1;
+  local git_hash=$2;
+  local dst=$3;
+  check_run aws s3 cp s3://$s3_build_bucket/$rp/$platform/${git_hash}.tgz .;
+  if [ -d "$dst" ]; then
+    check_run tar zxf ${git_hash}.tgz -C $dst/
+  else
+    check_run mkdir $git_hash
+    check_run tar zxf ${git_hash}.tgz -C $git_hash/
+    check_run cp $git_hash/* $dst
+    check_run rm -rf ${git_hash};
+  fi;
+  check_run rm -rf ${git_hash}.tgz;
+}
+
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -207,7 +237,7 @@ function cmake_build {
   local git_hash="$(git_get_hash $rp)";
 
   # check if build already exist
-  if ! aws s3 ls s3://$s3_build_bucket/$rp/$platform/$git_hash > /dev/null; then
+  if ! aws s3 ls s3://$s3_build_bucket/$rp/$platform/${git_hash}.tgz > /dev/null; then
     # check out git repo
     local dir=$(git_clone $rp);
 
@@ -240,7 +270,7 @@ function cmake_build {
 
     check_run make -j 8;
 
-    if [[ "$(git branch | grep \* | cut -d ' ' -f2)" != "release" ]]; then
+    if [ ! "$(git branch | grep \* | cut -d ' ' -f2)" = "release" ] && [[ "$rp" == "$repo" ]]; then
       # run unit test if build PR branch
       check_run make test;
     fi;
@@ -248,15 +278,17 @@ function cmake_build {
     check_run make install; # will copy to correct place
 
     # copy over the installation files
-    check_run rsync -arv ./install $dst
-    check_run "aws s3 sync ./install s3://$s3_build_bucket/$rp/$platform/$git_hash"
+    check_run rsync -arv ./install/ $dst/
+    #check_run "aws s3 sync ./install s3://$s3_build_bucket/$rp/$platform/$git_hash"
+    s3_upload ./install $rp $git_hash
 
     check_run rm -rf $build_dir/$dir;
   else
     echo "skip building $rp on platform $platform"
 
     # download build from s3
-    check_run "aws s3 sync s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
+    s3_download $rp $git_hash $dst
+    #check_run "aws s3 sync s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
   fi;
 
   check_run cd $curr_dir;
@@ -276,7 +308,7 @@ function gatk_build {
 
   local git_hash="$(git_get_hash $rp)";
 
-  if ! aws s3 ls s3://$s3_build_bucket/$rp/$platform/$git_hash > /dev/null; then
+  if ! aws s3 ls s3://$s3_build_bucket/$rp/$platform/${git_hash}.tgz > /dev/null; then
 
     local dir=$(git_clone $rp);
     check_run cd $dir;
@@ -293,14 +325,15 @@ function gatk_build {
       check_run ./build.sh -p $license_dst --profiling;
     fi;
     check_run cp ./export/*.jar $dst;
-    check_run "aws s3 cp ./export/*.jar s3://$s3_build_bucket/$rp/$platform/$git_hash"
+    s3_upload ./export/ $rp $git_hash;
 
     rm -rf $build_dir/$dir;
   else
     echo "skip building $rp on platform $platform"
 
     # download build from s3
-    check_run "aws s3 cp s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
+    #check_run "aws s3 cp s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
+    s3_download $rp $git_hash $dst;
   fi;
 
   check_run cd $curr_dir;
