@@ -52,50 +52,50 @@ fi
 temp_dir=/local/temp/$user
 mkdir -p $temp_dir
 
-ref_dir=/local/ref
-WORKDIR=/local/work_dir
+export ref_dir=/local/ref
+export WORKDIR=/local/work_dir
 
-fastq_dir=$WORKDIR/fastq
-genes_dir=$WORKDIR/genes
-baseline_dir=$WORKDIR/baselines
-tbdata_dir=$WORKDIR/tb
+export fastq_dir=$WORKDIR/fastq
+export genes_dir=$WORKDIR/genes
+export baseline_dir=$WORKDIR/baselines
+export tbdata_dir=$WORKDIR/tb
 
-FCSBIN=$FALCON_DIR/bin/fcs-genome
-BWABIN=$FALCON_DIR/tools/bin/bwa-flow
-GATK3=$FALCON_DIR/tools/package/GATK3.jar
-GATK4=$FALCON_DIR/tools/package/GATK4.jar
-SW_TB=$DIR/tb/$CLOUD/sw_tb
-PMM_TB=$DIR/tb/$CLOUD/pmm_tb
-SMEM_TB=$DIR/tb/$CLOUD/smem_tb
-SW_BIT=$FALCON_DIR/fpga/sw.xclbin
-PMM_BIT=$FALCON_DIR/fpga/pmm.xclbin
-SMEM_BIT=$FALCON_DIR/fpga/sw.xclbin
-VCFDIFF=$DIR/../common/vcfdiff
-BATS=$DIR/../common/bats/bats
+export FCSBIN=$FALCON_DIR/bin/fcs-genome
+export BWABIN=$FALCON_DIR/tools/bin/bwa-flow
+export GATK3=$FALCON_DIR/tools/package/GATK3.jar
+export GATK4=$FALCON_DIR/tools/package/GATK4.jar
+export SW_TB=$DIR/tb/$CLOUD/sw_tb
+export PMM_TB=$DIR/tb/$CLOUD/pmm_tb
+export SMEM_TB=$DIR/tb/$CLOUD/smem_tb
+export SW_BIT=$FALCON_DIR/fpga/sw.xclbin
+export PMM_BIT=$FALCON_DIR/fpga/pmm.xclbin
+export SMEM_BIT=$FALCON_DIR/fpga/sw.xclbin
+export VCFDIFF=$DIR/../common/vcfdiff
+export BATS=$DIR/../common/bats/bats
 
-ref_genome=$ref_dir/human_g1k_v37.fasta
-db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
-g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
-g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
-cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
-PON=$ref_dir/mutect_gatk4_pon.vcf 
-GNOMAD=$ref_dir/af-only-gnomad.raw.sites.b37.vcf.gz
+export ref_genome=$ref_dir/human_g1k_v37.fasta
+export db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
+export g1000_indels=$ref_dir/1000G_phase1.indels.b37.vcf
+export g1000_gold_standard_indels=$ref_dir/Mills_and_1000G_gold_standard.indels.b37.vcf
+export cosmic=$ref_dir/b37_cosmic_v54_120711.vcf
+export PON=$ref_dir/mutect_gatk4_pon.vcf 
+export GNOMAD=$ref_dir/af-only-gnomad.raw.sites.b37.vcf.gz
 
 # For Features Test:
-SAMPLE_ID=NA12878
-RGID=${SAMPLE_ID}
-PLATFORM="Illumina"
-LIB=${SAMPLE_ID}
-fastq1=${fastq_dir}/${SAMPLE_ID}_1.fastq.gz
-fastq2=${fastq_dir}/${SAMPLE_ID}_2.fastq.gz
-INPUT_BAM=${baseline_dir}/bwa/${SAMPLE_ID}_marked.bam
-REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
+export SAMPLE_ID=NA12878
+export RGID=${SAMPLE_ID}
+export PLATFORM="Illumina"
+export LIB=${SAMPLE_ID}
+export fastq1=${fastq_dir}/${SAMPLE_ID}_1.fastq.gz
+export fastq2=${fastq_dir}/${SAMPLE_ID}_2.fastq.gz
+export INPUT_BAM=${baseline_dir}/bwa/${SAMPLE_ID}_marked.bam
+export REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
 
-INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
-GENES_LIST=${genes_dir}/genelist_by_exons.txt
+export INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
+export GENES_LIST=${genes_dir}/genelist_by_exons.txt
 
-INPUT_DIR=/local/work_dir/baselines/joint/vcf/
-DATABASE=my_database
+export INPUT_DIR=/local/work_dir/baselines/joint/vcf/
+export DATABASE=my_database
 
 
 function check_dev_version {
