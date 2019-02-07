@@ -1,16 +1,165 @@
 #!/bin/bash
 
-source global.bash 
+function check_dev_version {
+  local bin=$1;
+  local version="$($bin --version | grep -i 'version' | awk '{print $NF}')";
+  if [ "${version: -4}" == "-dev" ]; then
+    return 0
+  else
+    echo "Incorrect dev version"
+    return 1
+  fi;
+}
 
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+function compare_BAM {
+  local subjectBAM=$1;
+  #convert BAM to SAM
+  export TMPDIR=/local/temp/
+  samtools view "$subjectBAM"  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa.dat;
+  countTotal=`diff $temp_dir/subject_bwa.dat $WORKDIR/baselines/bwa/$id_marked_counts.dat | wc -l`
 
-ts=$(date +%Y%m%d-%H%M)
-if [ -z "$FALCON_HOME" ]; then
-  FALCON_HOME=/usr/local/falcon
-fi
+  samtools view "$subjectBAM" -F4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_mapped.dat;
+  countMapped=`diff $temp_dir/subject_bwa_mapped.dat $WORKDIR/baselines/bwa/$id_marked_mapped.dat | wc -l`
 
-log_dir=log-$ts
-mkdir -p $log_dir
+  samtools view "$subjectBAM" -f4  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_unmapped.dat;
+  countUnmapped=`diff $temp_dir/subject_bwa_unmapped.dat $WORKDIR/baselines/bwa/$id_marked_unmapped.dat | wc -l`
+
+  samtools view "$subjectBAM" -f1024  | awk '{print $1}' | sort -u  > $temp_dir/subject_bwa_duplicates.dat;
+  countDups=`diff $temp_dir/subject_bwa_duplicates.dat $WORKDIR/baselines/bwa/$id_duplicates.dat | wc -l`
+
+  if [[ "$countTotal" -eq "0" ]] && [[ "$countMapped" -eq "0" ]] && [[ "$countUnmapped" -eq "0" ]] && [[ "$countDups" -eq "0" ]];then
+    return 0
+  else
+    echo "Failed Mapped Reads Comparison for $id"
+    return 1
+  fi;
+}
+
+function compare_depth {
+  local subject_file=$1; 
+  local baseline_file=$2;
+
+  r=$(paste ${subject_file} ${baseline_file} |  awk -v total=0 '{
+    split($0,a,"\t");
+    if(a[1]==a[10]){
+       sum_xy+=a[2]*a[11];
+       sum_x+=a[2]; sum_x2+=a[2]*a[2];
+       sum_y+=a[11]; sum_y2+=a[11]*a[11];
+       total++;
+    }
+  }END{
+    numerator=total*sum_xy-(sum_x*sum_y);
+    denominator=sqrt( (total*sum_x2- (sum_x*sum_x) )*( total*sum_y2 - (sum_y*sum_y) )  );
+    r=100*numerator/denominator;
+    if(r>=99.99){print 1};
+  }')
+
+  if [ "$r" == "1" ]; then
+    return 0;
+  else
+    return 1;
+  fi
+
+}
+
+function compare_flagstat {
+
+  local subjectBAM=$1;
+  local baselineBAM=$2;
+  local id=$3;
+  threshold=0.05;
+  equal=0.00;
+  samtools flagstat $subjectBAM  > $temp_dir/subject_flagstat;
+  samtools flagstat $baselineBAM > $temp_dir/baseline_flagstat;
+  
+  b_array=( $(cat $temp_dir/baseline_flagstat | awk '{print $1}') );
+  s_array=( $(cat $temp_dir/subject_flagstat | awk '{print $1}') );
+  
+  for idx in ${!b_array[*]}; do
+    DIFF=$(( ${b_array[$idx]} - ${s_array[$idx]} ))
+    
+    if [ $DIFF -ne 0 ]; then
+      equal=$(awk -v dividend="$DIFF" -v divisor="${b_array[$idx]}" 'BEGIN {printf "%.6f",sqrt((dividend/divisor)^2); exit(0)}')
+      if (( $(echo "$equal $threshold" | awk '{print ($1 >= $2)}') )); then
+        echo "$equal $threshold"
+        echo "Failed flagstat compare for $id"
+        return 1
+      fi
+    fi
+  done;
+  return 0;
+}
+
+function compare_bqsr {
+
+  local subjectBQSR=$1;
+  local baselineBQSR=$2;
+  local id=$3;
+  uniq_diff=$(diff $subjectBQSR $baselineBQSR | grep -e "|" | wc -l);
+  subject=`wc -l $subjectBQSR | awk '{print $1}'`
+  baseline=`wc -l $baselineBQSR | awk '{print $1}'`
+  
+  if [[ "${subject}" == "${baseline}" ]] && [[ "${uniq_diff}" == "0" ]]; then
+    return 0
+  else
+    echo "Failed BQSR compare for $id"
+    return 1
+  fi;
+
+}
+
+function compare_vcf {
+
+  local subjectVCF=$1;
+  local baselineVCF=$2;
+  local id=$3;
+  if [[ ${baselineVCF##*.} == "gz" ]];then
+     zcat $baselineVCF |  grep -v "^#" | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/base_grep.vcf;
+  else
+     grep -v "^#" $baselineVCF | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/base_grep.vcf;
+  fi
+
+  if [[ ${subjectVCF##*.} == "gz" ]];then
+     zcat $subjectVCF | grep -v "^#" | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/mod_grep.vcf
+  else
+     grep -v "^#" $subjectVCF | awk '{print $1"\t"$2"\t"$4"\t"$5}' | sort -k1,1V -k2,2n > $temp_dir/mod_grep.vcf
+  fi;
+
+  DIFF=$(diff $temp_dir/base_grep.vcf $temp_dir/mod_grep.vcf);
+  if [ "$DIFF" == "" ]; then
+    return 0
+  else
+    echo "Failed VCF compare for $id"
+    return 1
+  fi;
+
+}
+
+function compare_vcfdiff {
+
+  local subjectVCF=$1;
+  local baselineVCF=$2;
+  local id=$3;
+
+  if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
+     ${vcfdiff} ${baseVCF} ${testVCF} > $temp_dir/vcfdiff.txt;
+  else
+     echo "ERROR: vcfdiff for ${sample} not executed"
+  fi
+
+  recall=$(tail -n 1 $temp_dir/vcfdiff.txt | awk '{print $5}');
+  echo $recall;
+  min=0.99;
+  #if (( $(echo "$recall >= $min" | bc -l) )) ; then
+  if (( $(echo "$recall $min" | awk '{print ($1 >= $2)}') ));then
+    return 0
+  else
+    echo "Failed vcfdiff compare for $id"
+    return 1
+  fi;
+
+}
+
 
 function run_align {
   local sample=$1;
@@ -217,56 +366,3 @@ function run_mutect2 {
     -f $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
   # TODO: compare vcf results
 }
-
-capture=$NexteraCapture
-for sample in $(cat $DIR/wes_germline.list); do
-  run_align $sample
-  run_bqsr  $sample $capture " "
-  run_htc   $sample $capture " "
-  run_bqsr  $sample $capture gatk4
-  run_htc   $sample $capture gatk4
-done
-
-for sample in $(cat $DIR/wgs_germline.list); do
-  run_align $sample
-  run_bqsr  $sample "" ""
-  run_htc   $sample "" ""
-  run_bqsr  $sample "" gatk4
-  run_htc   $sample "" gatk4
-done
-
-for sample in $(cat $DIR/wes_germline.list $DIR/wgs_germline.list); do
-  run_ConsistencyTest $sample " "
-  run_ConsistencyTest $sample gatk4
-done
- 
-capture=$RocheCapture
-for pair in $(cat $DIR/mutect.list); do
-  for sample in ${pair}-N ${pair}-T; do
-    run_align $sample 
-    run_bqsr  $sample $capture " "
-    run_bqsr  $sample $capture gatk4
-  done
-  run_mutect2 $pair $capture " "
-  run_VCFcompare $pair ""
-  run_mutect2 $pair $capture gatk4
-  run_VCFcompare $pair gatk4
-done
-
-for sample in $(cat $DIR/giab_wgs.list $DIR/giab_wes.list); do
-  run_align $sample
-  run_bqsr  $sample "" gatk4
-  run_htc   $sample "" gatk4
-done
-
-for sample in $(cat $DIR/giab_wgs.list); do
-  run_AccuracyTest $sample HG001 WGS gatk4
-done
-
-for sample in $(cat $DIR/giab_wes.list); do
-  run_AccuracyTest $sample HG001 WES gatk4
-done
-
-# format the table
-$DIR/parse.sh $log_dir | tee performance-${ts}.csv
-exit ${PIPESTATUS[0]} # catch the return value for parse.sh

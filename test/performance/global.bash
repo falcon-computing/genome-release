@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Definign WORK_DIR
-export WORK_DIR="/local"
+# Definign ROOT_DIR
+export ROOT_DIR="/local"
 
 # Defining Variables to be used:
-export ref_dir="${WORK_DIR}/ref"
+export ref_dir="${ROOT_DIR}/ref"
 export ref_genome="$ref_dir/human_g1k_v37.fasta"
 export db138_SNPs="$ref_dir/dbsnp_138.b37.vcf"
 export g1000_indels="$ref_dir/1000G_phase1.indels.b37.vcf"
@@ -17,51 +17,54 @@ export vcf_baselines_dir="${WORKDIR}/vcf_baselines"
 if [[ ! -f $ref_genome ]] || [[ ! -f ${db138_SNPs} ]] || [[ ! -f ${cosmic} ]] || [[ ! -f ${pon} ]] || [[ ! -f ${gnomad} ]] ; then
    echo "$ref_genome or ${db138_SNPs} or ${cosmic} are missing"
    echo "If possible, downloaded from aws s3:"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ ${WORK_DIR}/ref/ --recursive  --exclude \"*\" --include \"dbsnp_138.b37*\" &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ ${WORK_DIR}/ref/ --recursive  --exclude \"*\" --include \"*1000*\" &>aws.log &"
-   echo "aws s3 cp s3://fcs-genome-data/ref/ ${WORK_DIR}/ref/ --recursive  --exclude \"*\" --include \"b37*\" &>aws.log & "
-   echo "aws s3 cp s3://fcs-genome-data/ref/ ${WORK_DIR}/ref/ --recursive  --exclude \"*\" --include \"human_g1k_v37*\" &>aws.log "
+   echo "aws s3 cp s3://fcs-genome-data/ref/ ${ROOT_DIR}/ref/ --recursive  --exclude \"*\" --include \"dbsnp_138.b37*\" &>aws.log &"
+   echo "aws s3 cp s3://fcs-genome-data/ref/ ${ROOT_DIR}/ref/ --recursive  --exclude \"*\" --include \"*1000*\" &>aws.log &"
+   echo "aws s3 cp s3://fcs-genome-data/ref/ ${ROOT_DIR}/ref/ --recursive  --exclude \"*\" --include \"b37*\" &>aws.log & "
+   echo "aws s3 cp s3://fcs-genome-data/ref/ ${ROOT_DIR}/ref/ --recursive  --exclude \"*\" --include \"human_g1k_v37*\" &>aws.log "
    return 1
 fi
 
 export NexteraCapture="/local/capture/IlluminaNexteraCapture.bed"
 export RocheCapture="/local/capture/VCRome21_SeqCapEZ_hg19_Roche.bed"
 
-# Defining Folders:
-if [[ ! -d ${WORK_DIR}/fastq/ ]] && [[ ! -d ${WORK_DIR}/ref/ ]];then
+# Making work folders for the runs
+if [[ ! -d ${ROOT_DIR}/fastq/ ]] && [[ ! -d ${ROOT_DIR}/ref/ ]];then
      echo "${WORKK_DIR}/fastq/ and ${WORKK_DIR}/ref/ do not exist"
      exit 1;
 fi
 
-if [[ -z "$(ls -A ${WORK_DIR}/fastq/)" ]];then
-   if [ ! -d ${WORK_DIR}/fastq/WES  ];then
-      echo "mkdir -p ${WORK_DIR}/fastq/WES"
-            mkdir -p ${WORK_DIR}/fastq/WES 
+if [[ -z "$(ls -A ${ROOT_DIR}/fastq/)" ]];then
+   if [ ! -d ${ROOT_DIR}/fastq/WES  ];then
+      echo "mkdir -p ${ROOT_DIR}/fastq/WES"
+            mkdir -p ${ROOT_DIR}/fastq/WES 
    fi 
 
-   if [ ! -d ${WORK_DIR}/fastq/WGS  ];then
-      echo "mkdir -p ${WORK_DIR}/fastq/WGS"
-            mkdir -p ${WORK_DIR}/fastq/WGS
+   if [ ! -d ${ROOT_DIR}/fastq/WGS  ];then
+      echo "mkdir -p ${ROOT_DIR}/fastq/WGS"
+            mkdir -p ${ROOT_DIR}/fastq/WGS
    fi
 
-   if [ ! -d ${WORK_DIR}/fastq/intel  ];then
-      echo "mkdir -p ${WORK_DIR}/fastq/intel"
-            mkdir -p ${WORK_DIR}/fastq/intel
+   if [ ! -d ${ROOT_DIR}/fastq/intel  ];then
+      echo "mkdir -p ${ROOT_DIR}/fastq/intel"
+            mkdir -p ${ROOT_DIR}/fastq/intel
    fi
 
-   if [ ! -d ${WORK_DIR}/fastq/mutect2  ];then
-      echo "mkdir -p ${WORK_DIR}/fastq/mutect2"
-            mkdir -p ${WORK_DIR}/fastq/mutect2/baylor
+   if [ ! -d ${ROOT_DIR}/fastq/mutect2  ];then
+      echo "mkdir -p ${ROOT_DIR}/fastq/mutect2"
+            mkdir -p ${ROOT_DIR}/fastq/mutect2/baylor
    fi
 fi
 
-if [ ! -d "${WORK_DIR}/capture/" ];then
-   echo "mkdir ${WORK_DIR}/capture"
-         mkdir ${WORK_DIR}/capture
+if [ ! -d "${ROOT_DIR}/capture/" ];then
+   echo "mkdir ${ROOT_DIR}/capture"
+         mkdir ${ROOT_DIR}/capture
    echo "If Trio Platinum Genomes or Normal/Tumor need to use Capture Targets BED files, copy over from aws s3 by typing the following command:\n"
-   echo "aws s3 cp s3://fcs-genome-data/capture/ ${WORK_DIR}/capture/ --recursive "
+   echo "aws s3 cp s3://fcs-genome-data/capture/ ${ROOT_DIR}/capture/ --recursive "
    return 1
 fi
+
+########## End moving to .run.sh #############
+
 
 # ==============================================================================================================
 # Check if Huawei, AWS or Merlin3 is used:
@@ -84,6 +87,10 @@ if [[ `get_cloud` == "hwc" ]] ;then
    INSTANCE_TYPE=`hwc_get_instance_type`
 fi
 INSTANCE_ID=`date +%Y%m%d%s`
+
+
+
+
 
 if [ "${CLOUD}" == "aws" ];then
    export LM_LICENSE_FILE=2300@fcs.fcs-internal
@@ -141,8 +148,8 @@ if [ ! -f ${GATK4} ];then
     return 1
 fi
 
-export fastq_dir=${WORK_DIR}/fastq
-export common_dir=${WORK_DIR}/genome-release/common
+export fastq_dir=${ROOT_DIR}/fastq
+export common_dir=${ROOT_DIR}/genome-release/common
 
 if [[ ! -d ${fastq_dir} ]] ;then 
    echo "${fastq_dir} is  missing"
@@ -161,13 +168,13 @@ if [[ ! -f ${BEDTOOLS} ]];then
     return 1
 fi
 
-export RTGjar="${WORK_DIR}/rtg-tools-3.9.1/RTG.jar"
+export RTGjar="${ROOT_DIR}/rtg-tools-3.9.1/RTG.jar"
 if [[ ! -f ${RTGjar} ]];then
     echo "RTGjar does not exist"
     return 1
 fi
 
-export RTG="${WORK_DIR}/rtg/rtg.sh"
+export RTG="${ROOT_DIR}/rtg/rtg.sh"
 if [[ ! -f ${RTG} ]];then
     echo "RTG does not exist"
     return 1

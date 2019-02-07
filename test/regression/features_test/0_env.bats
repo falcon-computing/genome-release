@@ -55,7 +55,7 @@ load ../global
 }
 
 @test "Check if vcfdiff exists" {
-  [ -f "$VCFDIFF" ]
-  [ ! -z "VCFDIFF" ]
+  [ ! -z "$VCFDIFF" ]
+  #[ -f $VCFDIFF ]
 }
 

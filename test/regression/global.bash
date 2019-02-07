@@ -2,7 +2,7 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 if [ -z "$CLOUD" ]; then
-  source $DIR/cloud-helper.sh
+  source $REG_DIR/cloud-helper.sh
   
   CLOUD=`get_cloud`
   if [[ "$CLOUD" == "aws" ]]; then
@@ -64,14 +64,15 @@ export FCSBIN=$FALCON_DIR/bin/fcs-genome
 export BWABIN=$FALCON_DIR/tools/bin/bwa-flow
 export GATK3=$FALCON_DIR/tools/package/GATK3.jar
 export GATK4=$FALCON_DIR/tools/package/GATK4.jar
-export SW_TB=$DIR/tb/$CLOUD/sw_tb
-export PMM_TB=$DIR/tb/$CLOUD/pmm_tb
-export SMEM_TB=$DIR/tb/$CLOUD/smem_tb
 export SW_BIT=$FALCON_DIR/fpga/sw.xclbin
 export PMM_BIT=$FALCON_DIR/fpga/pmm.xclbin
 export SMEM_BIT=$FALCON_DIR/fpga/sw.xclbin
-export VCFDIFF=$DIR/../common/vcfdiff
-export BATS=$DIR/../common/bats/bats
+
+export SW_TB=$REG_DIR/tb/$CLOUD/sw_tb
+export PMM_TB=$REG_DIR/tb/$CLOUD/pmm_tb
+export SMEM_TB=$REG_DIR/tb/$CLOUD/smem_tb
+export VCFDIFF=$REG_DIR/../common/vcfdiff
+export BATS=$REG_DIR/../common/bats/bats
 
 export ref_genome=$ref_dir/human_g1k_v37.fasta
 export db138_SNPs=$ref_dir/dbsnp_138.b37.vcf
