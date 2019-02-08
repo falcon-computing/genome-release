@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-load ../global
+load ../../lib/common
 
 helper_normalRun() {
   #"normal run for alignment"

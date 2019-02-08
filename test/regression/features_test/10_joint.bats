@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 @test "JOINT without input arg" {
    run ${FCSBIN} joint

@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-load ../global
+load ../../lib/common
 
 @test "Release Package Directory Test" {
   [ ! -z "$FALCON_DIR" ]

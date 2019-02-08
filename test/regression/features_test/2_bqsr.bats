@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 @test "BQSR without input arg" {
    run ${FCSBIN} bqsr

@@ -3,9 +3,9 @@
 usage() 
 # Usage statement for when things go wrong 
 { 
-    echo "regression.sh - Test the FPGA bitstream files, the toolkit features, and perform integration tests on a build
+    echo "regression.sh - Test the FPGA bitstream files, the toolkit features, and perform integration tests for both hg19 and hg38 on a build.
 usage:
-    regression.sh </full/path/to/build/>"1>&2
+    regression.sh </full/path/to/build/>" 1>&2
 }
 # Spit usage when no arguments are given
 if [ $# -lt 1 ]; then
@@ -25,8 +25,8 @@ source $SOURCE_DIR/../global.bash
 # This uses the FALCON_HOME variable and checks the build provided there. 
 source $SOURCE_DIR/lib/load_build.bash
 
-# Export variables relating to where indexes and reference files are
-source $SOURCE_DIR/lib/load_environment.bash
+# Export variables relating to where indexes and reference files are default to hg19
+source $SOURCE_DIR/lib/load_hg19_environment.bash
 
 # Load some testing functions
 source $SOURCE_DIR/lib/common.bash
@@ -36,6 +36,7 @@ output_log=${INSTANCE_TYPE}_$(date +%Y%m%d%s).log
 start_ts=$(date +%s)
 
 rm -rf regression.log
+
 
 echo -e "============================================================================" >> regression.log 
 echo -e "CPU INFO      "                                                               >> regression.log
@@ -77,31 +78,18 @@ fi
 echo "FPGA test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing feature in fcs-genome "                                               >> regression.log
+echo -e "Testing hg19 feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
-# Features tests export 
-export SAMPLE_ID=NA12878
-export RGID=${SAMPLE_ID}
-export PLATFORM="Illumina"
-export LIB=${SAMPLE_ID}
-export fastq1=${fastq_dir}/${SAMPLE_ID}_1.fastq.gz
-export fastq2=${fastq_dir}/${SAMPLE_ID}_2.fastq.gz
-export INPUT_BAM=${baseline_dir}/bwa/${SAMPLE_ID}_marked.bam
-export REPORT=${baseline_dir}/baserecal/3.8/${SAMPLE_ID}_BQSR.table
-export INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
-export GENES_LIST=${genes_dir}/genelist_by_exons.txt
-export INPUT_DIR=$WORKDIR/baselines/joint/vcf/
-export DATABASE=my_database
 
 $BATS $REG_DIR/features_test/ >> regression.log
 if [ $? -ne 0 ]; then
   exit 1
 fi
 rm -rf `pwd`/output.bam
-echo "Feature test passed"
+echo "Hg19 feature test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing Data-Dependent Alignment                               "              >> regression.log
+echo -e "Testing hg19 Data-Dependent Alignment                               "              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 array=(GEN-637)
 for id in ${array[@]}
@@ -114,7 +102,6 @@ for id in ${array[@]}
     fi
   done
 echo "Data-Dependent Alignment test passed"
-
 echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
 echo -e "============================================================================\n" >> regression.log
@@ -128,7 +115,7 @@ for id in ${array[@]}
       exit 1
     fi
   done
-echo "Germline test passed"
+echo "hg19 germline test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Pair Sample for Mutect2"                                                      >> regression.log
@@ -143,17 +130,32 @@ for id in ${array[@]}
       exit 1
     fi
   done
-echo "Somatic test passed"
+echo "Hg19 somatic test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Start tests for hg38"                                                      >> regression.log
 echo -e "============================================================================\n" >> regression.log
-source $REG_DIR/hg38.bash
+
+# Export variables relating to where indexes and reference files are, update to hg38
+source $SOURCE_DIR/lib/load_hg38_environment.bash
+
+echo -e "============================================================================" >> regression.log
+echo -e "Testing hg38 feature in fcs-genome "                                               >> regression.log
+echo -e "============================================================================\n" >> regression.log
+
+$BATS $REG_DIR/features_test/ >> regression.log
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+rm -rf `pwd`/output.bam
+echo "Hg38 feature test passed"
+
 array=(NA12878 NA12891 NA12892)
 for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
+    echo $BATS $REG_DIR/regression_test/
     $BATS $REG_DIR/regression_test/  >> regression.log
     if [ $? -ne 0 ]; then
       exit 1

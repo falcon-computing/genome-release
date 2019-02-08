@@ -3,9 +3,9 @@
 usage() 
 # Usage statement for when things go wrong 
 { 
-    echo "performance.sh - Test a build exhaustively with large WES and WGS samples
+    echo "performance.sh - Test a build exhaustively with large WES and WGS samples for hg19 only. 
 usage:
-    performance.sh </full/path/to/build/>"1>&2
+    performance.sh </full/path/to/build/>" 1>&2
 }
 # Spit usage when no arguments are given
 if [ $# -lt 1 ]; then
@@ -49,7 +49,7 @@ mkdir -p $log_dir
 source $SOURCE_DIR/lib/common.bash
 
 capture=$NexteraCapture
-for sample in $(cat $DIR/wes_germline.list); do
+for sample in $(cat $PER_DIR/wes_germline.list); do
   run_align $sample
   run_bqsr  $sample $capture " "
   run_htc   $sample $capture " "
@@ -57,7 +57,7 @@ for sample in $(cat $DIR/wes_germline.list); do
   run_htc   $sample $capture gatk4
 done
 
-for sample in $(cat $DIR/wgs_germline.list); do
+for sample in $(cat $PER_DIR/wgs_germline.list); do
   run_align $sample
   run_bqsr  $sample "" ""
   run_htc   $sample "" ""
@@ -65,13 +65,13 @@ for sample in $(cat $DIR/wgs_germline.list); do
   run_htc   $sample "" gatk4
 done
 
-for sample in $(cat $DIR/wes_germline.list $DIR/wgs_germline.list); do
+for sample in $(cat $PER_DIR/wes_germline.list $PER_DIR/wgs_germline.list); do
   run_ConsistencyTest $sample " "
   run_ConsistencyTest $sample gatk4
 done
  
 capture=$RocheCapture
-for pair in $(cat $DIR/mutect.list); do
+for pair in $(cat $PER_DIR/mutect.list); do
   for sample in ${pair}-N ${pair}-T; do
     run_align $sample 
     run_bqsr  $sample $capture " "
@@ -83,20 +83,20 @@ for pair in $(cat $DIR/mutect.list); do
   run_VCFcompare $pair gatk4
 done
 
-for sample in $(cat $DIR/giab_wgs.list $DIR/giab_wes.list); do
+for sample in $(cat $PER_DIR/giab_wgs.list $PER_DIR/giab_wes.list); do
   run_align $sample
   run_bqsr  $sample "" gatk4
   run_htc   $sample "" gatk4
 done
 
-for sample in $(cat $DIR/giab_wgs.list); do
+for sample in $(cat $PER_DIR/giab_wgs.list); do
   run_AccuracyTest $sample HG001 WGS gatk4
 done
 
-for sample in $(cat $DIR/giab_wes.list); do
+for sample in $(cat $PER_DIR/giab_wes.list); do
   run_AccuracyTest $sample HG001 WES gatk4
 done
 
 # format the table
-$DIR/parse.sh $log_dir | tee performance-${ts}.csv
+$PER_DIR/parse.sh $log_dir | tee performance-${ts}.csv
 exit ${PIPESTATUS[0]} # catch the return value for parse.sh

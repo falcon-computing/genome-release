@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 @test "MUTECT2 without input arg" {
    run ${FCSBIN} mutect2

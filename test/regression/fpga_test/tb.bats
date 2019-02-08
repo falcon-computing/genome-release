@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-load ../global
+load ../../lib/common
 
 @test "check if tb binaries exist" {
 [ ! -z "$SW_TB" ]

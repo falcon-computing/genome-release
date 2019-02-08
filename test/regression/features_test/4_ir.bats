@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 @test "INDEL without input arg" {
    run ${FCSBIN} indel

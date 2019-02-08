@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 @test "HTC without input arg" {
    run ${FCSBIN} htc

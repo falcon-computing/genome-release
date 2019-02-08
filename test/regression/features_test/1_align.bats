@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-load ../global
+load ../../lib/common
 
 @test "Check for fcs-genome" {
   run $FCSBIN

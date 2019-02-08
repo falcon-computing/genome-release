@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-load ../global
+load ../../lib/common
 
 helper_normalRun() {
   #"Normal run for BQSR"
