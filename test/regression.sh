@@ -14,6 +14,7 @@ if [ $# -lt 1 ]; then
 fi
 
 export FALCON_HOME=$1
+echo Running regression on build $1 >> regression.log
 
 # The directory that this script lives in (genome-release/test/)
 SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
@@ -155,7 +156,6 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    echo $BATS $REG_DIR/regression_test/
     $BATS $REG_DIR/regression_test/  >> regression.log
     if [ $? -ne 0 ]; then
       exit 1

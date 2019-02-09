@@ -14,6 +14,7 @@ if [ $# -lt 1 ]; then
 fi
 
 export FALCON_HOME=$1
+echo Running on build $1 >> performance.log
 
 # The directory that this script lives in (genome-release/test/)
 SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )

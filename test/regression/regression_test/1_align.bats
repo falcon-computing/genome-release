@@ -2,6 +2,8 @@
 load ../../lib/common
 
 fastq_dir=$WORKDIR/fastq
+temp_dir=/local/temp/$user
+mkdir -p $temp_dir
 
 helper_normalRun() {
 
@@ -41,9 +43,11 @@ helper_bamCompare() {
 }
 
 @test "Normal run for alignment: $id" {
+  echo Alignment
   helper_normalRun "$id" 
 }
 
 @test "Compare BAM file against baseline: $id" {
+  echo Validate bam
   helper_bamCompare "$id"
 }

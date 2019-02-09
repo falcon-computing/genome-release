@@ -52,8 +52,6 @@ helper_flagstatCompare() {
   echo "${output}"
   [ "$status" -eq 0 ]
 
-  #rm $WORKDIR/temp/subject_flagstat
-  #rm $WORKDIR/temp/baseline_flagstat
 }
 
 @test "Normal run for print reads GATK3 : $id" {
