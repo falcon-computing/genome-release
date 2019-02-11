@@ -8,7 +8,6 @@ helper_normalRun() {
   #"normal run for alignment"
   local -r id="$1"  
   # run with configuration settings
-  echo $temp_dir
   echo $FCSBIN depth \
     -r $ref_genome \
     -i $baseline_dir/bwa/${id}_marked.bam \
@@ -38,7 +37,6 @@ helper_CompareDepth() {
 }
 
 @test "Normal run for Depth of Coverage: $id" {
-  echo what the hell is going on
   helper_normalRun "$id" 
 }
 
