@@ -27,7 +27,7 @@ source $SOURCE_DIR/../global.bash
 source $SOURCE_DIR/lib/load_build.bash
 
 # Export variables relating to where indexes and reference files are
-source $SOURCE_DIR/lib/load_environment.bash
+source $SOURCE_DIR/lib/load_hg19_environment.bash
 
 # Performance specific environment variables which will be used
 export vcf_baselines_dir=$WORKDIR/vcf_baselines
