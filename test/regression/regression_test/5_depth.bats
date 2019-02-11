@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 load ../../lib/common
-temp_dir=/local/temp/$user
+export temp_dir=/local/temp/$USER
 mkdir -p $temp_dir
 
 helper_normalRun() {
