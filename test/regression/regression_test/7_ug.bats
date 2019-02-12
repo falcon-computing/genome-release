@@ -14,7 +14,7 @@ helper_normalRun() {
   run ${FCSBIN} ug \
     -r ${ref_genome} \
     -i ${BAM} \
-    -o ${id}.ug.g.vcf -f -L  ${WORKDIR}/capture/IlluminaNexteraCapture.bed --sample-id ${id} ${tag}
+    -o ${id}.ug.g.vcf -f -L  ${illumina_capture} --sample-id ${id} ${tag}
   
   [ "$status" -eq 0 ]
   [ -f ${id}.ug.g.vcf.gz ]

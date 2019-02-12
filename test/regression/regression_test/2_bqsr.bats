@@ -10,7 +10,7 @@ helper_normalRun() {
     -r ${ref_genome} \
     -i $baseline_dir/bwa/${id}_marked.bam \
     -o ${id}_BQSR.table \
-    --knownSites $db138_SNPs -f -L $WORKDIR/capture/IlluminaNexteraCapture.bed ${tag}
+    --knownSites $db138_SNPs -f -L ${illumina_capture} ${tag}
 
   echo "output = ${output}"
   [ "$status" -eq 0 ]

@@ -20,6 +20,8 @@ export fastq_dir=$WORKDIR/fastq
 export genes_dir=$WORKDIR/genes
 export baseline_dir=$WORKDIR/baselines
 export tbdata_dir=$WORKDIR/tb
+export illumina_capture=$WORKDIR/capture/IlluminaNexteraCapture.bed
+export roche_capture=$WORKDIR/capture/RocheCaptureTargets.bed
 
 # Reference genome quick links
 export ref_genome=$ref_dir/human_g1k_v37.fasta

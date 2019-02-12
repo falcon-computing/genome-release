@@ -14,7 +14,7 @@ helper_normalRun() {
   run ${FCSBIN} htc \
     -r ${ref_genome} \
     -i ${BAM} \
-    -o ${id}.vcf --produce-vcf -f -L  ${WORKDIR}/capture/IlluminaNexteraCapture.bed ${tag}
+    -o ${id}.vcf --produce-vcf -f -L  ${illumina_capture} ${tag}
   
   [ "$status" -eq 0 ]
   [ -f ${id}.vcf.gz ]

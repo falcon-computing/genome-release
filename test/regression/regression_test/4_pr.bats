@@ -16,7 +16,7 @@ helper_normalRun() {
     -r $ref_genome \
     -b ${BQSR_TABLE} \
     -i $WORKDIR/baselines/bwa/${id}_marked.bam \
-    -o ${id}_final_BAM.bam -f  -L ${WORKDIR}/capture/IlluminaNexteraCapture.bed  --merge-bam  ${tag}
+    -o ${id}_final_BAM.bam -f  -L ${illumina_capture}  --merge-bam  ${tag}
   
   echo "${output}"
   [ "$status" -eq 0 ]
