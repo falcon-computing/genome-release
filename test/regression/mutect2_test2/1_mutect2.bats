@@ -21,14 +21,14 @@ helper_normalRun() {
         --normal_name TCRBOA1-Normal \
         --tumor_name TCRBOA1-Tumor \
         --panels_of_normals ${PON} --germline ${GNOMAD} \
-        --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed ${tag}
+        --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L $roche_capture ${tag}
   else
       run ${FCSBIN} mutect2 \
         -r ${ref_genome} \
         --normal ${normalBAM} \
         --tumor  ${tumorBAM} \
         --dbsnp ${db138_SNPs} --cosmic ${cosmic} \
-        --output ${id}.vcf  -f  -L ${WORKDIR}/capture/RocheCaptureTargets.bed 
+        --output ${id}.vcf  -f  -L $roche_capture 
   fi
 
   [ "$status" -eq 0 ]

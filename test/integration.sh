@@ -28,7 +28,7 @@ source $SOURCE_DIR/../global.bash
 source $SOURCE_DIR/lib/load_build.bash
 
 # Export variables relating to where indexes and reference files are default to hg19
-source $SOURCE_DIR/lib/load_hg38_environment.bash
+source $SOURCE_DIR/lib/load_hg19_environment.bash
 
 # Load some testing functions
 source $SOURCE_DIR/lib/common.bash
