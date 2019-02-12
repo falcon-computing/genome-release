@@ -39,12 +39,12 @@ conf_path = falcon_home + '/blaze/conf'
 
 if not os.path.isfile(nam_path) or not os.path.isfile(conf_path): 
   print "error: missing blaze nam or configuration file"
+  sys.exit(1)
 
-# start blaze in the background
+# start blaze nam in the background
 blaze_proc = subprocess.Popen([nam_path, conf_path])
 print "info:", nam_path, conf_path
 
-time.sleep(5)
 
 # kill nam at exit
 def cleanup():
@@ -81,9 +81,13 @@ while count < 5:
     ret_str = sock_recv(s)
   
     s.close()
+
+    # socket connection was successful
     break
   
   except:
+    # give blaze nam some time to start
+    time.sleep(5)
     count += 1
 
 if count == 4:
