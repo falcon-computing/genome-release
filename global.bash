@@ -51,6 +51,7 @@ export CLOUD
 export SW_TB=$REG_DIR/tb/$CLOUD/sw_tb
 export PMM_TB=$REG_DIR/tb/$CLOUD/pmm_tb
 export SMEM_TB=$REG_DIR/tb/$CLOUD/smem_tb
+export BLAZE_TB=$REG_DIR/fpga_test/check-acc.py
 
 #### License check ####
 if [ "${CLOUD}" == "aws" ];then
