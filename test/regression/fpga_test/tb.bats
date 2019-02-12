@@ -26,6 +26,9 @@ load ../../lib/common
     $SW_BIT $ref_genome \
     $tbdata_dir/sw/input \
     $tbdata_dir/sw/golden_out
+
+  echo "${output}"
+
   [ "$status" -eq 0 ]
 }
 
@@ -41,6 +44,8 @@ load ../../lib/common
     $tbdata_dir/smem/ \
     32 768
 
+  echo "${output}"
+
   [ "$status" -eq 0 ]
 }
 
@@ -48,6 +53,8 @@ load ../../lib/common
   run $PMM_TB \
     $PMM_BIT \
     $tbdata_dir/pmm
+
+  echo "${output}"
 
   [ "$status" -eq 0 ]
 }

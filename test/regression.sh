@@ -156,7 +156,7 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $BATS $REG_DIR/regression_test/  >> regression.log
+    $BATS $REG_DIR/regression_test/1_align.bats  >> regression.log
     if [ $? -ne 0 ]; then
       exit 1
     fi
