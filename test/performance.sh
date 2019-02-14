@@ -51,52 +51,64 @@ source $SOURCE_DIR/lib/common.bash
 
 capture=$NexteraCapture
 for sample in $(cat $PER_DIR/wes_germline.list); do
-  run_align $sample
-  run_bqsr  $sample $capture " "
-  run_htc   $sample $capture " "
-  run_bqsr  $sample $capture gatk4
-  run_htc   $sample $capture gatk4
+#  run_align $sample
+#  run_bqsr  $sample $capture ""
+#  run_htc   $sample $capture ""
+#  run_bqsr  $sample $capture gatk4
+#  run_htc   $sample $capture gatk4
+
+  run_germline $sample $capture ""
+  run_germline $sample $capture gatk4
 done
 
 for sample in $(cat $PER_DIR/wgs_germline.list); do
-  run_align $sample
-  run_bqsr  $sample "" ""
-  run_htc   $sample "" ""
-  run_bqsr  $sample "" gatk4
-  run_htc   $sample "" gatk4
+#  run_align $sample
+#  run_bqsr  $sample "" ""
+#  run_htc   $sample "" ""
+#  run_bqsr  $sample "" gatk4
+#  run_htc   $sample "" gatk4
+
+  run_germline $sample "" ""
+  run_germline $sample "" gatk4
 done
 
-for sample in $(cat $PER_DIR/wes_germline.list $PER_DIR/wgs_germline.list); do
-  run_ConsistencyTest $sample " "
-  run_ConsistencyTest $sample gatk4
-done
- 
 capture=$RocheCapture
-for pair in $(cat $PER_DIR/mutect.list); do
-  for sample in ${pair}-N ${pair}-T; do
-    run_align $sample 
-    run_bqsr  $sample $capture " "
-    run_bqsr  $sample $capture gatk4
-  done
-  run_mutect2 $pair $capture " "
-  run_VCFcompare $pair ""
-  run_mutect2 $pair $capture gatk4
-  run_VCFcompare $pair gatk4
-done
+#for pair in $(cat $PER_DIR/mutect.list); do
+#  for sample in ${pair}-N ${pair}-T; do
+#    run_align $sample 
+#    run_bqsr  $sample $capture " "
+#    run_bqsr  $sample $capture gatk4
+#  done
+#  run_mutect2 $pair $capture " "
+#  run_mutect2 $pair $capture gatk4
+#done
 
 for sample in $(cat $PER_DIR/giab_wgs.list $PER_DIR/giab_wes.list); do
-  run_align $sample
-  run_bqsr  $sample "" gatk4
-  run_htc   $sample "" gatk4
+#  run_align $sample
+#  run_bqsr  $sample "" gatk4
+#  run_htc   $sample "" gatk4
+
+  run_germline $sample "" ""
+  run_germline $sample "" gatk4
 done
 
-for sample in $(cat $PER_DIR/giab_wgs.list); do
-  run_AccuracyTest $sample HG001 WGS gatk4
-done
-
-for sample in $(cat $PER_DIR/giab_wes.list); do
-  run_AccuracyTest $sample HG001 WES gatk4
-done
+#for pair in $(cat $PER_DIR/mutect.list); do
+#  run_VCFcompare $pair ""
+#  run_VCFcompare $pair gatk4
+#done
+#
+#for sample in $(cat $PER_DIR/wes_germline.list $PER_DIR/wgs_germline.list); do
+#  run_ConsistencyTest $sample " "
+#  run_ConsistencyTest $sample gatk4
+#done
+# 
+#for sample in $(cat $PER_DIR/giab_wgs.list); do
+#  run_AccuracyTest $sample HG001 WGS gatk4
+#done
+#
+#for sample in $(cat $PER_DIR/giab_wes.list); do
+#  run_AccuracyTest $sample HG001 WES gatk4
+#done
 
 # format the table
 $PER_DIR/parse.sh $log_dir | tee performance-${ts}.csv

@@ -344,7 +344,7 @@ function run_mutect2 {
     local input_n=/local/${sample}-N/gatk4/${sample}-N.recal.bam;
     local output=/local/$sample/${sample}-gatk4.vcf;
     local extra="--normal_name ${sample}-N --tumor_name ${sample}-T";
-    local extra="$extra -p $pon -m $gnomad";
+    local extra="$extra -p $PON -m $GNOMAD";
     local filtered=" --filtered_vcf /local/$sample/${sample}-gatk4_filtered.vcf";
     local log_fname=$log_dir/${sample}_mutect2_gatk4.log;
   else
@@ -352,7 +352,7 @@ function run_mutect2 {
     local input_t=/local/${sample}-T/gatk3/${sample}-T.recal.bam;
     local input_n=/local/${sample}-N/gatk3/${sample}-N.recal.bam;
     local output=/local/$sample/${sample}-gatk3.vcf;
-    local extra="--dbsnp $dbsnp --cosmic $cosmic";
+    local extra="--dbsnp $dbsnp_SNPs --cosmic $cosmic";
     local filtered=
     local log_fname=$log_dir/${sample}_mutect2_gatk3.log;
   fi;
@@ -364,5 +364,36 @@ function run_mutect2 {
     $extra \
     -o $output ${filtered} \
     -f $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
+  # TODO: compare vcf results
+}
+
+function run_germline {
+  local sample=$1;
+  local capture=$2
+  local gatk_version=$3
+  if [[ ! -z "$capture" ]];then
+    local SET_INTERVAL=" -L ${capture} "
+  else
+    local SET_INTERVAL=
+  fi;
+
+  if [[ "$gatk_version" == "gatk4" ]];then
+    mkdir -p /local/$sample/alt-gatk4;
+    local gatk4='--gatk4';
+    local output=/local/$sample/alt-gatk4/${sample}.vcf;
+    local log_fname=$log_dir/${sample}_alt_gatk4.log;
+  else
+    mkdir -p /local/$sample/alt-gatk3;
+    local gatk4=
+    local output=/local/$sample/alt-gatk3/${sample}.vcf;
+    local log_fname=$log_dir/${sample}_alt_gatk3.log;
+  fi;
+  $FALCON_HOME/bin/fcs-genome germline \
+    -r $ref_genome \
+    -1 /local/$sample/${sample}_1.fastq.gz \
+    -2 /local/$sample/${sample}_2.fastq.gz \
+    -o $output \
+    -f -v $gatk4 ${SET_INTERVAL} 1> /dev/null 2> $log_fname;
+
   # TODO: compare vcf results
 }
