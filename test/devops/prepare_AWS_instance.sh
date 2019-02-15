@@ -26,10 +26,16 @@ sleep 3m
 scp -i /curr/software/aws/user.pem get_latest.sh centos@$instance_ip:/local
 ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /usr/local ; sudo cp /local/get_latest.sh . ; sudo ./get_latest.sh aws'
 ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /usr/local; sudo tar -zxf falcon-g*'
-ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local/ ; sudo aws s3 sync s3://fcs-genome-local/ /local/'
+
 
 # Copy over some test directories. 
+ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local/ ; sudo aws s3 sync s3://fcs-genome-local/ /local/'
+
+# Install dependencues
 ssh -i /curr/software/aws/user.pem centos@$instance_ip 'sudo yum install git-lfs -y'
+ssh -i /curr/software/aws/user.pem centos@$instance_ip 'sudo pip install protobuf'
+
+# Download the testing repo
 ssh -i /curr/software/aws/user.pem centos@$instance_ip 'cd /local ; git clone git@github.com:falcon-computing/genome-release.git'
 
 return 0
