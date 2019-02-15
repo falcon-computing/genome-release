@@ -1,0 +1,9 @@
+This package should contain the following folders;
+
+features_test
+fpga_test
+mutect2_test2
+regression_test
+tb
+
+These directories are accessed primarily through the regression.sh script in /test (../)
