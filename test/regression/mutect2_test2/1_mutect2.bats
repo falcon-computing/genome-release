@@ -22,6 +22,7 @@ helper_normalRun() {
         --tumor_name TCRBOA1-Tumor \
         --panels_of_normals ${PON} --germline ${GNOMAD} \
         --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L $roche_capture ${tag}
+      echo "${output}"
   else
       run ${FCSBIN} mutect2 \
         -r ${ref_genome} \
