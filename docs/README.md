@@ -14,6 +14,7 @@ Release v2.1.0
 - [Synopsis](#synopsis)
 	- [Common Options](#common-options)
 	- [Common GATK Options](#common-gatk-options)
+	- [`fcs-genome germline` Options](#fcs-genome-germline-options)
 	- [`fcs-genome align` Options](#fcs-genome-align-options)
 	- [`fcs-genome bqsr` Options](#fcs-genome-bqsr-options)
 	- [`fcs-genome baserecal` Options](#fcs-genome-baserecal-options)
@@ -22,8 +23,8 @@ Release v2.1.0
 	- [`fcs-genome joint` Options](#fcs-genome-joint-options)
 	- [`fcs-genome mutect2` Options](#fcs-genome-mutect2-options)
 	- [`fcs-genome depth` Options](#fcs-genome-depth-options)
+	- [`fcs-genome vcf_filter` Options](#fcs-genome-vcf_filter-options)
 	- [`fcs-genome gatk` Options](#fcs-genome-gatk-options)
-	- [`fcs-genome germline` Options](#fcs-genome-germline-options)
 	- [Additional Commands](#additional-commands)
 - [Examples](#examples)
 	- [Germline Variant Calling for WGS](#germline-variant-calling-for-wgs)
@@ -310,9 +311,24 @@ The `depth` command calculates the depth of coverage for a given BAM input files
 | -g | --geneList | String | list of genes over which the coverage is calculated |
 | -b | --omitBaseOutput |    | omit output coverage depth at each base (default: false) |
 | -v | --omitIntervals |     | omit output coverage per-interval statistics (default false) |
-| -s | --omitSampleSummary | | omit output summary files for each sample (default false |
+| -s | --omitSampleSummary | | omit output summary files for each sample (default false) |
 
 **NOTE**: DepthOfCoverage is not available in GATK4. 
+
+### `fcs-genome vcf_filter` Options
+The `vcf_filter` emulates the *VariantFiltration* in GATK. It takes a VCF file as input and labels variants that meet the criteria set up by the user.
+
+| Option | Alternative | Argument | Description |
+| --- | --- | --- | --- |
+| -r | --ref | String | reference genome path |
+| -i | --input | String | input VCF filename |
+| -o | --output | String | output filtered VCF file |
+| -L | --intervalList | String | interval list file |
+|    | --filteringExpression | String | parameters used to filter variants |
+|    | --filter_name | String | Filter name for the log file |
+| -g | --gatk4 | |  use gatk4 to perform analysis |
+
+For additional details about how to set up the filtering expression, please refer to the the [GATK documentation]( https://software.broadinstitute.org/gatk/documentation/tooldocs/4.beta.3/org_broadinstitute_hellbender_tools_walkers_filters_VariantFiltration.php) 
 
 ### `fcs-genome gatk` Options
 The `gatk` emulates the original GATK 3.x commands and as such, there is no Falcon provided acceleration. Please refer to the [GATK documentation](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/) for additional details.
