@@ -8,7 +8,7 @@ helper_normalRun() {
   VCF_DIR=$WORKDIR/baselines/joint/vcf/
   if [ "${tag}" = "--gatk4" ];then
      DB=" --database_name my_database "
-     run rm -rf my_database
+     rm -rf my_database
   fi
 
   run ${FCSBIN} joint \
@@ -17,7 +17,7 @@ helper_normalRun() {
     -o test.vcf --sample-id PlatinumTrio -f ${DB} ${tag} 
 
   if [ "${tag}" = "--gatk4" ];then
-    run rm -rf my_database
+    rm -rf my_database
   fi  
 
   [ "$status" -eq 0 ]
@@ -36,13 +36,14 @@ helper_compareVCF() {
      baselineVCF="${WORKDIR}/baselines/joint/3.8/joint.vcf.gz"
   fi
 
-  if [[ -f ${baselineVCF} ]] && [[ -f ${subjectVCF} ]];then
+  if [ -f ${baselineVCF} ] && [ -f ${subjectVCF} ];then
      run compare_vcf "$subjectVCF" "$baselineVCF" "test"
   else
      echo "ERROR: vcfdiff for test not executed"
+     return 1;
   fi
 
-  run rm -rf test.vcf*
+  rm -rf test.vcf*
 
   [ "$status" -eq 0 ]
 }
