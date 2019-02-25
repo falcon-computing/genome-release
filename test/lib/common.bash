@@ -1,5 +1,57 @@
 #!/bin/bash
 
+# FPGA testbench paths
+SW_TB=$REG_DIR/tb/$platform/sw_tb
+SMEM_TB=$REG_DIR/tb/$platform/smem_tb
+PMM_TB=$REG_DIR/tb/$platform/pmm_tb
+BLAZE_TB=$REG_DIR/fpga_test/check-acc.py
+
+function check_file {
+  local file=$1;
+  if [ ! -z "$file" ]; then
+    [ -f $file ];
+  fi;
+}
+
+
+function collect_info {
+  echo "============================================================================";
+  echo "GENERAL DESCRIPTION                                                         ";
+  echo "============================================================================";
+  echo "Location      : $LOCATION";
+  echo "Hostname      : $(hostname)";
+  if [ ! "$LOCATION" = "local" ]; then
+  echo "Image ID      : $AMI";
+  echo "Instance      : $INSTANCE_TYPE";
+  echo "Region        : $REGION";
+  fi;
+  echo "";
+  echo "============================================================================";
+  echo "CPU INFO";
+  echo "============================================================================";
+  lscpu | grep -e ^CPU\(s\): | awk '{print "Number of CPUs: \t"$NF}';
+  lscpu | grep -e "^Thread";
+  lscpu | grep -e "^Model name:";
+  echo "============================================================================";
+  echo "MEM INFO";
+  echo "============================================================================";
+  cat /proc/meminfo | head -n3;
+  echo "============================================================================";
+  echo "";
+  echo "============================================================================";
+  echo "BUILD INFO";
+  echo "============================================================================";
+  echo "FALCON_HOME: ${FALCON_HOME}";
+  echo " - fcs-genome version: $($FCSBIN --version | awk '{print $NF}')";
+  echo " - bwa-flow   version: $($BWABIN --version | awk '{print $NF}')";
+  echo " - mmap-flow  version: $($MMAPBIN --version | awk '{print $NF}')";
+  #echo " - blaze      version: $($BLAZEBIN --version)";
+  echo " - gatk3      version: $(java -jar $GATK3 --version)";
+  echo " - gatk4      version: $(java -jar $GATK4 HaplotypeCaller --version 2>&1 | grep Version | cut -d ':' -f2)";
+  echo "============================================================================";
+  echo "";
+}
+
 function check_dev_version {
   local bin=$1;
   local version="$($bin --version | grep -i 'version' | awk '{print $NF}')";

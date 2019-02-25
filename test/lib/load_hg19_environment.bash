@@ -45,3 +45,4 @@ export INTERVAL_LIST=${genes_dir}/genelist_by_exons.bed
 export GENES_LIST=${genes_dir}/genelist_by_exons.txt
 export INPUT_DIR=$WORKDIR/baselines/joint/vcf/
 export DATABASE=my_database
+

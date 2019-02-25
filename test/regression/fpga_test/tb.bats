@@ -1,27 +1,19 @@
 #!/usr/bin/env bats
 load ../../lib/common
 
-@test "check if tb binaries exist" {
-[ ! -z "$SW_TB" ]
-  [ ! -z "$PMM_TB" ]
-#  [ ! -z "$SMEM_TB" ]
-
-  [ -f "$SW_TB" ]
-  [ -f "$PMM_TB" ]
-#  [ -f "$SMEM_TB" ]
-}
-
 @test "check if bitstreams exist" {
-  [ ! -z "$SW_BIT" ]; 
-  [ ! -z "$PMM_BIT" ]
-#  [ ! -z "$SMEM_BIT" ]
-
-  [ -f "$SW_BIT" ]
-  [ -f "$PMM_BIT" ]
-#  [ -f "$SMEM_BIT" ]
+  # if the filepath is defined then check existence
+  run check_file "$SW_BIT"
+  run check_file "$SMEM_BIT"
+  run check_file "$PMM_BIT"
 }
 
 @test "sw testbench" {
+  # if that parameter is undefined or equal to zero
+  if [ -z "$do_sw_test"] || 
+     [ "$do_sw_test" -eq 0 ]; then
+    skip
+  fi
   run $SW_TB \
     $SW_BIT $ref_genome \
     $tbdata_dir/sw/input \
@@ -33,7 +25,10 @@ load ../../lib/common
 }
 
 @test "smem testbench" {
-  skip
+  if [ -z "$do_smem_test" ] ||
+     [ "$do_smem_test" -eq 0 ]; then
+    skip
+  fi
   # run xbsak_gem if available
   if which xbutil &> /dev/null; then
     xbutil dmatest
@@ -50,6 +45,9 @@ load ../../lib/common
 }
 
 @test "pairhmm testbench" {
+  if [ -z "$do_pmm_test" ] || [ "$do_pmm_test" -eq 0 ]; then
+    skip
+  fi
   run $PMM_TB \
     $PMM_BIT \
     $tbdata_dir/pmm
