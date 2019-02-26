@@ -189,14 +189,15 @@ function compare_vcf {
 
 function compare_vcfdiff {
 
-  local subjectVCF=$1;
-  local baselineVCF=$2;
+  local testVCF=$1;
+  local baseVCF=$2;
   local id=$3;
 
   if [[ -f ${baseVCF} ]] && [[ -f ${testVCF} ]];then
      ${vcfdiff} ${baseVCF} ${testVCF} > $temp_dir/vcfdiff.txt;
   else
      echo "ERROR: vcfdiff for ${sample} not executed"
+     return 1
   fi
 
   recall=$(tail -n 1 $temp_dir/vcfdiff.txt | awk '{print $5}');
@@ -316,6 +317,7 @@ function run_VCFcompare {
      ${vcfdiff} ${baseVCF} ${testVCF} > ${testVCFlog}
   else
      echo "ERROR: vcfdiff for ${sample} not executed"
+     return 1
   fi
 }
 

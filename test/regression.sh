@@ -152,18 +152,13 @@ for id in ${array[@]}
   do
     echo "Processing $id"
     export id=$id
-    $BATS $REG_DIR/regression_test/1_align.bats  >> regression.log
-    $BATS $REG_DIR/regression_test/2_bqsr.bats   >> regression.log
-    $BATS $REG_DIR/regression_test/3_htc.bats    >> regression.log
-    $BATS $REG_DIR/regression_test/4_pr.bats     >> regression.log
-    $BATS $REG_DIR/regression_test/7_ug.bats     >> regression.log
+    $BATS $REG_DIR/regression_test/  >> regression.log
     if [ $? -ne 0 ]; then
       exit 1
     fi
   done
 echo "Hg38 Germline test passed"
 
-!<<skipMutect2TestforHg38
 array=(TCRBOA1)
 for id in ${array[@]}
   do
@@ -175,7 +170,6 @@ for id in ${array[@]}
     fi
   done
 echo "Hg38 Somatic test passed"
-skipMutect2TestforHg38
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log

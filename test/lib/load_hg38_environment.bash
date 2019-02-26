@@ -45,3 +45,5 @@ export INTERVAL_LIST=${genes_dir}/genelist_hg38_by_exons.bed
 export GENES_LIST=${genes_dir}/genelist_hg38_by_exons.txt
 export INPUT_DIR=/local/work_dir/baselines/joint/vcf/ # Note: No hg38 path available 02/08/2019 - Hard coding the link so this script works independently
 export DATABASE=my_database # Note No hg38 version available 02/08/2019
+
+export HG38_TEST=on
