@@ -22,38 +22,31 @@ if [[ ! -f ${BEDTOOLS} ]];then
     return 1
 fi
 
-
 #### Determine cloud settings ####
-if [ -z "$CLOUD" ]; then
+if [ -z "$LOCATION" ]; then
   source $TEST_LIB/cloud-helper.sh
   
-  CLOUD=`get_cloud`
-  if [[ "$CLOUD" == "aws" ]]; then
+  LOCATION=`get_cloud`
+  if [[ "$LOCATION" == "aws" ]]; then
     AMI=`get_image_id`
     REGION=`get_region`
     INSTANCE_TYPE=`aws_get_instance_type`
+
+    export LM_LICENSE_FILE=2300@fcs.fcs-internal
   elif [[ `get_cloud` == "hwc" ]]; then
     AMI=`get_image_id`
     REGION=`get_region`
     INSTANCE_TYPE=`hwc_get_instance_type`
   else
-    AMI="local"
-    REGION="local"
-    INSTANCE_TYPE="local"
-    CLOUD="local"
+    LOCATION="local"
   fi
 fi  
 
 export INSTANCE_ID="$(hostname)"
-export CLOUD
+export LOCATION
 
 # Update bit streams acording to the environment
-export SW_TB=$REG_DIR/tb/$CLOUD/sw_tb
-export PMM_TB=$REG_DIR/tb/$CLOUD/pmm_tb
-export SMEM_TB=$REG_DIR/tb/$CLOUD/smem_tb
-export BLAZE_TB=$REG_DIR/fpga_test/check-acc.py
-
-#### License check ####
-if [ "${CLOUD}" == "aws" ];then
-  export LM_LICENSE_FILE=2300@fcs.fcs-internal
-fi
+#export SW_TB=$REG_DIR/tb/$CLOUD/sw_tb
+#export PMM_TB=$REG_DIR/tb/$CLOUD/pmm_tb
+#export SMEM_TB=$REG_DIR/tb/$CLOUD/smem_tb
+#export BLAZE_TB=$REG_DIR/fpga_test/check-acc.py

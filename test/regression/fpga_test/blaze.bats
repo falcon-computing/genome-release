@@ -2,7 +2,9 @@
 load ../../lib/common
 
 @test "check if PairHMM works in blaze" {
-  [ -f $BLAZE_TB ]
+  if [ -z "$do_blaze_test" ]; then
+    skip
+  fi
   run python $BLAZE_TB PairHMM
 
   echo "${output}"
