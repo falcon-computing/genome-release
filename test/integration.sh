@@ -3,7 +3,7 @@
 usage() 
 # Usage statement for when things go wrong 
 { 
-    echo "integration.sh - Perform one integration test for hg19 on a build.
+    echo "integration.sh - Run integration tests on a build.
 usage:
     integration.sh </full/path/to/build/>" 1>&2
 }
@@ -15,8 +15,6 @@ fi
 
 export FALCON_HOME=$1
 
-echo Running on build $1 2>> integration.log
-
 # The directory that this script lives in (genome-release/test/)
 SOURCE_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -27,29 +25,8 @@ source $SOURCE_DIR/../global.bash
 # This uses the FALCON_HOME variable and checks the build provided there. 
 source $SOURCE_DIR/lib/load_build.bash
 
-# Export variables relating to where indexes and reference files are default to hg19
-source $SOURCE_DIR/lib/load_hg19_environment.bash
-
-# Load some testing functions
-source $SOURCE_DIR/lib/common.bash
-
-failed=0
-output_log=${INSTANCE_TYPE}_$(date +%Y%m%d%s).log
-start_ts=$(date +%s)
-
-rm -rf integration.log
-
-# Run a single sample through the pipeline 
-echo Starting integration test
-export id=NA12878
-$BATS $REG_DIR/regression_test/  >> integration.log
-if [ $? -ne 0 ]; then
-  echo Integration test failed
-  echo "Time taken: $((end_ts - start_ts))s"  2>> integration.log
-  exit 1
-fi
-echo Integration test passed
-
+# Run the local mitochondrial DNA dataset through the pipeline and compare to the expected
+# results
+python lib/test_BP_pipeline.py $FCSBIN data/ref/mito.fasta data/expected_output/ \
+    data/input/mito_1.fastq data/input/mito_2.fastq data/ref/mito_snps.vcf.gz
  
-end_ts=$(date +%s)
-echo "Time taken: $((end_ts - start_ts))s"  2>> integration.log

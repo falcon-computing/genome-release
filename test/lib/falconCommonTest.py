@@ -133,15 +133,11 @@ def remove_object(file_object):
         os.remove(file_object)
 
 
-def test_align(fcs_genome, ref, fastq1, fastq2, generic_name):
+def run_command(command):
     """
-    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
-    paths to two fastq files and an output file path.
-
-    Run the fcs-genome align command (accelerated BWA) on the fastq files and write the output.
+    Take in a comand as a list, run it with the subprocess module, keep the stdout and error
+    around and track how long it takes
     """
-    # Run the command and track the time
-    command = [fcs_genome, "align", "-r", ref, "-1", fastq1, "-2", fastq2, "-o", generic_name + ".bam"]
     logging.info("Running command {}".format(" ".join(command)))
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
     start = time.time()
@@ -150,7 +146,19 @@ def test_align(fcs_genome, ref, fastq1, fastq2, generic_name):
     elapsed_time = end - start
     logging.info("Command completed in {} seconds".format(elapsed_time))
     error_code = process.returncode
+    return elapsed_time
 
+
+def test_align(fcs_genome, ref, fastq1, fastq2, out_file):
+    """
+    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
+    paths to two fastq files and an output file path.
+
+    Run the fcs-genome align command (accelerated BWA) on the fastq files and write the output.
+    """
+    # Run the command and track the time
+    command = [fcs_genome, "align", "-r", ref, "-1", fastq1, "-2", fastq2, "-o", out_file]
+    elapsed_time = run_command(command)
     return elapsed_time
 
 
@@ -165,19 +173,11 @@ def test_bqsr(fcs_genome, ref, input_bam, vcf_compare, out_dir, use_GATK4=False)
     command = [fcs_genome, "bqsr", "-r", ref, "-i", input_bam, "-K", vcf_compare, "-o", out_dir]
     if use_GATK4:
         command.append("-g")
-    logging.info("Running command {}".format(" ".join(command)))
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-    start = time.time()
-    output, error = process.communicate()
-    end = time.time()
-    elapsed_time = end - start
-    logging.info("Command completed in {} seconds".format(elapsed_time))
-    error_code = process.returncode
-
+    elapsed_time = run_command(command)
     return elapsed_time
 
 
-def test_htc(fcs_genome, ref, bam_dir, generic_name, use_GATK4=False):
+def test_htc(fcs_genome, ref, bam_dir, out_file, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -185,17 +185,66 @@ def test_htc(fcs_genome, ref, bam_dir, generic_name, use_GATK4=False):
     Run the fcs-genome htc command (variant calling) on the bam file(s) and write the output.
     """
     # Run the command and track the time
-    command = [fcs_genome, "htc", "-r", ref, "-i", bam_dir, "-v", "-o", generic_name + ".vcf"]
+    command = [fcs_genome, "htc", "-r", ref, "-i", bam_dir, "-v", "-o", out_file]
     if use_GATK4:
         command.append("-g")
-    logging.info("Running command {}".format(" ".join(command)))
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-    start = time.time()
-    output, error = process.communicate()
-    end = time.time()
-    elapsed_time = end - start
-    logging.info("Command completed in {} seconds".format(elapsed_time))
-    error_code = process.returncode
-
+    elapsed_time = run_command(command)
     return elapsed_time
 
+
+def test_mutect2(fcs_genome, ref, bam_dir, known_snps, out_file, use_GATK4=False):
+    """
+    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
+    a path to a bam directory (or bam file) and an output vcf file name
+
+    Run the fcs-genome mutect2 command (variant calling) on the bam file(s) and write the output.
+    """
+    # Run the command and track the time
+    command = [fcs_genome, "mutect2", "-r", ref, "-i", bam_dir, "-v", "-o", out_file]
+    if use_GATK4:
+        command.append("-g")
+    elapsed_time = run_command(command)
+    return elapsed_time
+
+
+def test_joint(fcs_genome, ref, bam_dir, known_snps, out_file, use_GATK4=False):
+    """
+    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
+    a path to a bam directory (or bam file) and an output vcf file name
+
+    Run the fcs-genome joint command (variant calling) on the bam file(s) and write the output.
+    """
+    # Run the command and track the time
+    command = [fcs_genome, "joint", "-r", ref, "-i", bam_dir, "-v", "-o", out_file]
+    if use_GATK4:
+        command.append("-g")
+    elapsed_time = run_command(command)
+    return elapsed_time
+
+
+def test_ug(fcs_genome, ref, bam_dir, known_snps, out_file, use_GATK4=False):
+    """
+    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
+    a path to a bam directory (or bam file) and an output vcf file name
+
+    Run the fcs-genome ug command (variant calling) on the bam file(s) and write the output.
+    """
+    command = [fcs_genome, "ug", "-r", ref, "-i", bam_dir, "-v", "-o", out_file]
+    if use_GATK4:
+        command.append("-g")
+    elapsed_time = run_command(command)
+    return elapsed_time
+
+
+def test_germline(fcs_genome, ref, fastq1, fastq2, known_snps, out_file, use_GATK4=False):
+    """
+    Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
+    a path to a bam directory (or bam file) and an output vcf file name
+
+    Run the fcs-genome germline command (variant calling) on the bam file(s) and write the output.
+    """
+    command = [fcs_genome, "germline", "-r", ref, "-1", fastq1, "-2", fastq2, "-v", "-o", out_file]
+    if use_GATK4:
+        command.append("-g")
+    elapsed_time = run_command(command)
+    return elapsed_time

@@ -79,7 +79,7 @@ fi
 echo "FPGA test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing hg19 feature in fcs-genome "                                               >> regression.log
+echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
 $BATS $REG_DIR/features_test/ >> regression.log
@@ -87,7 +87,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 rm -rf `pwd`/output.bam
-echo "Hg19 feature test passed"
+echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
 echo -e "Testing hg19 Data-Dependent Alignment                               "              >> regression.log
@@ -104,82 +104,11 @@ for id in ${array[@]}
   done
 echo "Data-Dependent Alignment test passed"
 echo -e "============================================================================" >> regression.log
-echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(NA12878 NA12891 NA12892)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "hg19 germline test passed"
-
-echo -e "============================================================================" >> regression.log
-echo -e "Pair Sample for Mutect2"                                                      >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(TCRBOA1)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/mutect2_test2/ >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg19 somatic test passed"
-
-echo -e "============================================================================" >> regression.log
-echo -e "Start tests for hg38"                                                      >> regression.log
+echo -e "DNA Samples (Platinum Trio Sample NA12878)"              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
-# Export variables relating to where indexes and reference files are, update to hg38
-source $SOURCE_DIR/lib/load_hg38_environment.bash
-
-echo -e "============================================================================" >> regression.log
-echo -e "Testing hg38 feature in fcs-genome "                                               >> regression.log
-echo -e "============================================================================\n" >> regression.log
-
-$BATS $REG_DIR/features_test/ >> regression.log
-if [ $? -ne 0 ]; then
-  exit 1
-fi
-rm -rf `pwd`/output.bam
-echo "Hg38 feature test passed"
-
-array=(NA12878 NA12891 NA12892)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/1_align.bats  >> regression.log
-    $BATS $REG_DIR/regression_test/2_bqsr.bats   >> regression.log
-    $BATS $REG_DIR/regression_test/3_htc.bats    >> regression.log
-    $BATS $REG_DIR/regression_test/4_pr.bats     >> regression.log
-    $BATS $REG_DIR/regression_test/7_ug.bats     >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg38 Germline test passed"
-
-!<<skipMutect2TestforHg38
-array=(TCRBOA1)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/mutect2_test2/ >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg38 Somatic test passed"
-skipMutect2TestforHg38
+python lib/test_BP_pipeline.py $FCSBIN $ref_genome $WORKDIR/$SAMPLE_ID \
+    $FASTQ_DIR/$SAMPLE_ID_1 $FASTQ_DIR/$SAMPLE_ID_2 $db138_SNPs
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
