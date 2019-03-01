@@ -12,7 +12,9 @@ import argparse
 import subprocess
 import os
 import falconCommonTest
+import shutil
 import logging
+logging.basicConfig(level=logging.DEBUG)
 
 
 def parseArgs(args): 
@@ -39,6 +41,18 @@ def parseArgs(args):
     parser.add_argument ("known_SNPs",
             help = "Known variants that should be used for base recalibration (vcf file)",
             action = "store")
+    parser.add_argument ("tumor_bam",
+            help = "Tumor bam file for mutect variant calling",
+            action = "store")
+    parser.add_argument ("gvcf_dir",
+            help = "gvcf directory for joint variant calling",
+            action = "store")
+    parser.add_argument ("normal_panel_vcf",
+            help = "vcf for mutect gatk4 variant calling",
+            action = "store")
+    parser.add_argument ("gnomad_vcf",
+            help = "vcf for mutect gatk4 variant calling",
+            action = "store")
     # Optional variables
     parser.add_argument("--verbose",
             # Sets warning tags to on
@@ -48,6 +62,9 @@ def parseArgs(args):
             help = "Do not compare to the expected output files",
             action= "store_true")
     parser.add_argument("--hard_remove_files",
+            help = "Remove generated files even if they fail comparison",
+            action= "store_true")
+    parser.add_argument("--no_remove_files",
             help = "Remove generated files even if they fail comparison",
             action= "store_true")
 
@@ -66,35 +83,53 @@ def create_generated_file_dict(generic_fn):
 
     # GATK3 variant files
     bqsr_dir = generic_fn
-    htc_vcf_file = generic_fn + ".htc.vcf.gz"
+    htc_vcf_file = generic_fn + ".htc.vcf"
     htc_vcf_index_file = generic_fn + ".htc.vcf.gz.tbi"
-    mutect2_vcf_file = generic_fn + ".mutect2.vcf.gz"
-    joint_vcf_file = generic_fn + ".joint.vcf.gz"
-    ug_vcf_file = generic_fn + ".ug.vcf.gz"
-    germline_vcf_file = generic_fn + ".germline.vcf.gz"
+    mutect2_vcf_file = generic_fn + ".mutect2.vcf"
+    mutect2_vcf_index_file = generic_fn + ".mutect2.vcf.gz.tbi"
+    joint_vcf_file = generic_fn + ".joint.vcf"
+    joint_vcf_index_file = generic_fn + ".joint.vcf.gz.tbi"
+    ug_vcf_file = generic_fn + ".ug.vcf"
+    ug_vcf_index_file = generic_fn + ".ug.vcf.gz.tbi"
+    germline_vcf_file = generic_fn + ".germline.vcf"
 
     # GATK4 variant files
     generic_4_fn = generic_fn + "_gatk4"
-    bqsr_4_dir = generic_4_fn
-    htc_vcf_4_file = generic_4_fn + ".htc.vcf.gz"
+    htc_vcf_4_file = generic_4_fn + ".htc.vcf"
     htc_vcf_4_index_file = generic_4_fn + ".htc.vcf.gz.tbi"
-    mutect2_vcf_4_file = generic_4_fn + ".mutect2.vcf.gz"
-    joint_vcf_4_file = generic_4_fn + ".joint.vcf.gz"
-    ug_vcf_4_file = generic_4_fn + ".ug.vcf.gz"
-    germline_vcf_4_file = generic_4_fn + ".germline.vcf.gz"
+    mutect2_vcf_4_file = generic_4_fn + ".mutect2"
+    mutect2_vcf_4_index_file = generic_4_fn + ".mutect2.gz.tbi"
+    mutect2_vcf_4_filt_file = generic_4_fn + ".mutect2.filt"
+    joint_vcf_4_file = generic_4_fn + ".joint.vcf"
+    joint_vcf_4_index_file = generic_4_fn + ".joint.vcf.gz.tbi"
+    germline_vcf_4_file = generic_4_fn + ".germline.vcf"
 
     # Make a dict of all files that will be generated (for comparisons and to remove them later)
-    generated_file_dict = {"bam_file":bam_file, "bam_index_file":bam_index_file, "bqsr_dir":bqsr_dir,
-                           "htc_vcf_file":htc_vcf_file, "htc_vcf_index_file":htc_vcf_index_file,
-                           "mutect2_vcf_file":mutect2_vcf_file, "joint_vcf_file":joint_vcf_file,
-                           "ug_vcf_file":ug_vcf_file, "germline_vcf_file":germline_vcf_file,
-                           "bqsr_4_dir":bqsr_4_dir, "htc_vcf_4_file":htc_vcf_4_file,
-                           "htc_vcf_4_index_file":htc_vcf_4_index_file, "mutect2_vcf_4_file":mutect2_vcf_4_file,
-                           "joint_vcf_4_file":joint_vcf_4_file, "ug_vcf_4_file":ug_vcf_4_file,
-                           "germline_vcf_4_file":germline_vcf_4_file}
+    generated_file_dict = {"bam_file":bam_file,
+                           "bam_index_file":bam_index_file,
+                           "bqsr_dir":bqsr_dir,
+                           "htc_vcf_file":htc_vcf_file,
+                           "htc_vcf_index_file":htc_vcf_index_file,
+                           "mutect2_vcf_file":mutect2_vcf_file,
+                           "mutect2_vcf_index_file":mutect2_vcf_index_file,
+                           "joint_vcf_file":joint_vcf_file,
+                           "joint_vcf_index_file":joint_vcf_index_file,
+                           "ug_vcf_file":ug_vcf_file,
+                           "ug_vcf_index_file":ug_vcf_index_file,
+                           "germline_vcf_file":germline_vcf_file,
+                           "htc_vcf_4_file":htc_vcf_4_file,
+                           "htc_vcf_4_index_file":htc_vcf_4_index_file,
+                           "mutect2_vcf_4_file":mutect2_vcf_4_file,
+                           "mutect2_vcf_4_index_file":mutect2_vcf_4_index_file,
+                           "joint_vcf_4_file":joint_vcf_4_file,
+                           "joint_vcf_4_index_file":joint_vcf_4_index_file,
+                           "germline_vcf_4_file":germline_vcf_4_file,
+                           "mutect2_vcf_4_filt_file":mutect2_vcf_4_filt_file}
+    return generated_file_dict
 
 
-def run_pipeline_components(fcs_genome, ref, fastq1, fastq2, gen_fdict):
+def run_pipeline_components(fcs_genome, ref, fastq1, fastq2, gen_fdict, known_snps, tumor_bam, 
+                            gvcf_dir, normal_panel_vcf, gnomad_vcf):
     """
     Take in a path to the binary, reference genome path, two fastq files and a dictionary mapping
     string file names to their path.
@@ -102,27 +137,27 @@ def run_pipeline_components(fcs_genome, ref, fastq1, fastq2, gen_fdict):
     gen_fdict = generated file dictionary; maps string file names to their paths
     """
     align_time = falconCommonTest.test_align(fcs_genome, ref, fastq1, fastq2, gen_fdict["bam_file"])
+    bqsr_time = falconCommonTest.test_bqsr(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["bqsr_dir"])
 
     # GATK3
-    bqsr_time = falconCommonTest.test_bqsr(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["bqsr_dir"])
-    htc_time = falconCommonTest.test_htc(fcs_genome, ref, bqsr_dir, gen_fdict["htc_vcf_file"])
-    mutect2_time = falconCommonTest.test_mutect2(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["mutect2_vcf_file"])
-    joint_time = falconCommonTest.test_joint(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["joint_vcf_file"])
+    htc_time = falconCommonTest.test_htc(fcs_genome, ref, gen_fdict["bqsr_dir"], gen_fdict["htc_vcf_file"])
+    mutect2_time = falconCommonTest.test_mutect2(fcs_genome, ref, gen_fdict["bam_file"], tumor_bam, known_snps, gen_fdict["mutect2_vcf_file"])
+    joint_time = falconCommonTest.test_joint(fcs_genome, ref, gvcf_dir, known_snps, gen_fdict["joint_vcf_file"])
     ug_time = falconCommonTest.test_ug(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["ug_vcf_file"])
     # Falcon germline NOTE: this isn't working for the local testing
-    germline_time = falconCommonTest.test_germline(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["germline_vcf_4_file"])
+    germline_time = falconCommonTest.test_germline(fcs_genome, ref, fastq1, fastq2, known_snps, gen_fdict["germline_vcf_file"])
 
     # Run GATK4, it uses the same .bam file
-    bqsr_4_time = falconCommonTest.test_bqsr(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["bqsr_dir"], use_GATK4=True)
-    htc_4_time = falconCommonTest.test_htc(fcs_genome, ref, bqsr_4_dir, gen_fdict["htc_vcf_file"],  use_GATK4=True)
-    mutect2_time = falconCommonTest.test_mutect2(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["mutect2_vcf_file"], use_GATK4=True)
-    joint_time = falconCommonTest.test_joint(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["joint_vcf_file"], use_GATK4=True)
-    ug_time = falconCommonTest.test_ug(fcs_genome, ref, gen_fdict["bam_file"], known_snps, ["ug_vcf_file"], use_GATK4=True)
-    germline_time = falconCommonTest.test_germline(fcs_genome, ref, gen_fdict["bam_file"], known_snps, gen_fdict["germline_vcf_4_file"], use_GATK4=True)
+    htc_4_time = falconCommonTest.test_htc(fcs_genome, ref, gen_fdict["bqsr_dir"], gen_fdict["htc_vcf_4_file"],  use_GATK4=True)
+    mutect2_4_time = falconCommonTest.test_mutect2(fcs_genome, ref, gen_fdict["bam_file"], tumor_bam, known_snps,
+                        gen_fdict["mutect2_vcf_4_file"], use_GATK4=True,normal_panel_vcf=normal_panel_vcf,
+                        gnomad_vcf=gnomad_vcf, filtered_vcf=gen_fdict["mutect2_vcf_4_filt_file"])
+    joint_4_time = falconCommonTest.test_joint(fcs_genome, ref, gvcf_dir, known_snps, gen_fdict["joint_vcf_4_file"], use_GATK4=True)
+    germline_4_time = falconCommonTest.test_germline(fcs_genome, ref, fastq1, fastq2, known_snps, gen_fdict["germline_vcf_4_file"], use_GATK4=True)
 
-    logging.info("Run time table;\nalign\tbqsr\thtc\tmutect2\tjoint\tug\tgermline\tbqsr_4\thtc4\tmutect2_4\tjoint_4\tug_4\tgermline_4\n" +
+    logging.info("Run time table;\nalign\tbqsr\thtc\tmutect2\tjoint\tug\tgermline\thtc4\tmutect2_4\tjoint_4\tug_4\tgermline_4\n" +
                  "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(align_time, bqsr_time, htc_time, mutect2_time, joint_time, ug_time, germline_time) +
-                 "\t{}\t{}\t{}\t{}\t{}\t{}\n".format(bqsr_4_time, htc_4_time, mutect2_4_time, joint_4_time, ug_4_time, germline_4_time))
+                 "\t{}\t{}\t{}\t{}\n".format(htc_4_time, mutect2_4_time, joint_4_time, germline_4_time))
 
 
 def compare_generated_files_to_expected(no_comparison, generated_file_list, expected_output_dir):
@@ -135,7 +170,7 @@ def compare_generated_files_to_expected(no_comparison, generated_file_list, expe
     result = False
     if not no_comparison:
         try:
-            passed_comparison = falconCommonTest.compare_files(generated_file_list, options.expected_output_dir)
+            passed_comparison = falconCommonTest.compare_files_to_expected_files(generated_file_list, expected_output_dir)
             result = passed_comparison
         except:
             logging.exception("Tragic failure in comparison")
@@ -148,7 +183,10 @@ def remove_files(passed_comparison, generated_file_list):
     """
     if passed_comparison:
         for new_file in generated_file_list:
-           falconCommonTest.remove_object(new_file)
+            if ".vcf" in new_file and ".tbi" not in new_file: new_file += ".gz"
+            logging.debug("Removing {}".format(new_file))
+            falconCommonTest.remove_object(new_file)
+    shutil.rmtree("log")
 
 
 def main(args):
@@ -164,21 +202,34 @@ def main(args):
     known_snps = options.known_SNPs
     fastq1 = options.fastq_R1
     fastq2 = options.fastq_R2
+    tumor_bam = options.tumor_bam
+    gvcf_dir = options.gvcf_dir
+    normal_panel_vcf = options.normal_panel_vcf
+    gnomad_vcf = options.gnomad_vcf
 
     # Create a dictionary that maps variable names to a file name. All these files should
     # be generated by testing and need to be compared and removed later.
     generic_fn = fastq1.replace(".gz", "").replace(".fastq", "").split("/")[-1].split("_")[0]
     gen_fdict = create_generated_file_dict(generic_fn)
 
+
     # Run the various components of the pipeline and track their run times.
-    run_pipeline_components(fcs_genome, ref, fastq1, fastq2, gen_fdict["bam_file"], gen_fdict)
+    run_pipeline_components(fcs_genome, ref, fastq1, fastq2, gen_fdict, known_snps, tumor_bam,
+                            gvcf_dir, normal_panel_vcf, gnomad_vcf)
 
     # Compare the generated files to expected ones.
-    passed_comparison = compare_generated_files_to_expected(options.no_comparison, gen_fdict.values(), options.expected_output_dir)
+    try:
+        passed_comparison = compare_generated_files_to_expected(options.no_comparison, gen_fdict.values(), options.expected_output_dir)
+    except:
+        logging.exception("There was a problem comparing files")
+
 
     # Remove the files if they passed the comparison
     if options.hard_remove_files: passed_comparison = True
+    if options.no_remove_files: passed_comparison = True
     remove_files(passed_comparison, gen_fdict.values())
+
+    logging.info("Finished testing")
 
 
 if __name__ == "__main__" :

@@ -71,7 +71,7 @@ echo -e "=======================================================================
 echo -e "============================================================================" >> regression.log
 echo -e "Testing FPGA "                                                                >> regression.log
 echo -e "============================================================================\n" >> regression.log
-$BATS $REG_DIR/fpga_test/ >> regression.log
+#$BATS $REG_DIR/fpga_test/ >> regression.log
 if [ $? -ne 0 ]; then
   echo "FPGA test failed"
   exit 1
@@ -90,25 +90,18 @@ rm -rf `pwd`/output.bam
 echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing hg19 Data-Dependent Alignment                               "              >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(GEN-637)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/1_align.bats  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Data-Dependent Alignment test passed"
-echo -e "============================================================================" >> regression.log
 echo -e "DNA Samples (Platinum Trio Sample NA12878)"              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
-python lib/test_BP_pipeline.py $FCSBIN $ref_genome $WORKDIR/$SAMPLE_ID \
-    $FASTQ_DIR/$SAMPLE_ID_1 $FASTQ_DIR/$SAMPLE_ID_2 $db138_SNPs
+normalBAM=$WORKDIR/baselines/printreads/3.8/${SAMPLE_ID}-Normal_final_BAM.bam
+tumorBAM=$WORKDIR/baselines/printreads/3.8/${SAMPLE_ID}-Tumor_final_BAM.bam
+normalBAM_GATK4=$WORKDIR/baselines/printreads/4.0/${SAMPLE_ID}-Normal_final_BAM.bam
+tumorBAM_GATK4=$WORKDIR/baselines/printreads/4.0/${SAMPLE_ID}-Tumor_final_BAM.bam
+VCF_DIR=$WORKDIR/baselines/joint/vcf/
+
+python $SOURCE_DIR/lib/test_toolkit.py $FCSBIN $ref_genome $WORKDIR/$SAMPLE_ID \
+    $fastq_dir/${SAMPLE_ID}_1.fastq.gz $fastq_dir/${SAMPLE_ID}_2.fastq.gz $db138_SNPs \
+    $tumorBAM $VCF_DIR $PON $GNOMAD --no_remove_files
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log
