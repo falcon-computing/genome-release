@@ -47,7 +47,7 @@ def compare_vcf_files(file1, file2):
             dif = False
             if var1 != var2: dif = True
             if dif:
-                differing_variants.append((" ".join(var1), " ".join(var2)))
+                differing_variants.append((var1, var2))
         if differing_variants:
             for pair in differing_variants:
                 logging.info("Variants {} differ!".format(" ".join(pair)))

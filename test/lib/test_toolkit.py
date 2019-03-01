@@ -186,7 +186,7 @@ def remove_files(passed_comparison, generated_file_list):
             if ".vcf" in new_file and ".tbi" not in new_file: new_file += ".gz"
             logging.debug("Removing {}".format(new_file))
             falconCommonTest.remove_object(new_file)
-    shutil.rmtree("log")
+    shutil.rmtree("log", ignore_errors=True)
 
 
 def main(args):

@@ -13,23 +13,47 @@ helper_normalRun() {
      tumorBAM=$WORKDIR/baselines/printreads/4.0/${id}-Tumor_final_BAM.bam
   fi
 
-  if [ "${tag}" == "--gatk4" ];then 
-      run ${FCSBIN} mutect2 \
-        -r ${ref_genome} \
-        --normal ${normalBAM} \
-        --tumor  ${tumorBAM} \
-        --normal_name TCRBOA1-Normal \
-        --tumor_name TCRBOA1-Tumor \
-        --panels_of_normals ${PON} --germline ${GNOMAD} \
-        --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L $roche_capture ${tag}
-      echo "${output}"
+  if [ "${HG38_TEST}" == "on" ];then
+    echo "conduct hg38 test"
+    if [ "${tag}" == "--gatk4" ];then 
+        run ${FCSBIN} mutect2 \
+          -r ${ref_genome} \
+          --normal ${normalBAM} \
+          --tumor  ${tumorBAM} \
+          --normal_name TCRBOA1-Normal \
+          --tumor_name TCRBOA1-Tumor \
+          --panels_of_normals ${PON} --germline ${GNOMAD} \
+          --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L $roche_capture ${tag}
+        echo "${output}"
+    else
+        # no cosmic file for hg38 test
+        run ${FCSBIN} mutect2 \
+          -r ${ref_genome} \
+          --normal ${normalBAM} \
+          --tumor  ${tumorBAM} \
+          --dbsnp ${db138_SNPs} \
+          --output ${id}.vcf  -f  -L $roche_capture 
+    fi
   else
-      run ${FCSBIN} mutect2 \
-        -r ${ref_genome} \
-        --normal ${normalBAM} \
-        --tumor  ${tumorBAM} \
-        --dbsnp ${db138_SNPs} --cosmic ${cosmic} \
-        --output ${id}.vcf  -f  -L $roche_capture 
+    echo "using hg19"  
+    if [ "${tag}" == "--gatk4" ];then 
+        run ${FCSBIN} mutect2 \
+          -r ${ref_genome} \
+          --normal ${normalBAM} \
+          --tumor  ${tumorBAM} \
+          --normal_name TCRBOA1-Normal \
+          --tumor_name TCRBOA1-Tumor \
+          --panels_of_normals ${PON} --germline ${GNOMAD} \
+          --output ${id}.vcf --filtered_vcf ${id}_filtered.vcf -f  -L $roche_capture ${tag}
+        echo "${output}"
+    else
+        run ${FCSBIN} mutect2 \
+          -r ${ref_genome} \
+          --normal ${normalBAM} \
+          --tumor  ${tumorBAM} \
+          --dbsnp ${db138_SNPs} --cosmic ${cosmic} \
+          --output ${id}.vcf  -f  -L $roche_capture 
+    fi
   fi
 
   [ "$status" -eq 0 ]

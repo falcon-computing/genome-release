@@ -35,6 +35,7 @@ helper_vcfdiff() {
      run compare_vcf "$subjectVCF" "$baselineVCF" "$id"
   else
      echo "ERROR: vcfdiff for ${sample} not executed"
+     return 1
   fi
   
   echo "${output}"

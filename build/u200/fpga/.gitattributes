@@ -1,0 +1,2 @@
+pmm.xclbin filter=lfs diff=lfs merge=lfs -text
+sw.xclbin filter=lfs diff=lfs merge=lfs -text
