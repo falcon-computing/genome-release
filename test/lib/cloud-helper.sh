@@ -16,10 +16,10 @@ function set_env {
   fi;
 
   # decide which cloud are we running on
-  if [ "$(curl ${aws_metadata_url} -s -o /dev/null -w '%{http_code}')" = "200" ]; then
+  if [ "$(curl ${aws_metadata_url} -s -o /dev/null -m 2 -w '%{http_code}')" = "200" ]; then
     echo "Running on AWS";
     helper_cloud=aws;
-  elif [ "$(curl ${hwc_metadata_url} -s -o /dev/null -w '%{http_code}')" = "200" ]; then
+  elif [ "$(curl ${hwc_metadata_url} -s -o /dev/null -m 2 -w '%{http_code}')" = "200" ]; then
     echo "Running on Huawei";
     helper_cloud=hwc;
   else

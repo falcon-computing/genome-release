@@ -184,6 +184,9 @@ function git_clone {
   export GIT_LFS_SKIP_SMUDGE=1;
 
   check_run git clone -b "$(git_get_branch "$rp")" --single-branch $git;
+  check_run cd $dir;
+  check_run git submodule update --init --recursive;
+  check_run cd -;
   echo $dir;
 }
 
