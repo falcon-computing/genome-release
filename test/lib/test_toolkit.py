@@ -14,7 +14,7 @@ import os
 import falconCommonTest
 import shutil
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def parseArgs(args): 
@@ -104,12 +104,12 @@ def main(args):
     mutect2_time = falconCommonTest.test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snps)
     joint_time = falconCommonTest.test_joint(fcs_genome, expected_dir, ref, gvcf_dir, generic_fn, known_snps)
     ug_time = falconCommonTest.test_ug(fcs_genome, expected_dir, ref, generic_fn, known_snps)
-    germline_time = falconCommonTest.test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn)
+    germline_time =0# falconCommonTest.test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn)
     htc_4_time = falconCommonTest.test_htc(fcs_genome, expected_dir, ref, generic_fn, use_GATK4=True)
     mutect2_4_time = falconCommonTest.test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snps,
                                                    use_GATK4=True, normal_panel_vcf=normal_panel_vcf, gnomad_vcf=gnomad_vcf)
     joint_4_time = falconCommonTest.test_joint(fcs_genome, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=True)
-    germline_4_time = falconCommonTest.test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=True)
+    germline_4_time = 0#falconCommonTest.test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=True)
 
     stats_table = "Run time table;\nalign\tbqsr\thtc\tmutect2\tjoint\tug\tgermline\thtc4\tmutect2_4\tjoint_4\tug_4\tgermline_4\n" + \
                  "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(align_time, bqsr_time, htc_time, mutect2_time, joint_time, ug_time, germline_time) + \

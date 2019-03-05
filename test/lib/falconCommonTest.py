@@ -50,11 +50,11 @@ def compare_vcf_files(file1, file2):
                 differing_variants.append((var1, var2))
         if differing_variants:
             for pair in differing_variants:
-                logging.info("Variants {} differ!".format(" ".join(pair)))
+                logging.warning("Variants {} differ!".format(" ".join(pair)))
             return False
         return True
     except IOError:
-        logging.warning("The output file {} is not present".format(file2))
+        logging.warning("The output file {} is not present".format(file1))
     except:
         logging.exception("Comparing vcf files {} failed".format(file1))
 
@@ -123,10 +123,10 @@ def compare_files_to_expected_files(output_file_list, expected_output_dir):
         if os.path.isdir(file_object):
            failed_list += compare_directories(file_object, exp_object)
         else:
-           if ".vcf" in file_object and ".tbi" not in file_object:
-               compare_vcf_files(file_object + ".gz", exp_object + ".gz")
+            if "vcf" in file_object and "tbi" not in file_object: 
+               compare_vcf_files(file_object, exp_object)
            # do a basic file size comparison here
-           elif not niave_file_compare(file_object, exp_object):
+            elif not niave_file_compare(file_object, exp_object):
                failed_list.append((file_object, exp_object))
 
     if failed_list:
@@ -134,7 +134,7 @@ def compare_files_to_expected_files(output_file_list, expected_output_dir):
             logging.error("Files {} are not the same! The test has failed".format(pair))
         return False
 
-    logging.info("Output files are as expected")
+    logging.debug("Output files are as expected")
     return True
 
 
@@ -148,9 +148,9 @@ def remove_object(file_object):
         else:
             os.remove(file_object)
     except IOError:
-        logging.warning("The file {} is not present".format(file_object))
+        logging.debug("The file {} is not present".format(file_object))
     except OSError:
-        logging.warning("The output file {} is not present".format(file_object))
+        logging.debug("The output file {} is not present".format(file_object))
     except:
         logging.exception("Could not remove {}".format(file_object))
 
@@ -160,16 +160,25 @@ def run_command(command, expected_dir, out_file_list):
     Take in a command as a list, run it with the subprocess module, keep the stdout and error
     around and track how long it takes
     """
-    logging.info("Running command {}".format(" ".join(command)))
+    logging.debug("Running command {}".format(" ".join(command)))
+    timeout=500
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
         start = time.time()
+        timer = 0
+        while process.poll() is None:
+            time.sleep(1)
+            timer += 1
+            sys.stdout.flush    
+            if timer == timeout:
+                raise Exception ("Command timed out")
         output, error = process.communicate()
     except:
-        logging.exception("Command {} failed.".format(command))
+        logging.exception("Command {} failed.".format(" ".join(command)))
     end = time.time()
     elapsed_time = '%.2f' % float(end - start) # Round to 2 decimal places
-    logging.info("Command completed in {} seconds".format(elapsed_time))
+    if int(end - start) >= timeout: elapsed_time = "timed_out"
+    logging.debug("Command completed in {} seconds".format(elapsed_time))
     error_code = process.returncode
     if error_code > 0:
         logging.error("{}".format(error))
@@ -247,24 +256,17 @@ def test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snp
     """
     # Run the command and track the time
     bam_dir = os.path.join(expected_dir, generic_fn)
-    mutect2_outdir = generic_fn + ".mutect2.outdir"
+    mutect2_vcf_file = generic_fn + ".mutect2.vcf"
     mutect2_vcf_index_file = generic_fn + ".mutect2.vcf.gz.tbi"
-    command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir]
-    out_file_list = [mutect2_vcf_file + ".gz" , mutect2_vcf_index_file, mutect2_outdir]
+    command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_vcf_file]
+    out_file_list = [mutect2_vcf_file + ".gz", mutect2_vcf_index_file]
     if use_GATK4:
-        command.append("-g")
-        command.append("--normal_name")
-        command.append("foo")
-        command.append("--tumor_name")
-        command.append("bar")
-        command.append("--panels_of_normals")
-        command.append(normal_panel_vcf)
-        command.append("--germline")
-        command.append(gnomad_vcf)
-        command.append("--filtered_vcf")
+        mutect2_outdir = generic_fn + ".mutect2"
         mutect2_vcf_4_filt_file = generic_fn + ".mutect2.filt"
-        command.append(mutect2_vcf_4_filt_file)
-        out_file_list.append(mutect2_vcf_4_filt_file)
+        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file]
+        command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir,
+                  "-g", "--normal_name", "foo", "--tumor_name", "bar", "--panels_of_normals", normal_panel_vcf,
+                  "--germline", gnomad_vcf, "--filtered_vcf", mutect2_vcf_4_filt_file]
 
     elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
