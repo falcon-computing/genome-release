@@ -87,11 +87,19 @@ def compare_directories(dir1, dir2):
     """
     # Validate new generated files
     dir1_file_list = []
-    for fn in os.listdir(dir1):
-        dir1_file_list.append(os.path.join(dir1, fn))
+    try:
+        for fn in os.listdir(dir1):
+            dir1_file_list.append(os.path.join(dir1, fn))
+    except OSError:
+        logging.warning("Could not find dir {}".format(dir1))
+        return []
     dir2_file_list = []
-    for fn in os.listdir(dir2):
-        dir2_file_list.append(os.path.join(dir2, fn))
+    try:
+        for fn in os.listdir(dir2):
+            dir2_file_list.append(os.path.join(dir2, fn))
+    except OSError:
+        logging.warning("Could not find dir {}".format(dir1))
+        return []
 
     failed_list = []
     for file1, file2 in zip(sorted(dir1_file_list), sorted(dir2_file_list)):
@@ -105,8 +113,8 @@ def compare_directories(dir1, dir2):
 
 def compare_files_to_expected_files(output_file_list, expected_output_dir):
     """
-    Take in two lists of files, go over the lists one index at a time and compare the files
-    complain if they are different. 
+    Take in one list of files and an output directory, go over the list one file at a time
+    verify a file with the same name exists in the expected output directory and do a comparison.
     """
     failed_list = []
     for file_object in output_file_list:
@@ -123,7 +131,7 @@ def compare_files_to_expected_files(output_file_list, expected_output_dir):
 
     if failed_list:
         for pair in failed_list:
-            logging.info("Files {} are not the same! The test has failed".format(pair))
+            logging.error("Files {} are not the same! The test has failed".format(pair))
         return False
 
     logging.info("Output files are as expected")
@@ -147,9 +155,9 @@ def remove_object(file_object):
         logging.exception("Could not remove {}".format(file_object))
 
 
-def run_command(command):
+def run_command(command, expected_dir, out_file_list):
     """
-    Take in a comand as a list, run it with the subprocess module, keep the stdout and error
+    Take in a command as a list, run it with the subprocess module, keep the stdout and error
     around and track how long it takes
     """
     logging.info("Running command {}".format(" ".join(command)))
@@ -160,15 +168,26 @@ def run_command(command):
     except:
         logging.exception("Command {} failed.".format(command))
     end = time.time()
-    elapsed_time = end - start
+    elapsed_time = '%.2f' % float(end - start) # Round to 2 decimal places
     logging.info("Command completed in {} seconds".format(elapsed_time))
     error_code = process.returncode
     if error_code > 0:
         logging.error("{}".format(error))
+        elapsed_time = "failed"
+
+    passed_comparison = compare_files_to_expected_files(out_file_list, expected_dir)
+    if not passed_comparison:
+        elapsed_time = "mangled"
+
+    for new_file in out_file_list:
+#        if ".vcf" in new_file and ".tbi" not in new_file: new_file += ".gz"
+        logging.debug("Removing {}".format(new_file))
+        remove_object(new_file)
+
     return elapsed_time
 
 
-def test_align(fcs_genome, ref, fastq1, fastq2, out_file):
+def test_align(fcs_genome, expected_dir, ref, fastq1, fastq2, out_file):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     paths to two fastq files and an output file path.
@@ -177,11 +196,12 @@ def test_align(fcs_genome, ref, fastq1, fastq2, out_file):
     """
     # Run the command and track the time
     command = [fcs_genome, "align", "-r", ref, "-1", fastq1, "-2", fastq2, "-o", out_file]
-    elapsed_time = run_command(command)
+    out_file_list = [out_file, out_file + ".bai"]
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_bqsr(fcs_genome, ref, input_bam, vcf_compare, out_dir, use_GATK4=False):
+def test_bqsr(fcs_genome, expected_dir, ref, vcf_compare, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam file and a VCF file for comparison.
@@ -189,14 +209,16 @@ def test_bqsr(fcs_genome, ref, input_bam, vcf_compare, out_dir, use_GATK4=False)
     Run the fcs-genome bqsr command on the bam file and generate the output directory.
     """
     # Run the command and track the time
-    command = [fcs_genome, "bqsr", "-r", ref, "-i", input_bam, "-K", vcf_compare, "-o", out_dir]
+    input_bam = os.path.join(expected_dir, generic_fn + ".bam")
+    command = [fcs_genome, "bqsr", "-r", ref, "-i", input_bam, "-K", vcf_compare, "-o", generic_fn]
     if use_GATK4:
         command.append("-g")
-    elapsed_time = run_command(command)
+    out_file_list = [generic_fn]
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_htc(fcs_genome, ref, bam_dir, out_file, use_GATK4=False):
+def test_htc(fcs_genome, expected_dir, ref, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -204,15 +226,19 @@ def test_htc(fcs_genome, ref, bam_dir, out_file, use_GATK4=False):
     Run the fcs-genome htc command (variant calling) on the bam file(s) and write the output.
     """
     # Run the command and track the time
-    command = [fcs_genome, "htc", "-r", ref, "-i", bam_dir, "-v", "-o", out_file]
+    bam_dir = os.path.join(expected_dir, generic_fn)
+    htc_vcf_file = generic_fn + ".htc.vcf"
+    htc_vcf_index_file = generic_fn + ".htc.vcf.gz.tbi"
+    command = [fcs_genome, "htc", "-r", ref, "-i", bam_dir, "-v", "-o", htc_vcf_file]
+    out_file_list = [htc_vcf_file + ".gz", htc_vcf_index_file]
     if use_GATK4:
         command.append("-g")
-    elapsed_time = run_command(command)
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_mutect2(fcs_genome, ref, bam_dir, tumor_bam, known_snps, out_file, use_GATK4=False,
-                 normal_panel_vcf=None, gnomad_vcf=None, filtered_vcf=None):
+def test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snps, use_GATK4=False,
+                 normal_panel_vcf=None, gnomad_vcf=None):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -220,7 +246,11 @@ def test_mutect2(fcs_genome, ref, bam_dir, tumor_bam, known_snps, out_file, use_
     Run the fcs-genome mutect2 command (variant calling) on the bam file(s) and write the output.
     """
     # Run the command and track the time
-    command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", out_file]
+    bam_dir = os.path.join(expected_dir, generic_fn)
+    mutect2_outdir = generic_fn + ".mutect2.outdir"
+    mutect2_vcf_index_file = generic_fn + ".mutect2.vcf.gz.tbi"
+    command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir]
+    out_file_list = [mutect2_vcf_file + ".gz" , mutect2_vcf_index_file, mutect2_outdir]
     if use_GATK4:
         command.append("-g")
         command.append("--normal_name")
@@ -232,47 +262,60 @@ def test_mutect2(fcs_genome, ref, bam_dir, tumor_bam, known_snps, out_file, use_
         command.append("--germline")
         command.append(gnomad_vcf)
         command.append("--filtered_vcf")
-        command.append(filtered_vcf)
-    elapsed_time = run_command(command)
+        mutect2_vcf_4_filt_file = generic_fn + ".mutect2.filt"
+        command.append(mutect2_vcf_4_filt_file)
+        out_file_list.append(mutect2_vcf_4_filt_file)
+
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_joint(fcs_genome, ref, bam_dir, known_snps, out_file, use_GATK4=False):
+def test_joint(fcs_genome, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
 
     Run the fcs-genome joint command (variant calling) on the bam file(s) and write the output.
     """
-    # Run the command and track the time
-    command = [fcs_genome, "joint", "-r", ref, "-i", bam_dir, "-o", out_file, "--database_name", "my_database"]
+    # Run the command and track the tim
+    joint_vcf_file = generic_fn + ".joint.vcf"
+    joint_vcf_index_file = generic_fn + ".joint.vcf.gz.tbi"
+    command = [fcs_genome, "joint", "-r", ref, "-i", gvcf_dir, "-o", joint_vcf_file, "--database_name", "my_database"]
+    out_file_list = [joint_vcf_file + ".gz" , joint_vcf_index_file]
     if use_GATK4:
         command.append("--gatk4")
-    elapsed_time = run_command(command)
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_ug(fcs_genome, ref, bam_dir, known_snps, out_file):
+def test_ug(fcs_genome, expected_dir, ref, generic_fn, known_snps):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
 
     Run the fcs-genome ug command (variant calling) on the bam file(s) and write the output.
     """
-    command = [fcs_genome, "ug", "-r", ref, "-i", bam_dir, "-o", out_file]
-    elapsed_time = run_command(command)
+    bam_dir = os.path.join(expected_dir, generic_fn)
+    ug_vcf_file = generic_fn + ".ug.vcf"
+    ug_vcf_index_file = generic_fn + ".ug.vcf.gz.tbi"
+    command = [fcs_genome, "ug", "-r", ref, "-i", bam_dir, "-o", ug_vcf_file]
+    out_file_list = [ug_vcf_file + ".gz", ug_vcf_index_file]
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_germline(fcs_genome, ref, fastq1, fastq2, known_snps, out_file, use_GATK4=False):
+def test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
 
     Run the fcs-genome germline command (variant calling) on the bam file(s) and write the output.
     """
-    command = [fcs_genome, "germline", "-r", ref, "-1", fastq1, "-2", fastq2, "-v", "-o", out_file]
+    bam_dir = os.path.join(expected_dir, generic_fn)
+    germline_vcf_file = generic_fn + ".germline.vcf"
+    command = [fcs_genome, "germline", "-r", ref, "-1", fastq1, "-2", fastq2, "-v", "-o", germline_vcf_file]
     if use_GATK4:
         command.append("--gatk4")
-    elapsed_time = run_command(command)
+    out_file_list = [germline_vcf_file + ".gz"]
+    elapsed_time = run_command(command, expected_dir, out_file_list)
     return elapsed_time
