@@ -41,22 +41,31 @@ def compare_vcf_files(file1, file2):
     """
     try:
         vcf_contents1 = load_vcf_file(file1)
-        vcf_contents2 = load_vcf_file(file2)
-        differing_variants = []
-        for var1, var2, in zip(vcf_contents1, vcf_contents2):
-            dif = False
-            if var1 != var2: dif = True
-            if dif:
-                differing_variants.append((var1, var2))
-        if differing_variants:
-            for pair in differing_variants:
-                logging.warning("Variants {} differ!".format(" ".join(pair)))
-            return False
-        return True
     except IOError:
         logging.warning("The output file {} is not present".format(file1))
+        return False
     except:
         logging.exception("Comparing vcf files {} failed".format(file1))
+        return False
+    try:
+        vcf_contents2 = load_vcf_file(file2)
+    except IOError:
+        logging.warning("The expected output file {} is not present".format(file2))
+        return False
+    except:
+        logging.exception("Comparing vcf files {} failed".format(file2))
+        return False
+    differing_variants = []
+    for var1, var2, in zip(vcf_contents1, vcf_contents2):
+        dif = False
+        if var1 != var2: dif = True
+        if dif:
+            differing_variants.append((var1, var2))
+    if differing_variants:
+        for pair in differing_variants:
+            logging.warning("Variants {} differ!".format(" ".join(pair)))
+        return False
+    return True
 
 
 def niave_file_compare(file1, file2):
@@ -66,20 +75,33 @@ def niave_file_compare(file1, file2):
     """
     try:
         size1 = float(os.stat(file1).st_size)
-        size2 = float(os.stat(file2).st_size)
-        lower_size = size1 * .98
-        upper_size = size1 * 1.02
-        if upper_size <= size2 <= lower_size:
-            logging.error("Files {} and {} are too different in size".format(file1, file2))
-            return False
-        return True
     except IOError:
-        logging.warning("The output file {} is not present".format(file2))
+        logging.warning("The output file {} is not present".format(file1))
+        return False
     except OSError:
-        logging.warning("The output file {} is not present".format(file2))
+        logging.warning("The output file {} is not present".format(file1))
+        return False
     except:
         logging.exception("Comparing files {} failed".format(file1))
+        return False
+    try:
+        size2 = float(os.stat(file2).st_size)
+    except IOError:
+        logging.warning("The output file {} is not present".format(file2))
+        return False
+    except OSError:
+        logging.warning("The output file {} is not present".format(file2))
+        return False
+    except:
+        logging.exception("Comparing files {} failed".format(file2))
+        return False
+    lower_size = size1 * .98
+    upper_size = size1 * 1.02
+    if upper_size <= size2 <= lower_size:
+        logging.error("Files {} and {} are too different in size".format(file1, file2))
+        return False
     return True
+
 
 def compare_directories(dir1, dir2):
     """
@@ -155,13 +177,12 @@ def remove_object(file_object):
         logging.exception("Could not remove {}".format(file_object))
 
 
-def run_command(command, expected_dir, out_file_list):
+def run_command(command, timeout, expected_dir, out_file_list):
     """
     Take in a command as a list, run it with the subprocess module, keep the stdout and error
     around and track how long it takes
     """
     logging.debug("Running command {}".format(" ".join(command)))
-    timeout=500
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
         start = time.time()
@@ -189,14 +210,13 @@ def run_command(command, expected_dir, out_file_list):
         elapsed_time = "mangled"
 
     for new_file in out_file_list:
-#        if ".vcf" in new_file and ".tbi" not in new_file: new_file += ".gz"
         logging.debug("Removing {}".format(new_file))
         remove_object(new_file)
 
     return elapsed_time
 
 
-def test_align(fcs_genome, expected_dir, ref, fastq1, fastq2, out_file):
+def test_align(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, out_file):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     paths to two fastq files and an output file path.
@@ -206,11 +226,11 @@ def test_align(fcs_genome, expected_dir, ref, fastq1, fastq2, out_file):
     # Run the command and track the time
     command = [fcs_genome, "align", "-r", ref, "-1", fastq1, "-2", fastq2, "-o", out_file]
     out_file_list = [out_file, out_file + ".bai"]
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_bqsr(fcs_genome, expected_dir, ref, vcf_compare, generic_fn, use_GATK4=False):
+def test_bqsr(fcs_genome, timeout, expected_dir, ref, vcf_compare, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam file and a VCF file for comparison.
@@ -223,11 +243,11 @@ def test_bqsr(fcs_genome, expected_dir, ref, vcf_compare, generic_fn, use_GATK4=
     if use_GATK4:
         command.append("-g")
     out_file_list = [generic_fn]
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_htc(fcs_genome, expected_dir, ref, generic_fn, use_GATK4=False):
+def test_htc(fcs_genome, timeout, expected_dir, ref, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -242,11 +262,11 @@ def test_htc(fcs_genome, expected_dir, ref, generic_fn, use_GATK4=False):
     out_file_list = [htc_vcf_file + ".gz", htc_vcf_index_file]
     if use_GATK4:
         command.append("-g")
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snps, use_GATK4=False,
+def test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, known_snps, use_GATK4=False,
                  normal_panel_vcf=None, gnomad_vcf=None):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
@@ -263,16 +283,16 @@ def test_mutect2(fcs_genome, expected_dir, ref, generic_fn, tumor_bam, known_snp
     if use_GATK4:
         mutect2_outdir = generic_fn + ".mutect2"
         mutect2_vcf_4_filt_file = generic_fn + ".mutect2.filt"
-        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file]
+        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file + ".gz", mutect2_vcf_4_filt_file + ".gz.tbi"]
         command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir,
-                  "-g", "--normal_name", "foo", "--tumor_name", "bar", "--panels_of_normals", normal_panel_vcf,
+                  "-g", "--normal_name", generic_fn, "--tumor_name", generic_fn, "--panels_of_normals", normal_panel_vcf,
                   "--germline", gnomad_vcf, "--filtered_vcf", mutect2_vcf_4_filt_file]
 
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_joint(fcs_genome, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=False):
+def test_joint(fcs_genome, timeout, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -286,11 +306,11 @@ def test_joint(fcs_genome, expected_dir, ref, gvcf_dir, generic_fn, known_snps, 
     out_file_list = [joint_vcf_file + ".gz" , joint_vcf_index_file]
     if use_GATK4:
         command.append("--gatk4")
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_ug(fcs_genome, expected_dir, ref, generic_fn, known_snps):
+def test_ug(fcs_genome, timeout, expected_dir, ref, generic_fn, known_snps):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -302,11 +322,11 @@ def test_ug(fcs_genome, expected_dir, ref, generic_fn, known_snps):
     ug_vcf_index_file = generic_fn + ".ug.vcf.gz.tbi"
     command = [fcs_genome, "ug", "-r", ref, "-i", bam_dir, "-o", ug_vcf_file]
     out_file_list = [ug_vcf_file + ".gz", ug_vcf_index_file]
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
 
 
-def test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=False):
+def test_germline(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=False):
     """
     Take in a path to the binary, path to the reference fasta (assumed index files are in the same folder), 
     a path to a bam directory (or bam file) and an output vcf file name
@@ -319,5 +339,5 @@ def test_germline(fcs_genome, expected_dir, ref, fastq1, fastq2, known_snps, gen
     if use_GATK4:
         command.append("--gatk4")
     out_file_list = [germline_vcf_file + ".gz"]
-    elapsed_time = run_command(command, expected_dir, out_file_list)
+    elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
     return elapsed_time
