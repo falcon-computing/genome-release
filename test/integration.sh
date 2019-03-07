@@ -56,6 +56,6 @@ source $platform_profile
 # Run the local mitochondrial DNA dataset through the pipeline and compare to the expected
 python $SOURCE_DIR/lib/test_toolkit.py $FCSBIN $SOURCE_DIR/data/ref/mito.fasta $SOURCE_DIR/data/expected_output/ \
     $SOURCE_DIR/data/input/mito_1.fastq $SOURCE_DIR/data/input/mito_2.fastq $SOURCE_DIR/data/ref/mito_snps.vcf.gz \
-    $SOURCE_DIR/data/expected_output/mito.bam $SOURCE_DIR/data/input/ $SOURCE_DIR/data/ref/mutect_gatk4_pon.mito.vcf.gz \
+    $SOURCE_DIR/data/expected_output/mito.tumor.bam $SOURCE_DIR/data/input/ $SOURCE_DIR/data/ref/mutect_gatk4_pon.mito.vcf.gz \
     $SOURCE_DIR/data/ref/mutect-gnomad.vcf.gz --no_remove_files
  

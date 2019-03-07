@@ -275,7 +275,7 @@ def test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, 
     Run the fcs-genome mutect2 command (variant calling) on the bam file(s) and write the output.
     """
     # Run the command and track the time
-    bam_dir = os.path.join(expected_dir, generic_fn)
+    bam_dir = os.path.join(expected_dir, generic_fn + ".bam")
     mutect2_vcf_file = generic_fn + ".mutect2.vcf"
     mutect2_vcf_index_file = generic_fn + ".mutect2.vcf.gz.tbi"
     command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_vcf_file]
