@@ -219,7 +219,7 @@ def run_command(command, timeout, expected_dir, out_file_list):
 
     for new_file in out_file_list:
         logging.debug("Removing {}".format(new_file))
-        remove_object(new_file)
+    #    remove_object(new_file)
 
     return elapsed_time
 
@@ -291,9 +291,10 @@ def test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, 
     if use_GATK4:
         mutect2_outdir = generic_fn + ".mutect2"
         mutect2_vcf_4_filt_file = generic_fn + ".mutect2.filt"
-        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file + ".gz", mutect2_vcf_4_filt_file + ".gz.tbi", mutect2_vcf_4_filt_file]
+        out_file_list = [mutect2_vcf_4_filt_file + ".gz", mutect2_vcf_4_filt_file + ".gz.tbi",
+                         mutect2_outdir + ".gz", mutect2_outdir + ".gz.tbi"]
         command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir,
-                  "-g", "--normal_name", generic_fn, "--tumor_name", generic_fn, "--panels_of_normals", normal_panel_vcf,
+                  "-g", "--normal_name", "sample", "--tumor_name", "sample", "--panels_of_normals", normal_panel_vcf,
                   "--germline", gnomad_vcf, "--filtered_vcf", mutect2_vcf_4_filt_file]
 
     elapsed_time = run_command(command, timeout, expected_dir, out_file_list)
