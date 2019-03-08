@@ -108,22 +108,32 @@ def main(args):
     mutect2_time = falconCommonTest.test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, known_snps)
     joint_time = falconCommonTest.test_joint(fcs_genome, timeout, expected_dir, ref, gvcf_dir, generic_fn, known_snps)
     ug_time = falconCommonTest.test_ug(fcs_genome, timeout, expected_dir, ref, generic_fn, known_snps)
-    germline_time = 0 #falconCommonTest.test_germline(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn)
+    germline_time = falconCommonTest.test_germline(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn)
     htc_4_time = falconCommonTest.test_htc(fcs_genome, timeout, expected_dir, ref, generic_fn, use_GATK4=True)
     mutect2_4_time = falconCommonTest.test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, known_snps,
                                                    use_GATK4=True, normal_panel_vcf=normal_panel_vcf, gnomad_vcf=gnomad_vcf)
-    joint_4_time = 0 #falconCommonTest.test_joint(fcs_genome, timeout, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=True)
-    germline_4_time = 0#falconCommonTest.test_germline(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=True)
-
-    stats_table = "Run time table;\nalign\tbqsr\thtc\tmutect2\tjoint\tug\tgermline\thtc4\tmutect2_4\tjoint_4\tug_4\tgermline_4\n" + \
-                 "{}\t{}\t{}\t{}\t{}\t{}\t{}".format(align_time, bqsr_time, htc_time, mutect2_time, joint_time, ug_time, germline_time) + \
-                 "\t{}\t{}\t{}\t{}\n".format(htc_4_time, mutect2_4_time, joint_4_time, germline_4_time)
+    joint_4_time = falconCommonTest.test_joint(fcs_genome, timeout, expected_dir, ref, gvcf_dir, generic_fn, known_snps, use_GATK4=True)
+    germline_4_time = falconCommonTest.test_germline(fcs_genome, timeout, expected_dir, ref, fastq1, fastq2, known_snps, generic_fn, use_GATK4=True)
 
     shutil.rmtree("log", ignore_errors=True)
 
-    logging.info("{}".format(stats_table))
+    stats_table = ["Run time table;",
+                   "Command\tTime/Status",
+                   "align\t{}".format(align_time),
+                   "bqsr\t{}".format(bqsr_time),
+                   "htc\t{}".format(htc_time),
+                   "mutet2\t{}".format(mutect2_time),
+                   "joint\t{}".format(joint_time),
+                   "ug\t{}".format(ug_time),
+                   "germline\t{}".format(germline_time),
+                   "htc_4\t{}".format(htc_4_time),
+                   "mutect2_4\t{}".format(mutect2_4_time),
+                   "joint_4\t{}".format(joint_4_time),
+                   "germline_4\t{}".format(germline_4_time)
+                  ]
+    logging.info("{}".format("\n".join(stats_table)))
 
-    if "failed" or "mangled" in stats_table: return 1
+    if "failed" or "mangled" or "skipped" in stats_table: return 1
 
 
 if __name__ == "__main__" :

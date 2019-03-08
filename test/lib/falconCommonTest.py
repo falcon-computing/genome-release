@@ -166,9 +166,12 @@ def remove_object(file_object):
     """
     try:
         if os.path.isdir(file_object):
+            
             shutil.rmtree(file_object)
+            logging.debug("Removed directory {}".format(file_object))
         else:
             os.remove(file_object)
+            logging.debug("Removed file {}".format(file_object))
     except IOError:
         logging.debug("The file {} is not present".format(file_object))
     except OSError:
@@ -183,6 +186,10 @@ def run_command(command, timeout, expected_dir, out_file_list):
     around and track how long it takes
     """
     logging.debug("Running command {}".format(" ".join(command)))
+    for new_file in out_file_list:
+        remove_object(new_file)
+
+
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
         start = time.time()
@@ -205,9 +212,10 @@ def run_command(command, timeout, expected_dir, out_file_list):
         logging.error("{}".format(error))
         elapsed_time = "failed"
 
-    passed_comparison = compare_files_to_expected_files(out_file_list, expected_dir)
-    if not passed_comparison:
-        elapsed_time = "mangled"
+    if elapsed_time is not "failed":
+        passed_comparison = compare_files_to_expected_files(out_file_list, expected_dir)
+        if not passed_comparison:
+            elapsed_time = "mangled"
 
     for new_file in out_file_list:
         logging.debug("Removing {}".format(new_file))
@@ -283,7 +291,7 @@ def test_mutect2(fcs_genome, timeout, expected_dir, ref, generic_fn, tumor_bam, 
     if use_GATK4:
         mutect2_outdir = generic_fn + ".mutect2"
         mutect2_vcf_4_filt_file = generic_fn + ".mutect2.filt"
-        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file + ".gz", mutect2_vcf_4_filt_file + ".gz.tbi"]
+        out_file_list = [mutect2_outdir, mutect2_vcf_4_filt_file + ".gz", mutect2_vcf_4_filt_file + ".gz.tbi", mutect2_vcf_4_filt_file]
         command = [fcs_genome, "mutect2", "-r", ref, "-n", bam_dir, "-t", tumor_bam, "-o", mutect2_outdir,
                   "-g", "--normal_name", generic_fn, "--tumor_name", generic_fn, "--panels_of_normals", normal_panel_vcf,
                   "--germline", gnomad_vcf, "--filtered_vcf", mutect2_vcf_4_filt_file]
