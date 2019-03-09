@@ -219,7 +219,7 @@ def run_command(command, timeout, expected_dir, out_file_list):
 
     for new_file in out_file_list:
         logging.debug("Removing {}".format(new_file))
-    #    remove_object(new_file)
+        remove_object(new_file)
 
     return elapsed_time
 
