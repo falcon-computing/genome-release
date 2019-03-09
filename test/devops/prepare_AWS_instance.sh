@@ -19,6 +19,7 @@ fi
 instance_ip=$1
 
 echo Ip: $instance_ip
+echo sleeping for a couple minutes while the instance loads
 sleep 3m
 
 # Login to the instance, get the setup script and use it to download the most recent build

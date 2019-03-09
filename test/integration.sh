@@ -3,7 +3,7 @@
 usage() 
 # Usage statement for when things go wrong 
 { 
-    echo "integration.sh - Perform one integration test for hg19 on a build.
+    echo "integration.sh - Run integration tests on a build.
 usage:
     integration.sh </full/path/to/build/> <platform>" 1>&2
 }
@@ -36,7 +36,7 @@ fi
 if [ ! -z "$2" ]; then
   platform=$2
 fi
-export platform 
+export platform
 platform_profile=$SOURCE_DIR/../common/platforms/${platform}.bash
 
 echo Targetting platform $platform
@@ -50,32 +50,12 @@ fi
 # This uses the FALCON_HOME variable and checks the build provided there. 
 source $SOURCE_DIR/lib/load_build.bash
 
-# Export variables relating to where indexes and reference files are default to hg19
-source $SOURCE_DIR/lib/load_hg19_environment.bash
-
-# Load some testing functions
-source $SOURCE_DIR/lib/common.bash
-
 # Load platform profile
 source $platform_profile
 
-failed=0
-output_log=${INSTANCE_TYPE}_$(date +%Y%m%d%s).log
-start_ts=$(date +%s)
-
-collect_info > integration.log
-
-# Run a single sample through the pipeline 
-echo Starting integration test
-export id=NA12878
-$BATS $REG_DIR/regression_test/  >> integration.log
-if [ $? -ne 0 ]; then
-  echo Integration test failed
-  echo "Time taken: $((end_ts - start_ts))s"  2>> integration.log
-  exit 1
-fi
-echo Integration test passed
-
+# Run the local mitochondrial DNA dataset through the pipeline and compare to the expected
+python $SOURCE_DIR/lib/test_toolkit.py $FCSBIN $SOURCE_DIR/data/ref/mito.fasta $SOURCE_DIR/data/expected_output/ \
+    $SOURCE_DIR/data/input/mito_1.fastq $SOURCE_DIR/data/input/mito_2.fastq $SOURCE_DIR/data/ref/mito_snps.vcf.gz \
+    $SOURCE_DIR/data/expected_output/mito.tumor.bam $SOURCE_DIR/data/input/ $SOURCE_DIR/data/ref/mutect_gatk4_pon.mito.vcf.gz \
+    $SOURCE_DIR/data/ref/mutect-gnomad.vcf.gz --no_remove_files
  
-end_ts=$(date +%s)
-echo "Time taken: $((end_ts - start_ts))s"  2>> integration.log

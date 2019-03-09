@@ -75,7 +75,7 @@ fi
 echo "FPGA test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing hg19 feature in fcs-genome "                                               >> regression.log
+echo -e "Testing feature in fcs-genome "                                               >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
 $BATS $REG_DIR/features_test/ >> regression.log
@@ -83,93 +83,21 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 rm -rf `pwd`/output.bam
-echo "Hg19 feature test passed"
+echo "Feature test passed"
 
 echo -e "============================================================================" >> regression.log
-echo -e "Testing hg19 Data-Dependent Alignment                               "              >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(GEN-637)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/1_align.bats  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Data-Dependent Alignment test passed"
-echo -e "============================================================================" >> regression.log
-echo -e "DNA Samples (Platinum Trio Genome NA12878, NA12891 and NA12892)"              >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(NA12878 NA12891 NA12892)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "hg19 germline test passed"
-
-echo -e "============================================================================" >> regression.log
-echo -e "Pair Sample for Mutect2"                                                      >> regression.log
-echo -e "============================================================================\n" >> regression.log
-array=(TCRBOA1)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/mutect2_test2/ >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg19 somatic test passed"
-
-echo -e "============================================================================" >> regression.log
-echo -e "Start tests for hg38"                                                      >> regression.log
+echo -e "DNA Samples (Platinum Trio Sample NA12878)"              >> regression.log
 echo -e "============================================================================\n" >> regression.log
 
-# Export variables relating to where indexes and reference files are, update to hg38
-source $SOURCE_DIR/lib/load_hg38_environment.bash
+normalBAM=$WORKDIR/baselines/printreads/3.8/${SAMPLE_ID}-Normal_final_BAM.bam
+tumorBAM=$WORKDIR/baselines/printreads/3.8/${SAMPLE_ID}-Tumor_final_BAM.bam
+normalBAM_GATK4=$WORKDIR/baselines/printreads/4.0/${SAMPLE_ID}-Normal_final_BAM.bam
+tumorBAM_GATK4=$WORKDIR/baselines/printreads/4.0/${SAMPLE_ID}-Tumor_final_BAM.bam
+VCF_DIR=$WORKDIR/baselines/joint/vcf/
 
-echo -e "============================================================================" >> regression.log
-echo -e "Testing hg38 feature in fcs-genome "                                               >> regression.log
-echo -e "============================================================================\n" >> regression.log
-
-$BATS $REG_DIR/features_test/ >> regression.log
-if [ $? -ne 0 ]; then
-  exit 1
-fi
-rm -rf `pwd`/output.bam
-echo "Hg38 feature test passed"
-
-array=(NA12878 NA12891 NA12892)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/regression_test/  >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg38 Germline test passed"
-
-array=(TCRBOA1)
-for id in ${array[@]}
-  do
-    echo "Processing $id"
-    export id=$id
-    $BATS $REG_DIR/mutect2_test2/ >> regression.log
-    if [ $? -ne 0 ]; then
-      exit 1
-    fi
-  done
-echo "Hg38 Somatic test passed"
+python $SOURCE_DIR/lib/test_toolkit.py $FCSBIN $ref_genome $WORKDIR/$SAMPLE_ID \
+    $fastq_dir/${SAMPLE_ID}_1.fastq.gz $fastq_dir/${SAMPLE_ID}_2.fastq.gz $db138_SNPs \
+    $tumorBAM $VCF_DIR $PON $GNOMAD --no_remove_files
 
 end_ts=$(date +%s)
 echo "Time taken: $((end_ts - start_ts))s"  >> regression.log

@@ -1,0 +1,19 @@
+# Launching an AWS instance;
+# AWS instances are launched from the falcon-aws script which lives in the internal repo
+# git clone git@github.com:falcon-computing/internal.git
+# The aws instance can be launched with the following command format; 
+
+internal/aws-manage/falcon-aws request -i ami-09f8aee7a4f413042 -t chrisTesting -d f1.16xlarge --no-conf
+
+# This will generate some text output, then spit out an IP. Keep track of this.
+# This image has ssh credentials and the IP is ready to be passed in to prepare_aws_instance.sh.
+
+# Notes:
+# -t labels the instance, use something descriptive
+# -d specifies the instance type. Some populare ones are f1.16xlarge m5.12xlarge and m4.10xlarge
+# The instance default to shutting down if idle for a couple minutes. This can be turned off by adding
+#      the --no-alarm command.
+
+# Tearing down an AWS instance
+
+internal/aws-manage/falcon-aws terminate <ip>
