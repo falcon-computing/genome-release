@@ -181,7 +181,6 @@ function git_clone {
   local git=${repos_git[$rp]};
   local dir=$(basename $git);
   dir=${dir%%.*};
-  export GIT_LFS_SKIP_SMUDGE=1;
 
   check_run git clone -b "$(git_get_branch "$rp")" --single-branch $git;
   check_run cd $dir;
@@ -310,7 +309,7 @@ function gatk_build {
 
   if ! aws s3 ls "$(s3_link $rp $git_hash)" > /dev/null; then
 
-    local dir=$(git_clone $rp);
+    local dir=$(GIT_LFS_SKIP_SMUDGE=1 git_clone $rp);
     check_run cd $dir;
 
     if [ -z "$profiling" ]; then
