@@ -56,13 +56,13 @@ for sample in $(cat $PER_DIR/germline.list); do
     capture=
   fi
   run_align $sample
-  run_bqsr  $sample $capture ""
-  run_htc   $sample $capture ""
-  run_bqsr  $sample $capture gatk4
-  run_htc   $sample $capture gatk4
+  run_bqsr  $sample "$capture" ""
+  run_htc   $sample "$capture" ""
+  run_bqsr  $sample "$capture" gatk4
+  run_htc   $sample "$capture" gatk4
 
-  run_germline $sample $capture ""
-  run_germline $sample $capture gatk4
+  run_germline $sample "$capture" ""
+  run_germline $sample "$capture" gatk4
 done
 
 #for pair in $(cat $PER_DIR/mutect.list); do
