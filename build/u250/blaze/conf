@@ -1,0 +1,31 @@
+verbose : 0
+profile : true
+platform {
+  id: "cpu"
+}
+platform {
+  id: "xlnx_opencl"
+  path : "/usr/local/falcon/blaze/platforms/libxlnx_opencl.so"
+  cache_loc: "cpu"
+  acc {
+    id: "PairHMM"
+    path: "/usr/local/falcon/blaze/acc/libPairHMMTask.so"
+    param {
+      key: "program_path"
+      value : "/usr/local/falcon/fpga/pmm.xclbin"
+    }
+    param { key: "num_kernels" value: "4" }
+    param { key: "kernel_name[0]" value: "pmm_core_top0" }
+    param { key: "kernel_name[1]" value: "pmm_core_top1" }
+    param { key: "kernel_name[2]" value: "pmm_core_top2" }
+    param { key: "kernel_name[3]" value: "pmm_core_top3" }
+    param { key: "pmm_core_top0.num_pe" value: "80" }
+    param { key: "pmm_core_top1.num_pe" value: "80" }
+    param { key: "pmm_core_top2.num_pe" value: "80" }
+    param { key: "pmm_core_top3.num_pe" value: "80" }
+    param { key: "pmm_core_top0.bankID" value: "0" }
+    param { key: "pmm_core_top1.bankID" value: "1" }
+    param { key: "pmm_core_top2.bankID" value: "2" }
+    param { key: "pmm_core_top3.bankID" value: "3" }
+  }
+}
