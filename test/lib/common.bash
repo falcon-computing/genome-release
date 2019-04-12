@@ -230,6 +230,7 @@ function run_align {
     -2 /local/$sample/${sample}_2.fastq.gz \
     -o /local/$sample/${sample}_marked.bam \
     -R $sample -L $sample -P illumina -S $sample \
+    --disable-merge \
     -f 1> /dev/null 2>> $log_fname;
 }
 
