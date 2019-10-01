@@ -5,8 +5,6 @@ Release v2.1.0
 <!-- TOC depthFrom:2 depthTo:3 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [Introduction](#introduction)
-- [Quick Start on Public Clouds](#quick-start-on-public-clouds)
-- [FAQ](#faq)
 - [System Requirements and Installation](#system-requirements-and-installation)
 	- [Software Prerequisites](#software-prerequisites)
 	- [System Setup](#system-setup)
@@ -23,7 +21,7 @@ Release v2.1.0
 	- [`fcs-genome joint` Options](#fcs-genome-joint-options)
 	- [`fcs-genome mutect2` Options](#fcs-genome-mutect2-options)
 	- [`fcs-genome depth` Options](#fcs-genome-depth-options)
-	- [`fcs-genome vcf_filter` Options](#fcs-genome-vcf_filter-options)
+	- [`fcs-genome vcf_filter` Options](#fcs-genome-vcffilter-options)
 	- [`fcs-genome gatk` Options](#fcs-genome-gatk-options)
 	- [Additional Commands](#additional-commands)
 - [Examples](#examples)
@@ -66,14 +64,6 @@ The table below shows which of the components of the GATK best practices have a 
 | | | Mutect2 | mutect2 |
 
 This User Guide provides details on the setup of the Falcon Genome pipeline, command-line usage and a step-by-step example to run the variant calling pipeline.
-
-## Quick Start on Public Clouds
-- [AWS](aws/README.md)
-- [Huawei Cloud](hwcloud/README.md)
-- [Alibaba Cloud](aliyun/README.md)
-
-## FAQ
-[FAQ for Falcon Accelerated Genomics Pipelines.](FAQ.md)
 
 ## System Requirements and Installation
 ### Software Prerequisites
@@ -126,7 +116,7 @@ The following options are available for all `fcs-genome` commands.
 | -O | --extra-options | String(\*) | access to GATK tools extra options. Use " " to enclose the option name and argument(s). Example "--option argrement" |
 
 - The option `--force | -f` will force `fcs-genome` to overwrite output file if it already exists. By default, the tool will prompt user input if the specified output file(s) already exists.  
-- The option `--extra-options | -O` is used to apply additional options to the downstream tools (bwa, GATK) that are not included in `fcs-genome`. All additional parameters in the GATK methods are available through that option. 
+- The option `--extra-options | -O` is used to apply additional options to the downstream tools (bwa, GATK) that are not included in `fcs-genome`. All additional parameters in the GATK methods are available through that option.
 For example:  
    ```
    fcs-genome htc
@@ -153,7 +143,7 @@ For GATK commands (e.g. `bqsr`, `htc`, `mutect2`), the following options are ava
 
 ### `fcs-genome germline` Options
 The `germline` command performs alignment and variant calling using [minimap2]() and GATK (both v3.8 and v4.0.x).
-Given a set of pair-end FASTQ data as input, it produces a VCF or GVCF file with all variant sites. 
+Given a set of pair-end FASTQ data as input, it produces a VCF or GVCF file with all variant sites.
 
 | Option | Alternative | Argument | Description |
 | --- | --- | --- | --- |
@@ -197,7 +187,7 @@ Given a set of pair-end FASTQ data as input, it produces a BAM file with all rea
 SampleA,SampleA_1.fastq.gz,SampleA_2.fastq.gz,SampleA,Illumina,ABC
 SampleB,SampleB_1.fastq.gz,SampleB_2.fastq.gz,SampleB,Illumina,ABC
 ```
-The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample, and save the BAM file in a folder with the sample name. By default, duplicate reads will be marked in the output BAM file unless the --align-only option is set. 
+The header describes the order of the input data as follows: Sample Name or ID, Read 1 FASTQ filename path, Read 2 filename path, Read Group Name, Platform which the sample was sequenced, and Library ID. Note that a sample may have more than 1 pair of FASTQ files. Using the Sample Sheet feature, the fcs-genome align will merge all the outputs generated from that sample, and save the BAM file in a folder with the sample name. By default, duplicate reads will be marked in the output BAM file unless the --align-only option is set.
 
 #### Known Limitations
 1. `fcs-genome align` can only produce sorted BAM file, or mark duplicate BAM. For mark duplicate BAMs, duplications cannot be removed at this moment. To remove duplications, 3rd party tools such as `samtools` can be used.
@@ -290,7 +280,7 @@ Additional documentations for GATK 3.x usage can be found in this [link](https:/
 | -a | --normal_name | String | Sample name for Normal Input BAM. Must match the SM tag in the BAM header |
 | -b | --tumor_name | String | Sample name for Tumor Input BAM. Must match the SM tag in the BAM header |
 
-In GATK 4.x, two more options (`--normal_name` and `--tumor_name`) are required in addition to the filenames of the normal and tumor BAM file(s). These two options are used to specify the sample names for the normal and tumor samples, which in essense is the `SM` filed in the BAM header. 
+In GATK 4.x, two more options (`--normal_name` and `--tumor_name`) are required in addition to the filenames of the normal and tumor BAM file(s). These two options are used to specify the sample names for the normal and tumor samples, which in essense is the `SM` filed in the BAM header.
 
 Additional documentations for GATK 4.x usage can be found in this [link](https://software.broadinstitute.org/gatk/documentation/tooldocs/current/org_broadinstitute_hellbender_tools_walkers_mutect_Mutect2.php).
 
@@ -298,7 +288,7 @@ Panels of Normals (PON) is a VCF file generated from the merge of a collection o
 
 For futher details about PON, please go to this [link](https://gatkforums.broadinstitute.org/gatk/discussion/11053/panel-of-normals-pon).
 
-Usually, pairs of normal-tumor samples are sequenced using captures. User should use -L option to provide BED file with the coordinates of the genomic regions defined by capture. 
+Usually, pairs of normal-tumor samples are sequenced using captures. User should use -L option to provide BED file with the coordinates of the genomic regions defined by capture.
 
 ### `fcs-genome depth` Options
 The `depth` command calculates the depth of coverage for a given BAM input files. It is equivalent to GATK 3.x *DepthOfCoverage* command. The output will be a set of reports depending on the options selected.
@@ -313,7 +303,7 @@ The `depth` command calculates the depth of coverage for a given BAM input files
 | -v | --omitIntervals |     | omit output coverage per-interval statistics (default false) |
 | -s | --omitSampleSummary | | omit output summary files for each sample (default false) |
 
-**NOTE**: DepthOfCoverage is not available in GATK4. 
+**NOTE**: DepthOfCoverage is not available in GATK4.
 
 ### `fcs-genome vcf_filter` Options
 The `vcf_filter` emulates the *VariantFiltration* in GATK. It takes a VCF file as input and labels variants that meet the criteria set up by the user.
@@ -328,7 +318,7 @@ The `vcf_filter` emulates the *VariantFiltration* in GATK. It takes a VCF file a
 |    | --filter_name | String | Filter name for the log file |
 | -g | --gatk4 | |  use gatk4 to perform analysis |
 
-For additional details about how to set up the filtering expression, please refer to the the [GATK documentation]( https://software.broadinstitute.org/gatk/documentation/tooldocs/4.beta.3/org_broadinstitute_hellbender_tools_walkers_filters_VariantFiltration.php) 
+For additional details about how to set up the filtering expression, please refer to the the [GATK documentation]( https://software.broadinstitute.org/gatk/documentation/tooldocs/4.beta.3/org_broadinstitute_hellbender_tools_walkers_filters_VariantFiltration.php)
 
 ### `fcs-genome gatk` Options
 The `gatk` emulates the original GATK 3.x commands and as such, there is no Falcon provided acceleration. Please refer to the [GATK documentation](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/) for additional details.
