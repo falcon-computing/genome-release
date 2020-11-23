@@ -306,7 +306,6 @@ function gatk_build {
     check_run ./build.sh -p $license_dst --profiling;
   fi;
   check_run cp ./export/*.jar $dst;
-  s3_upload ./export/ $rp $git_hash;
 
   rm -rf $build_dir/$dir;
 
