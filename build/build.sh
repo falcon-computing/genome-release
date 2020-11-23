@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 # global settings
 build_dir=$HOME/build-temp
 dst_dir=./falcon
@@ -296,27 +297,18 @@ function gatk_build {
 
   local git_hash="$(git_get_hash $rp)";
 
-  if ! aws s3 ls "$(s3_link $rp $git_hash)" > /dev/null; then
+  local dir=$(GIT_LFS_SKIP_SMUDGE=1 git_clone $rp);
+  check_run cd $dir;
 
-    local dir=$(GIT_LFS_SKIP_SMUDGE=1 git_clone $rp);
-    check_run cd $dir;
-
-    if [ -z "$profiling" ]; then
-      check_run ./build.sh -p $license_dst;
-    else
-      check_run ./build.sh -p $license_dst --profiling;
-    fi;
-    check_run cp ./export/*.jar $dst;
-    s3_upload ./export/ $rp $git_hash;
-
-    rm -rf $build_dir/$dir;
+  if [ -z "$profiling" ]; then
+    check_run ./build.sh -p $license_dst;
   else
-    echo "skip building $rp on platform $platform"
-
-    # download build from s3
-    #check_run "aws s3 cp s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
-    s3_download $rp $git_hash $dst;
+    check_run ./build.sh -p $license_dst --profiling;
   fi;
+  check_run cp ./export/*.jar $dst;
+  s3_upload ./export/ $rp $git_hash;
+
+  rm -rf $build_dir/$dir;
 
   check_run cd $curr_dir;
 }
