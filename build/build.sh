@@ -240,55 +240,46 @@ function cmake_build {
 
   local git_hash="$(git_get_hash $rp)";
 
-  # check if build already exist
-  if ! aws s3 ls "$(s3_link $rp $git_hash)" > /dev/null; then
-    # check out git repo
-    local dir=$(git_clone $rp);
+  # check out git repo
+  local dir=$(git_clone $rp);
 
-    check_run mkdir -p $dir/build;
-    check_run cd $dir/build;
+  check_run mkdir -p $dir/build;
+  check_run cd $dir/build;
 
-    if [ -z "$debug" ]; then
-      if [ -z "$profiling" ]; then
-        check_run cmake3 \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DRELEASE_VERSION=""$version"" \
-          -DDEPLOYMENT_DST=$license_dst \
-          -DNO_PROFILE=1 \
-          -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
-      else
-        check_run cmake3 \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DRELEASE_VERSION=""$version"" \
-          -DDEPLOYMENT_DST=$license_dst \
-          -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
-      fi
+  if [ -z "$debug" ]; then
+    if [ -z "$profiling" ]; then
+      check_run cmake3 \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DRELEASE_VERSION=""$version"" \
+	-DDEPLOYMENT_DST=$license_dst \
+	-DNO_PROFILE=1 \
+	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
     else
-      check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
-    fi;
-
-    check_run make -j 8;
-
-    if [ ! "$(git branch | grep \* | cut -d ' ' -f2)" = "release" ] && [[ "$rp" == "$repo" ]]; then
-      # run unit test if build PR branch
-      check_run make test;
-    fi;
-
-    check_run make install; # will copy to correct place
-
-    # copy over the installation files
-    check_run rsync -arv ./install/ $dst/
-    #check_run "aws s3 sync ./install s3://$s3_build_bucket/$rp/$platform/$git_hash"
-    s3_upload ./install $rp $git_hash
-
-    check_run rm -rf $build_dir/$dir;
+      check_run cmake3 \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DRELEASE_VERSION=""$version"" \
+	-DDEPLOYMENT_DST=$license_dst \
+	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
+    fi
   else
-    echo "skip building $rp on platform $platform"
-
-    # download build from s3
-    s3_download $rp $git_hash $dst
-    #check_run "aws s3 sync s3://$s3_build_bucket/$rp/$platform/$git_hash $dst"
+    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
   fi;
+
+  check_run make -j 8;
+
+  if [ ! "$(git branch | grep \* | cut -d ' ' -f2)" = "release" ] && [[ "$rp" == "$repo" ]]; then
+    # run unit test if build PR branch
+    check_run make test;
+  fi;
+
+  check_run make install; # will copy to correct place
+
+  # copy over the installation files
+  check_run rsync -arv ./install/ $dst/
+  #check_run "aws s3 sync ./install s3://$s3_build_bucket/$rp/$platform/$git_hash"
+  s3_upload ./install $rp $git_hash
+
+  check_run rm -rf $build_dir/$dir;
 
   check_run cd $curr_dir;
 }
