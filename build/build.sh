@@ -276,8 +276,6 @@ function cmake_build {
 
   # copy over the installation files
   check_run rsync -arv ./install/ $dst/
-  #check_run "aws s3 sync ./install s3://$s3_build_bucket/$rp/$platform/$git_hash"
-  s3_upload ./install $rp $git_hash
 
   check_run rm -rf $build_dir/$dir;
 
