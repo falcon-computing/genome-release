@@ -9,6 +9,7 @@ Release v2.1.0
 	- [Software Prerequisites](#software-prerequisites)
 	- [System Setup](#system-setup)
 	- [Preparation](#preparation)
+	- [Run Demo Data] (#run-demo-data)
 - [Synopsis](#synopsis)
 	- [Common Options](#common-options)
 	- [Common GATK Options](#common-gatk-options)
@@ -86,6 +87,50 @@ The software package of the Falcon Accelerated Genomics Pipelines is self-contai
 ftp://gsapubftp-anonymous@ftp.broadinstitute.org/bundle/  
 To take full advantage of the FPGA acceleration provided by the Falcon Genome image, the reference genome needs to be preprocessed by running the script /usr/local/falcon/prepare-ref.sh <path-to-fasta>. This step is optional, and the regular reference genome files (FASTA) will still work without processing. The processed reference genome, on the other hand, will also work for other software such as BWA, Picard, GATK, etc.
 + Optional arguments: GATK relies on files with known variants in its processing. For example, known variant files including the 1000 Genome indel sites, the Mills indel sites and the dbSNP sites can be given as additional parameters for the pipeline steps. These can also be downloaded from the Broad Institute website.
+
+### Run Demo Data
+
+In order to check if the installation and setup went well, users can follow the instructions below to the run demo data through the Falcon Genomics pipelines and verify.
+
++ Getting the data for the demo run: For demo purposes, we provide test data and reference files along with run script that runs mapping, quality score recalibration and variant calling steps. Get all of the files by downloading the folder as demo folder onto your AWS instance.
+
+```
+aws s3 sync  s3://fcs-genome-pub/demo_dataset/  /local/demo 
+```
+
++ Contents of demo dataset: The folder to be downloaded referred to as /local/demo/ above contains two sub folders called fastq/ and ref/, and one script called run_test.sh. Contents of these folders should look as below:
+
+```
+ls -1 ref/ fastq/
+fastq/:
+NA12878_chr22_1.fastq.gz
+NA12878_chr22_2.fastq.gz
+ref/:
+dbsnp_138.b37_chr22.vcf.gz
+dbsnp_138.b37_chr22.vcf.gz.tbi
+human_g1k_v37_chr22.dict
+human_g1k_v37_chr22.fasta
+human_g1k_v37_chr22.fasta.amb
+human_g1k_v37_chr22.fasta.ann
+human_g1k_v37_chr22.fasta.bwt
+human_g1k_v37_chr22.fasta.fai
+human_g1k_v37_chr22.fasta.pac
+human_g1k_v37_chr22.fasta.sa
+human_g1k_v37_chr22.mmi
+Mills_and_1000G_gold_standard.indels.b37_chr22.vcf.gz
+Mills_and_1000G_gold_standard.indels.b37_chr22.vcf.gz.tbi
+RefSeq_GenesList_chr22.bed
+RefSeq_GenesList_chr22.list
+```
+
+In order to run the test data and ensure correct install, simply run the bash script provided
+
+```
+cd /local/demo
+nohup ./run_demo.sh 
+```
+
+A correct install with appropriate environmental variable ensures creation of BAM and VCF file generation for the test dataset provided.
 
 ## Synopsis
 This section provides all the methods available in the fcs-genome command with their respective options settings.
