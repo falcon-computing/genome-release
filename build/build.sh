@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x
 # global settings
 build_dir=$HOME/build-temp
 dst_dir=./falcon
@@ -9,7 +8,6 @@ script_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 # default values
 platform="vcu1525"
-s3_build_bucket="fcs-genome-build"
 repo=
 branch="release"
 build_type="release"
@@ -39,8 +37,6 @@ print_help() {
   echo "           default is 'local' which runs on merlin3";
   echo "   -r|--repo: ";
   echo "           if specified, will build the PR branch of the specified repo";
-  echo "   -u|--upload: ";
-  echo "           whether to upload to s3 bucket, default false";
   echo "   -v|--version: ";
   echo "           build version label";
   echo "   --profiling: ";
@@ -190,43 +186,6 @@ function git_clone {
   echo $dir;
 }
 
-function s3_link {
-  local rp=$1;
-  local git_hash=$2;
-
-  echo "s3://$s3_build_bucket/$rp/$build_type/$platform/${git_hash}.tgz";
-}
-
-function s3_upload {
-  local src=$1;
-  local rp=$2;
-  local git_hash=$3;
-  if [ -d $src ]; then
-    local dir=$src
-  else
-    local dir=$(dirname $src)
-  fi;
-  check_run tar zcf ${git_hash}.tgz -C $dir .;
-  check_run aws s3 cp ${git_hash}.tgz "$(s3_link $rp $git_hash)";
-  check_run rm -rf ${git_hash}.tgz;
-}
-
-function s3_download {
-  local rp=$1;
-  local git_hash=$2;
-  local dst=$3;
-  check_run aws s3 cp "$(s3_link $rp $git_hash)" .;
-  if [ -d "$dst" ]; then
-    check_run tar zxf ${git_hash}.tgz -C $dst/
-  else
-    check_run mkdir $git_hash
-    check_run tar zxf ${git_hash}.tgz -C $git_hash/
-    check_run cp $git_hash/* $dst
-    check_run rm -rf ${git_hash};
-  fi;
-  check_run rm -rf ${git_hash}.tgz;
-}
-
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -363,16 +322,6 @@ if [ ! -z "$platform" ]; then
   tarball=${tarball}-$platform
 fi
 check_run tar zcf ${tarball}.tgz falcon/
-
-# upload to aws s3
-if [ ! -z "$upload" ]; then
-    link=s3://fcs-genome-build/$build_type/${tarball}.tgz
-    
-  echo $link > latest-$platform
-  check_run aws s3 cp ${tarball}.tgz $link
-  check_run aws s3 cp latest-$platform $(dirname $link)/latest-$platform
-  check_run rm -f latest-$platform
-fi
 
 end_ts=$(date +%s)
 echo "Build finishes in $((end_ts - start_ts)) seconds"
