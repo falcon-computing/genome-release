@@ -307,7 +307,7 @@ cmake_build "blaze" $dst_dir/blaze
 cmake_build "falcon-genome" $dst_dir/bin
 cmake_build "bwa-flow" $dst_dir/tools/bin
 cmake_build "minimap2" $dst_dir/tools/bin
-gatk_build "gatk3" $dst_dir/tools/package/GATK3.jar
+#gatk_build "gatk3" $dst_dir/tools/package/GATK3.jar
 gatk_build "gatk4" $dst_dir/tools/package/GATK4.jar
 
 # fix sdaccel profile issue
