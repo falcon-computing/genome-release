@@ -247,6 +247,17 @@ function build_jsoncpp {
   cd ${oldpwd}
 }
 
+function build_protobuf {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.gz | tar -xz
+  cd protobuf-2.5.0
+  ./configure --prefix=${PWD}/build
+  make clean install -j
+  cd build
+  tar czf ${script_dir}/protobuf-2.5.0.tar.gz *
+  cd ${oldpwd}
+}
+
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -371,6 +382,7 @@ build_glog
 build_googletest
 build_htslib
 build_jsoncpp
+build_protobuf
 
 # build projects
 cmake_build "blaze" $dst_dir/blaze
