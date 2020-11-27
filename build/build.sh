@@ -186,6 +186,44 @@ function git_clone {
   echo $dir;
 }
 
+function build_gflags {
+  local oldpwd=${PWD}
+  #cd `mktemp -d /tmp/gflags_XXX`
+  wget -O - https://github.com/gflags/gflags/archive/v2.2.2.tar.gz | tar -xz
+  cd gflags-2.2.2
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=gflags ..
+  make install -j
+  tar czf ${script_dir}/gflags.tar.gz gflags
+  cd ${oldpwd}
+}
+
+function build_glog {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/google/glog/archive/v0.4.0.tar.gz | tar -xz
+  cd glog-0.4.0
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=glog -DWITH_GFLAGS=OFF ..
+  make install -j
+  mv glog/lib64 glog/lib
+  tar czf ${script_dir}/glog-falcon.tar.gz glog
+  cd ${oldpwd}
+}
+
+function build_googletest {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/google/googletest/archive/release-1.10.0.tar.gz | tar -xz
+  cd googletest-release-1.10.0
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=googletest ..
+  make install -j
+  tar czf ${script_dir}/googletest.tar.gz googletest
+  cd ${oldpwd}
+}
+
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -213,16 +251,18 @@ function cmake_build {
 	-DRELEASE_VERSION=""$version"" \
 	-DDEPLOYMENT_DST=$license_dst \
 	-DNO_PROFILE=1 \
+        -DDEPS=${script_dir} \
 	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
     else
       check_run cmake3 \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DRELEASE_VERSION=""$version"" \
 	-DDEPLOYMENT_DST=$license_dst \
+        -DDEPS=${script_dir} \
 	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
     fi
   else
-    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
+    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DDEPS=${script_dir} -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
   fi;
 
   check_run make -j 8;
@@ -301,6 +341,11 @@ fi
 
 # enable gcc-6
 #source scl_source enable devtoolset-4
+
+# build dependencies
+build_gflags
+build_glog
+build_googletest
 
 # build projects
 cmake_build "blaze" $dst_dir/blaze
