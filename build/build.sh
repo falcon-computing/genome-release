@@ -225,6 +225,28 @@ function build_googletest {
   cd ${oldpwd}
 }
 
+function build_htslib {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/samtools/htslib/archive/1.3.1.tar.gz | tar -xz
+  cd htslib-1.3.1
+  make prefix=build install
+  cd build
+  tar czf ${script_dir}/htslib-1.3.1.tar.gz *
+  cd ${oldpwd}
+}
+
+function build_jsoncpp {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/open-source-parsers/jsoncpp/archive/1.7.7.tar.gz | tar -xz
+  cd jsoncpp-1.7.7
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=jsoncpp-1.7.7 ..
+  make install -j
+  tar czf ${script_dir}/jsoncpp-1.7.7.tar.gz jsoncpp-1.7.7
+  cd ${oldpwd}
+}
+
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -347,6 +369,8 @@ fi
 build_gflags
 build_glog
 build_googletest
+build_htslib
+build_jsoncpp
 
 # build projects
 cmake_build "blaze" $dst_dir/blaze
