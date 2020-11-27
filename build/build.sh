@@ -220,6 +220,7 @@ function build_googletest {
   cd build
   cmake -DCMAKE_INSTALL_PREFIX=googletest ..
   make install -j
+  mv googletest/lib64 googletest/lib
   tar czf ${script_dir}/googletest.tar.gz googletest
   cd ${oldpwd}
 }
