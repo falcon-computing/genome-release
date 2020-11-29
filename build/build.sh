@@ -188,7 +188,6 @@ function git_clone {
 
 function build_gflags {
   local oldpwd=${PWD}
-  #cd `mktemp -d /tmp/gflags_XXX`
   wget -O - https://github.com/gflags/gflags/archive/v2.2.2.tar.gz | tar -xz
   cd gflags-2.2.2
   mkdir build
