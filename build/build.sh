@@ -186,6 +186,77 @@ function git_clone {
   echo $dir;
 }
 
+function build_gflags {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/gflags/gflags/archive/v2.2.2.tar.gz | tar -xz
+  cd gflags-2.2.2
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=gflags ..
+  make install -j
+  tar czf ${script_dir}/gflags.tar.gz gflags
+  cd ${oldpwd}
+}
+
+function build_glog {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/google/glog/archive/v0.4.0.tar.gz | tar -xz
+  cd glog-0.4.0
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=glog -DWITH_GFLAGS=OFF ..
+  make install -j
+  mv glog/lib64 glog/lib
+  tar czf ${script_dir}/glog-falcon.tar.gz glog
+  cd ${oldpwd}
+}
+
+function build_googletest {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/google/googletest/archive/release-1.10.0.tar.gz | tar -xz
+  cd googletest-release-1.10.0
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=googletest ..
+  make install -j
+  mv googletest/lib64 googletest/lib
+  tar czf ${script_dir}/googletest.tar.gz googletest
+  cd ${oldpwd}
+}
+
+function build_htslib {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/samtools/htslib/archive/1.3.1.tar.gz | tar -xz
+  cd htslib-1.3.1
+  make prefix=build install
+  cd build
+  tar czf ${script_dir}/htslib-1.3.1.tar.gz *
+  cd ${oldpwd}
+}
+
+function build_jsoncpp {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/open-source-parsers/jsoncpp/archive/1.7.7.tar.gz | tar -xz
+  cd jsoncpp-1.7.7
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=jsoncpp-1.7.7 ..
+  make install -j
+  tar czf ${script_dir}/jsoncpp-1.7.7.tar.gz jsoncpp-1.7.7
+  cd ${oldpwd}
+}
+
+function build_protobuf {
+  local oldpwd=${PWD}
+  wget -O - https://github.com/protocolbuffers/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.gz | tar -xz
+  cd protobuf-2.5.0
+  ./configure --prefix=${PWD}/build
+  make clean install -j
+  cd build
+  tar czf ${script_dir}/protobuf-2.5.0.tar.gz *
+  cd ${oldpwd}
+}
+
 function cmake_build {
   local rp=$1;
   local git=${repos_git[$rp]};
@@ -213,16 +284,18 @@ function cmake_build {
 	-DRELEASE_VERSION=""$version"" \
 	-DDEPLOYMENT_DST=$license_dst \
 	-DNO_PROFILE=1 \
+        -DDEPS=${script_dir} \
 	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
     else
       check_run cmake3 \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DRELEASE_VERSION=""$version"" \
 	-DDEPLOYMENT_DST=$license_dst \
+        -DDEPS=${script_dir} \
 	-DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
     fi
   else
-    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
+    check_run cmake3 -DCMAKE_BUILD_TYPE=Debug -DDEPLOYMENT_DST=$license_dst -DDEPS=${script_dir} -DCMAKE_INSTALL_PREFIX=$(pwd)/install ..;
   fi;
 
   check_run make -j 8;
@@ -301,6 +374,14 @@ fi
 
 # enable gcc-6
 #source scl_source enable devtoolset-4
+
+# build dependencies
+build_gflags
+build_glog
+build_googletest
+build_htslib
+build_jsoncpp
+build_protobuf
 
 # build projects
 cmake_build "blaze" $dst_dir/blaze
